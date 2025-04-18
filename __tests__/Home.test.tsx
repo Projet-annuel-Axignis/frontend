@@ -7,6 +7,7 @@ import { ImageProps } from 'next/image';
 jest.mock('next/image', () => ({
   __esModule: true,
   default: ({ src, alt, className, fill, sizes, priority }: Partial<ImageProps>) => (
+    // eslint-disable-next-line @next/next/no-img-element
     <img
       src={src as string}
       alt={alt as string}
@@ -52,7 +53,7 @@ describe('Page d\'accueil', () => {
     expect(logo).toBeInTheDocument();
 
     // Vérification des boutons CTA
-    const servicesButton = screen.getByText('Nos Services');
+    const servicesButton = screen.getByRole('link', { name: 'Nos Services' });
     expect(servicesButton).toBeInTheDocument();
 
     const contactButton = screen.getByText('Contactez-nous');
