@@ -5,12 +5,14 @@ import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
+import { centuryGothic } from './fonts';
 import "./globals.css";
 
 const montserrat = Montserrat({
   weight: ['300', '400', '500', '700'],
   style: ['normal', 'italic'],
   subsets: ["latin"],
+  variable: '--font-montserrat',
 });
 
 export const metadata: Metadata = {
@@ -24,10 +26,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr">
-      <body
-        className={`${montserrat.className} antialiased`}
-      >
+    <html lang="fr" className={`${montserrat.variable} ${centuryGothic.variable}`}>
+      <body className={`font-sans antialiased bg-white text-gray-800`}>
         {children}
       </body>
     </html>
