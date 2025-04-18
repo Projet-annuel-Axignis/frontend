@@ -1,3 +1,4 @@
+import I18nProvider from '@/i18n/I18nProvider';
 import '@fontsource/inter';
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
@@ -37,7 +38,9 @@ export default function RootLayout({
       } as React.CSSProperties}
     >
       <body className="font-sans antialiased">
-        {children}
+        <I18nProvider>
+          {children}
+        </I18nProvider>
       </body>
     </html>
   );

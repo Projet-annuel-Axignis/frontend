@@ -1,0 +1,15 @@
+{
+  "welcome": "Bienvenue sur notre application",
+  "home": "Accueil",
+  "about": "À propos",
+  "contact": "Contact",
+  "settings": "Paramètres",
+  "language": "Langue",
+  "login": "Connexion",
+  "logout": "Déconnexion",
+  "profile": "Profil",
+  "error": {
+    "404": "Page non trouvée",
+    "500": "Erreur serveur"
+  }
+}
