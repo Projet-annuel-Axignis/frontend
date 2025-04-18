@@ -1,6 +1,11 @@
+'use client';
+
+import { useTranslation } from '@/i18n/useTranslation';
 import Image from 'next/image';
 
 export default function Footer() {
+  const { t } = useTranslation();
+
   return (
     <footer className="
       bg-gray-900
@@ -36,7 +41,7 @@ export default function Footer() {
               text-gray-300
               mb-6
             ">
-              Spécialiste en sécurité incendie et accessibilité des bâtiments. Notre expertise au service de votre sécurité.
+              {t('footer.description')}
             </p>
             <div className="
               flex
@@ -80,7 +85,7 @@ export default function Footer() {
               mb-4
               text-[var(--color-axignis-secondary)]
             ">
-              Liens Rapides
+              {t('footer.quick_links')}
             </h3>
             <ul className="
               space-y-2
@@ -91,7 +96,7 @@ export default function Footer() {
                   hover:text-white
                   transition-colors
                 ">
-                  Notre Mission
+                  {t('footer.mission')}
                 </a>
               </li>
               <li>
@@ -100,7 +105,7 @@ export default function Footer() {
                   hover:text-white
                   transition-colors
                 ">
-                  Services
+                  {t('footer.services')}
                 </a>
               </li>
               <li>
@@ -109,7 +114,7 @@ export default function Footer() {
                   hover:text-white
                   transition-colors
                 ">
-                  Contact
+                  {t('footer.contact')}
                 </a>
               </li>
               <li>
@@ -118,7 +123,7 @@ export default function Footer() {
                   hover:text-white
                   transition-colors
                 ">
-                  Mentions Légales
+                  {t('footer.legal')}
                 </a>
               </li>
             </ul>
@@ -132,7 +137,7 @@ export default function Footer() {
               mb-4
               text-[var(--color-axignis-secondary)]
             ">
-              Contact
+              {t('footer.contact')}
             </h3>
             <ul className="
               space-y-2
@@ -146,8 +151,7 @@ export default function Footer() {
                   <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                 </svg>
                 <span className="text-gray-300">
-                  123 Avenue de la République<br />
-                  75011 Paris, France
+                  {t('footer.address')}
                 </span>
               </li>
               <li className="
@@ -158,7 +162,7 @@ export default function Footer() {
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[var(--color-axignis-secondary)]" viewBox="0 0 20 20" fill="currentColor">
                   <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
                 </svg>
-                <span className="text-gray-300">+33 6 12 34 56 78</span>
+                <span className="text-gray-300">{t('homepage.contact.phone')}</span>
               </li>
               <li className="
                 flex
@@ -183,7 +187,7 @@ export default function Footer() {
           text-center
           text-gray-400
         ">
-          <p>&copy; {new Date().getFullYear()} Axignis. Tous droits réservés.</p>
+          <p>&copy; {new Date().getFullYear()} Axignis. {t('footer.copyright')}</p>
         </div>
       </div>
     </footer>
