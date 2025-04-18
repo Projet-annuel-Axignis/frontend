@@ -6,6 +6,7 @@ import { render, screen } from '@testing-library/react';
 jest.mock('next/image', () => ({
   __esModule: true,
   default: ({ src, alt }: { src: string, alt: string }) => (
+    // eslint-disable-next-line @next/next/no-img-element
     <img
       src={src}
       alt={alt}
@@ -26,19 +27,19 @@ describe('Composant Footer', () => {
 
   test('affiche la section Liens Rapides avec les liens appropriés', () => {
     // Titre de la section
-    const linksTitle = screen.getByText('Liens Rapides');
+    const linksTitle = screen.getByRole('heading', { name: 'Liens Rapides' });
     expect(linksTitle).toBeInTheDocument();
 
     // Liens
-    expect(screen.getByText('Notre Mission')).toBeInTheDocument();
-    expect(screen.getByText('Services')).toBeInTheDocument();
-    expect(screen.getByText('Contact')).toBeInTheDocument();
-    expect(screen.getByText('Mentions Légales')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Notre Mission' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Services' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Contact' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Mentions Légales' })).toBeInTheDocument();
   });
 
   test('affiche la section Contact avec les informations de contact', () => {
     // Titre de la section
-    const contactTitle = screen.getByText('Contact');
+    const contactTitle = screen.getByRole('heading', { name: 'Contact' });
     expect(contactTitle).toBeInTheDocument();
 
     // Informations de contact
