@@ -1,4 +1,3 @@
-import { centuryGothic } from "@/app/fonts";
 import Image from "next/image";
 
 export default function Home() {
@@ -13,7 +12,8 @@ export default function Home() {
           height={38}
           priority
         />
-        <p className={`${centuryGothic.className} text-2xl font-bold`}>Texte en centuryGothic</p>
+        <h1 className="font-title font-bold text-4xl text-axignis-primary">Bienvenue sur Axignis</h1>
+        <p className={`text-2xl font-bold`}>Texte en centuryGothic</p>
         <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left">
           <li className="mb-2 tracking-[-.01em]">
             Get started by editing{" "}
