@@ -1,0 +1,78 @@
+{
+  "welcome": "Welcome to our application",
+  "home": "Home",
+  "about": "About",
+  "contact": "Contact",
+  "settings": "Settings",
+  "language": "Language",
+  "login": "Login",
+  "logout": "Logout",
+  "profile": "Profile",
+  "learn_more": "Learn more",
+  "error": {
+    "404": "Page not found",
+    "500": "Server error"
+  },
+  "homepage": {
+    "hero": {
+      "specialist": "Specialist in",
+      "fire_safety": "fire safety",
+      "and": "and",
+      "building_accessibility": "building accessibility"
+    },
+    "cta": {
+      "our_services": "Our Services",
+      "contact_us": "Contact us"
+    },
+    "mission": {
+      "title": "Our Mission",
+      "description1": "Axignis supports companies and establishments receiving the public (ERP) in regulatory compliance concerning fire safety and accessibility for people with disabilities.",
+      "description2": "Thanks to recognized expertise, Axignis offers comprehensive support, from design to final acceptance of projects.",
+      "image_alt": "Our mission - Team meeting"
+    },
+    "services": {
+      "title": "Our Services",
+      "items": [
+        {
+          "title": "Safety Register",
+          "description": "Digital and automated management of mandatory registers with integrated alerts and monitoring for permanent compliance."
+        },
+        {
+          "title": "SSI Coordination",
+          "description": "Expert support in all phases: design, implementation and acceptance of the Fire Safety System."
+        },
+        {
+          "title": "Technical Database",
+          "description": "Secure centralization of technical information, user manuals and certificates for safety equipment."
+        }
+      ]
+    },
+    "founder": {
+      "title": "About the founder",
+      "name": "Loïc Rome",
+      "description": "Founder and expert in fire safety and accessibility, Loïc Rome has been supporting companies in their regulatory procedures since 2017 with passion and expertise.",
+      "linkedin": "View LinkedIn profile"
+    },
+    "contact": {
+      "title": "Ready to secure your establishment?",
+      "subtitle": "Contact us today for a free, no-obligation consultation.",
+      "contact_button": "Contact us",
+      "phone": "+33 6 12 34 56 78"
+    }
+  },
+  "footer": {
+    "description": "Specialist in fire safety and building accessibility. Our expertise at your service.",
+    "quick_links": "Quick Links",
+    "mission": "Our Mission",
+    "services": "Services",
+    "contact": "Contact",
+    "legal": "Legal Notice",
+    "address": "123 Avenue de la République, 75011 Paris, France",
+    "copyright": "All rights reserved."
+  },
+  "language_selector": {
+    "french": "French",
+    "english": "English",
+    "select_language": "Select language"
+  }
+}

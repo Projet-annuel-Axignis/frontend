@@ -17,6 +17,7 @@ if (typeof window !== 'undefined') {
     // Initialisation i18next
     .init({
       fallbackLng: 'fr',
+      supportedLngs: ['fr', 'en'],
       debug: process.env.NODE_ENV === 'development',
 
       interpolation: {
@@ -31,6 +32,12 @@ if (typeof window !== 'undefined') {
       // Espaces de noms par défaut
       defaultNS: 'common',
       ns: ['common'],
+
+      // Options de détection de langue
+      detection: {
+        order: ['localStorage', 'navigator', 'htmlTag'],
+        caches: ['localStorage'],
+      },
     });
 }
 

@@ -8,8 +8,71 @@
   "login": "Connexion",
   "logout": "Déconnexion",
   "profile": "Profil",
+  "learn_more": "En savoir plus",
   "error": {
     "404": "Page non trouvée",
     "500": "Erreur serveur"
+  },
+  "homepage": {
+    "hero": {
+      "specialist": "Spécialiste en",
+      "fire_safety": "sécurité incendie",
+      "and": "et",
+      "building_accessibility": "accessibilité des bâtiments"
+    },
+    "cta": {
+      "our_services": "Nos Services",
+      "contact_us": "Contactez-nous"
+    },
+    "mission": {
+      "title": "Notre Mission",
+      "description1": "Axignis accompagne les entreprises et établissements recevant du public (ERP) dans la mise en conformité réglementaire concernant la sécurité incendie et l'accessibilité aux personnes en situation de handicap.",
+      "description2": "Grâce à une expertise reconnue, Axignis propose un accompagnement complet, de la conception à la réception finale des projets.",
+      "image_alt": "Notre mission - Réunion d'équipe"
+    },
+    "services": {
+      "title": "Nos Services",
+      "items": [
+        {
+          "title": "Registre de Sécurité",
+          "description": "Gestion digitale et automatisée des registres obligatoires avec alertes et suivis intégrés pour une conformité permanente."
+        },
+        {
+          "title": "Coordination SSI",
+          "description": "Accompagnement expert dans toutes les phases : conception, réalisation et réception du Système de Sécurité Incendie."
+        },
+        {
+          "title": "Base Technique",
+          "description": "Centralisation sécurisée des informations techniques, notices d'utilisation et certificats des équipements de sécurité."
+        }
+      ]
+    },
+    "founder": {
+      "title": "À propos du fondateur",
+      "name": "Loïc Rome",
+      "description": "Fondateur et expert en sécurité incendie et accessibilité, Loïc Rome accompagne depuis 2017 les entreprises dans leurs démarches réglementaires avec passion et expertise.",
+      "linkedin": "Voir le profil LinkedIn"
+    },
+    "contact": {
+      "title": "Prêt à sécuriser votre établissement?",
+      "subtitle": "Contactez-nous dès aujourd'hui pour une consultation gratuite et sans engagement.",
+      "contact_button": "Nous contacter",
+      "phone": "+33 6 12 34 56 78"
+    }
+  },
+  "footer": {
+    "description": "Spécialiste en sécurité incendie et accessibilité des bâtiments. Notre expertise au service de votre sécurité.",
+    "quick_links": "Liens Rapides",
+    "mission": "Notre Mission",
+    "services": "Services",
+    "contact": "Contact",
+    "legal": "Mentions Légales",
+    "address": "123 Avenue de la République, 75011 Paris, France",
+    "copyright": "Tous droits réservés."
+  },
+  "language_selector": {
+    "french": "Français",
+    "english": "Anglais",
+    "select_language": "Sélectionner la langue"
   }
 }

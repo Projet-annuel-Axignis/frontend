@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslation } from '@/i18n/useTranslation';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -9,6 +12,8 @@ interface ServiceCardProps {
 }
 
 export default function ServiceCard({ title, description, imageSrc, link }: ServiceCardProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="
       group
@@ -91,7 +96,7 @@ export default function ServiceCard({ title, description, imageSrc, link }: Serv
             self-start
           "
         >
-          En savoir plus
+          {t('learn_more', 'En savoir plus')}
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M5 12h14"></path>
             <path d="m12 5 7 7-7 7"></path>
