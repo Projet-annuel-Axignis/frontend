@@ -7,14 +7,21 @@ Ce guide explique comment utiliser Docker avec ce projet frontend.
 - Docker et Docker Compose installés sur votre machine
 - Git pour cloner le projet
 
-## Configuration
+## Organisation des fichiers
 
-Le projet inclut plusieurs fichiers de configuration Docker :
+Tous les fichiers liés à Docker sont organisés dans le dossier `docker/` :
 
-- `Dockerfile` - Pour la construction de l'image de production
-- `Dockerfile.dev` - Pour l'environnement de développement
-- `docker-compose.yml` - Pour le déploiement en production
-- `docker-compose.dev.yml` - Pour l'environnement de développement
+- `docker/Dockerfile` - Pour la construction de l'image de production
+- `docker/Dockerfile.dev` - Pour l'environnement de développement
+- `docker/docker-compose.yml` - Pour le déploiement en production
+- `docker/docker-compose.dev.yml` - Pour l'environnement de développement
+- `docker/.dockerignore` - Liste des fichiers à ignorer lors de la construction
+
+Des scripts pour faciliter l'utilisation sont disponibles à la racine du projet :
+
+- `docker-dev.sh` - Pour démarrer l'environnement de développement
+- `docker-prod.sh` - Pour déployer en production
+- `docker-cleanup.sh` - Pour nettoyer les ressources Docker
 
 ## Utilisation
 
@@ -23,7 +30,7 @@ Le projet inclut plusieurs fichiers de configuration Docker :
 Pour démarrer l'environnement de développement :
 
 ```bash
-./dev-docker.sh
+./docker-dev.sh
 ```
 
 Cela va :
@@ -41,7 +48,7 @@ Les changements de code seront automatiquement détectés et l'application se re
 Pour déployer l'application en production :
 
 ```bash
-./deploy-docker.sh
+./docker-prod.sh
 ```
 
 Cela va :
@@ -60,7 +67,7 @@ Pour nettoyer toutes les ressources Docker associées au projet :
 
 ## Volumes et persistance
 
-- Le volume `./public/locales:/app/public/locales` dans la configuration de production permet de mettre à jour les fichiers de traduction sans reconstruire l'image.
+- Le volume `../public/locales:/app/public/locales` dans la configuration de production permet de mettre à jour les fichiers de traduction sans reconstruire l'image.
 
 ## Structure des images Docker
 
@@ -79,13 +86,31 @@ Pour nettoyer toutes les ressources Docker associées au projet :
 - Ne contient que les fichiers nécessaires pour exécuter l'application
 - Utilise la commande `npm run start`
 
+## Intégration Continue (CI)
+
+Le projet est configuré avec GitHub Actions pour les tests et le déploiement Docker automatique :
+
+- **Workflow CI** (`.github/workflows/ci.yml`) :
+  - Exécute les tests pour chaque pull request et push
+  - Vérifie que le projet peut être compilé correctement
+  - Effectue les vérifications de linting et les tests unitaires
+
+- **Workflow Docker** (`.github/workflows/docker.yml`) :
+  - Construit et publie l'image Docker sur GitHub Container Registry
+  - Déclenché automatiquement pour les branches `main` (production) et `dev` (développement)
+  - Peut être lancé manuellement via le déclencheur `workflow_dispatch`
+  - Applique des tags appropriés selon l'environnement et la branche
+  - Envoie une notification après un déploiement réussi
+
+Les images Docker sont accessibles via `ghcr.io/{nom-utilisateur}/{nom-repo}:{tag}`.
+
 ## Personnalisation
 
 Vous pouvez personnaliser les configurations Docker en modifiant les fichiers suivants :
 
-- `Dockerfile` et `Dockerfile.dev` pour les images
-- `docker-compose.yml` et `docker-compose.dev.yml` pour les services
-- Scripts shell pour les processus de déploiement
+- `docker/Dockerfile` et `docker/Dockerfile.dev` pour les images
+- `docker/docker-compose.yml` et `docker/docker-compose.dev.yml` pour les services
+- Les scripts shell à la racine du projet pour les processus de déploiement
 
 ## Dépannage
 

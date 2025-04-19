@@ -1,0 +1,103 @@
+name: Docker Build & Deploy
+
+on:
+  push:
+    branches: [ main, dev ]
+    paths-ignore:
+      - '**/*.md'
+      - 'LICENSE'
+  pull_request:
+    branches: [ main, dev ]
+    paths-ignore:
+      - '**/*.md'
+      - 'LICENSE'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environnement de déploiement'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - production
+
+env:
+  BRANCH_NAME: ${{ github.ref_name }}
+
+jobs:
+  docker-build:
+    name: Build & Push Docker Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      env_name: ${{ steps.env.outputs.env_name }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Determine environment
+        id: env
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            ENV_NAME="${{ github.event.inputs.environment }}"
+          else
+            if [ "${{ env.BRANCH_NAME }}" == "main" ]; then
+              ENV_NAME="production"
+            else
+              ENV_NAME="dev"
+            fi
+          fi
+          echo "ENV_NAME=${ENV_NAME}" >> $GITHUB_ENV
+          echo "env_name=${ENV_NAME}" >> $GITHUB_OUTPUT
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=raw,value=${{ env.ENV_NAME }}
+            type=raw,value=${{ env.BRANCH_NAME }}
+            type=sha,format=short
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            NODE_ENV=${{ env.ENV_NAME == 'production' && 'production' || 'development' }}
+
+  notify:
+    name: Notification de déploiement
+    needs: docker-build
+    runs-on: ubuntu-latest
+    if: success()
+    
+    steps:
+      - name: Envoyer une notification de succès
+        run: |
+          echo "🚀 Image Docker construite et publiée avec succès!"
+          echo "📦 Repository: ghcr.io/${{ github.repository }}"
+          echo "🏷️ Tag: ${{ env.BRANCH_NAME }}"
+          echo "🏷️ Environnement: ${{ needs.docker-build.outputs.env_name }}"
+          echo "🔍 SHA: ${{ github.sha }}" 

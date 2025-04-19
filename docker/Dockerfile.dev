@@ -1,10 +1,7 @@
-FROM node:20-alpine
+FROM node:23-alpine
 
 # Définir le répertoire de travail
 WORKDIR /app
-
-# Installer nodemon pour le redémarrage automatique (optionnel)
-RUN npm install -g nodemon
 
 # Copier seulement les fichiers de dépendances d'abord
 COPY package.json package-lock.json ./

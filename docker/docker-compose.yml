@@ -1,10 +1,8 @@
-version: '3.8'
-
 services:
   frontend:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: docker/Dockerfile
     ports:
       - "3000:3000"
     environment:
@@ -15,4 +13,4 @@ services:
     #   - backend
     volumes:
       # Pour la persistance des traductions
-      - ./public/locales:/app/public/locales 
+      - ../public/locales:/app/public/locales 
