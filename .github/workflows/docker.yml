@@ -6,11 +6,6 @@ on:
     paths-ignore:
       - '**/*.md'
       - 'LICENSE'
-  pull_request:
-    branches: [ main, dev ]
-    paths-ignore:
-      - '**/*.md'
-      - 'LICENSE'
   workflow_dispatch:
     inputs:
       environment:
@@ -26,8 +21,34 @@ env:
   BRANCH_NAME: ${{ github.ref_name }}
 
 jobs:
+  test-and-build:
+    name: Test & Build Application
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
   docker-build:
     name: Build & Push Docker Image
+    needs: test-and-build
     runs-on: ubuntu-latest
     permissions:
       contents: read
