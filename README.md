@@ -1,6 +1,6 @@
 # Axignis Frontend
 
-![Logo Axignis](./public/images/logo/logo-axignis-nb.png)
+![Logo Axignis](./public/images/logo/logo-axignis.png)
 
 Frontend pour l'application Axignis - Spécialiste en sécurité incendie et accessibilité des bâtiments.
 
@@ -58,7 +58,6 @@ Plus d'informations sur l'utilisation de Docker dans le [Guide Docker](./docker/
 - `npm run start` - Démarre le serveur de production
 - `npm run lint` - Vérifie le code avec ESLint
 - `npm test` - Lance les tests
-- `npm run test:watch` - Lance les tests en mode watch
 
 ## 🌐 Internationalisation
 
@@ -80,11 +79,14 @@ npm test
 
 ### CI/CD
 
-Le projet utilise GitHub Actions pour l'intégration continue et le déploiement :
+Le projet utilise GitHub Actions pour l'intégration et le déploiement continus :
 
-- **Workflow CI** : Linting et tests sur toutes les branches
-- **Workflow Docker** : Construction et publication d'images Docker pour les branches principales
-
+- **Workflow CI** (`.github/workflows/ci.yml`) : Lint et tests sur toutes les branches de développement
+- **Workflow CD** (`.github/workflows/docker.yml`) : 
+  - Tests et build de l'application
+  - Construction et publication d'images Docker prêtes pour le déploiement
+  - Automatisation basée sur l'environnement (dev/production)
+  
 ### Images Docker
 
 Les images Docker sont publiées sur GitHub Container Registry :
@@ -159,8 +161,3 @@ frontend/
 ## 📝 Licence
 
 Ce projet est sous licence [MIT](LICENSE).
-
-## 🙏 Remerciements
-
-- L'équipe Axignis pour leur vision et leur expertise
-- Tous les contributeurs qui ont rendu ce projet possible 
