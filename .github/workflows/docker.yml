@@ -70,7 +70,7 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
-            type=raw,value=${{ env.ENV_NAME }}
+            type=raw,value=${{ steps.env.outputs.env_name }}
             type=raw,value=${{ env.BRANCH_NAME }}
             type=sha,format=short
 
@@ -85,19 +85,4 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            NODE_ENV=${{ env.ENV_NAME == 'production' && 'production' || 'development' }}
-
-  notify:
-    name: Notification de déploiement
-    needs: docker-build
-    runs-on: ubuntu-latest
-    if: success()
-    
-    steps:
-      - name: Envoyer une notification de succès
-        run: |
-          echo "🚀 Image Docker construite et publiée avec succès!"
-          echo "📦 Repository: ghcr.io/${{ github.repository }}"
-          echo "🏷️ Tag: ${{ env.BRANCH_NAME }}"
-          echo "🏷️ Environnement: ${{ needs.docker-build.outputs.env_name }}"
-          echo "🔍 SHA: ${{ github.sha }}" 
+            NODE_ENV=${{ steps.env.outputs.env_name == 'production' && 'production' || 'development' }}
