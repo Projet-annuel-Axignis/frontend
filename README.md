@@ -132,7 +132,7 @@ frontend/
       <a href="https://github.com/LoanCB">
         <img src="https://github.com/LoanCB.png" width="100px;" alt="Loan Courchinoux-Billonnet"/>
         <br />
-        <sub><b>Loan Courchinoux-Billonnet</b></sub>
+        <sub><b>Loan COURCHINOUX-BILLONNET</b></sub>
       </a>
       <br />
       <sub>LoanCB</sub>
@@ -150,7 +150,7 @@ frontend/
       <a href="https://github.com/s-kenza">
         <img src="https://github.com/s-kenza.png" width="100px;" alt="Kenza Schuler"/>
         <br />
-        <sub><b>Kenza Schuler</b></sub>
+        <sub><b>Kenza SCHULER</b></sub>
       </a>
       <br />
       <sub>s-kenza</sub>
