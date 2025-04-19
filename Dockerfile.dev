@@ -1,0 +1,19 @@
+FROM node:20-alpine
+
+# Définir le répertoire de travail
+WORKDIR /app
+
+# Installer nodemon pour le redémarrage automatique (optionnel)
+RUN npm install -g nodemon
+
+# Copier seulement les fichiers de dépendances d'abord
+COPY package.json package-lock.json ./
+
+# Installer toutes les dépendances (y compris celles de développement)
+RUN npm install
+
+# Exposer le port utilisé par Next.js
+EXPOSE 3000
+
+# La commande est définie dans docker-compose.dev.yml
+CMD ["npm", "run", "dev"] 

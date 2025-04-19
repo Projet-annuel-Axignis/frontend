@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  frontend-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true  # Pour une meilleure détection des changements de fichiers
+    volumes:
+      # Monter le code source pour le hot-reloading
+      - ./:/app
+      # Éviter de monter les node_modules du host
+      - /app/node_modules
+    command: npm run dev 
