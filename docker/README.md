@@ -86,7 +86,7 @@ Pour nettoyer toutes les ressources Docker associées au projet :
 - Ne contient que les fichiers nécessaires pour exécuter l'application
 - Utilise la commande `npm run start`
 
-## Intégration Continue (CI)
+## Intégration Continue (CI/CD)
 
 Le projet est configuré avec GitHub Actions pour les tests et le déploiement Docker automatique :
 
@@ -95,14 +95,26 @@ Le projet est configuré avec GitHub Actions pour les tests et le déploiement D
   - Vérifie que le projet peut être compilé correctement
   - Effectue les vérifications de linting et les tests unitaires
 
-- **Workflow Docker** (`.github/workflows/docker.yml`) :
+- **Workflow CD** (`.github/workflows/docker.yml`) :
   - Construit et publie l'image Docker sur GitHub Container Registry
+  - Publie également l'image sur Docker Hub pour les branches principales
   - Déclenché automatiquement pour les branches `main` (production) et `dev` (développement)
   - Peut être lancé manuellement via le déclencheur `workflow_dispatch`
   - Applique des tags appropriés selon l'environnement et la branche
   - Envoie une notification après un déploiement réussi
 
-Les images Docker sont accessibles via `ghcr.io/{nom-utilisateur}/{nom-repo}:{tag}`.
+### Images disponibles
+
+Les images Docker sont publiées aux emplacements suivants :
+
+- **GitHub Container Registry** : `ghcr.io/projet-annuel-axignis/frontend:{tag}`
+- **Docker Hub** : `operdrix/axignis-frontend:{tag}`
+
+Tags disponibles :
+- `dev` - Version de développement
+- `production` - Version de production
+- `{branch-name}` - Nom de la branche
+- `{sha}` - SHA court du commit
 
 ## Personnalisation
 

@@ -16,9 +16,15 @@ on:
         options:
           - dev
           - production
+      publish_dockerhub:
+        description: 'Publier sur Docker Hub'
+        required: false
+        default: false
+        type: boolean
 
 env:
   BRANCH_NAME: ${{ github.ref_name }}
+  DOCKERHUB_IMAGE: operdrix/axignis-frontend
 
 jobs:
   test-and-build:
@@ -70,6 +76,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || github.event.inputs.publish_dockerhub == 'true'
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Determine environment
         id: env
         run: |
@@ -89,11 +102,30 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: |
+            ghcr.io/${{ github.repository }}
+            ${{ env.DOCKERHUB_IMAGE }}
           tags: |
             type=raw,value=${{ steps.env.outputs.env_name }}
             type=raw,value=${{ env.BRANCH_NAME }}
             type=sha,format=short
+
+      - name: Determine if should push to Docker Hub
+        id: dockerhub
+        run: |
+          PUSH_DOCKERHUB=false
+          
+          # Publication automatique sur Docker Hub uniquement depuis main et dev
+          if [ "${{ github.ref }}" == "refs/heads/main" ] || [ "${{ github.ref }}" == "refs/heads/dev" ]; then
+            PUSH_DOCKERHUB=true
+          fi
+          
+          # Ou si spécifié manuellement
+          if [ "${{ github.event.inputs.publish_dockerhub }}" == "true" ]; then
+            PUSH_DOCKERHUB=true
+          fi
+          
+          echo "push=$PUSH_DOCKERHUB" >> $GITHUB_OUTPUT
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -107,3 +139,21 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             NODE_ENV=${{ steps.env.outputs.env_name == 'production' && 'production' || 'development' }}
+
+  notify:
+    name: Notification de déploiement
+    needs: docker-build
+    runs-on: ubuntu-latest
+    if: success()
+    
+    steps:
+      - name: Envoyer une notification de succès
+        run: |
+          echo "🚀 Image Docker construite et publiée avec succès!"
+          echo "📦 GitHub Container Registry: ghcr.io/${{ github.repository }}"
+          if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.ref }}" == "refs/heads/dev" || "${{ github.event.inputs.publish_dockerhub }}" == "true" ]]; then
+            echo "📦 Docker Hub: ${{ env.DOCKERHUB_IMAGE }}"
+          fi
+          echo "🏷️ Tag: ${{ env.BRANCH_NAME }}"
+          echo "🏷️ Environnement: ${{ needs.docker-build.outputs.env_name }}"
+          echo "🔍 SHA: ${{ github.sha }}"
