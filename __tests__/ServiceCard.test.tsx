@@ -2,6 +2,22 @@ import ServiceCard from '@/components/ServiceCard';
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 
+// Mock pour i18next
+jest.mock('@/i18n/useTranslation', () => ({
+  useTranslation: () => ({
+    t: (key: string, fallback?: string) => {
+      if (key === 'learn_more') {
+        return 'En savoir plus';
+      }
+      return fallback || key;
+    },
+    i18n: {
+      language: 'fr',
+      changeLanguage: jest.fn(),
+    },
+  }),
+}));
+
 // Mock des composants externes
 jest.mock('next/image', () => ({
   __esModule: true,
