@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    # Pour les projets avec un backend, vous pourriez ajouter :
+    # depends_on:
+    #   - backend
+    volumes:
+      # Pour la persistance des traductions
+      - ./public/locales:/app/public/locales 
