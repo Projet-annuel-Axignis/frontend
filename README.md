@@ -1,11 +1,12 @@
 # Axignis Frontend
 
-![Logo Axignis](./public/images/logo/logo-axignis.png)
+![Logo Axignis](./public/images/logo/logo-axignis-nb.png)
 
 Frontend pour l'application Axignis - Spécialiste en sécurité incendie et accessibilité des bâtiments.
 
 [![Next.js CI](https://github.com/Projet-annuel-Axignis/frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/Projet-annuel-Axignis/frontend/actions/workflows/ci.yml)
 [![Docker Build & Deploy](https://github.com/Projet-annuel-Axignis/frontend/actions/workflows/docker.yml/badge.svg)](https://github.com/Projet-annuel-Axignis/frontend/actions/workflows/docker.yml)
+[![Docker Hub](https://img.shields.io/docker/pulls/operdrix/axignis-frontend?logo=docker)](https://hub.docker.com/r/operdrix/axignis-frontend)
 
 ## 🚀 Technologies
 
@@ -49,6 +50,13 @@ npm run dev
 ./docker-prod.sh
 ```
 
+### Via Docker Hub
+
+```bash
+# Télécharger et exécuter directement l'image
+docker run -p 3000:3000 operdrix/axignis-frontend:latest
+```
+
 Plus d'informations sur l'utilisation de Docker dans le [Guide Docker](./docker/README.md).
 
 ## 📋 Scripts disponibles
@@ -58,6 +66,7 @@ Plus d'informations sur l'utilisation de Docker dans le [Guide Docker](./docker/
 - `npm run start` - Démarre le serveur de production
 - `npm run lint` - Vérifie le code avec ESLint
 - `npm test` - Lance les tests
+- `npm run test:watch` - Lance les tests en mode watch
 
 ## 🌐 Internationalisation
 
@@ -79,19 +88,29 @@ npm test
 
 ### CI/CD
 
-Le projet utilise GitHub Actions pour l'intégration et le déploiement continus :
+Le projet utilise GitHub Actions pour l'intégration continue et le déploiement :
 
-- **Workflow CI** (`.github/workflows/ci.yml`) : Lint et tests sur toutes les branches de développement
-- **Workflow CD** (`.github/workflows/docker.yml`) : 
+- **Workflow CI** (`.github/workflows/ci.yml`) :
+  - Lint et tests sur toutes les branches de développement
+  - Vérification du build pour les pull requests
+
+- **Workflow CD** (`.github/workflows/docker.yml`) :
   - Tests et build de l'application
   - Construction et publication d'images Docker prêtes pour le déploiement
+  - Publication sur GitHub Container Registry et Docker Hub
   - Automatisation basée sur l'environnement (dev/production)
-  
+
 ### Images Docker
 
-Les images Docker sont publiées sur GitHub Container Registry :
-- `ghcr.io/projet-annuel-axignis/frontend:dev` - Version de développement
-- `ghcr.io/projet-annuel-axignis/frontend:main` - Version de production
+Les images Docker sont publiées sur :
+
+- **GitHub Container Registry** : `ghcr.io/projet-annuel-axignis/frontend:{tag}`
+- **Docker Hub** : `operdrix/axignis-frontend:{tag}`
+
+Tags disponibles :
+- `dev` - Version de développement (branche dev)
+- `production` - Version de production (branche main)
+- `{sha}` - Tag basé sur le hash du commit
 
 ## 🧩 Structure du projet
 
@@ -132,7 +151,7 @@ frontend/
       <a href="https://github.com/LoanCB">
         <img src="https://github.com/LoanCB.png" width="100px;" alt="Loan Courchinoux-Billonnet"/>
         <br />
-        <sub><b>Loan COURCHINOUX-BILLONNET</b></sub>
+        <sub><b>Loan Courchinoux-Billonnet</b></sub>
       </a>
       <br />
       <sub>LoanCB</sub>
@@ -150,7 +169,7 @@ frontend/
       <a href="https://github.com/s-kenza">
         <img src="https://github.com/s-kenza.png" width="100px;" alt="Kenza Schuler"/>
         <br />
-        <sub><b>Kenza SCHULER</b></sub>
+        <sub><b>Kenza Schuler</b></sub>
       </a>
       <br />
       <sub>s-kenza</sub>
@@ -161,3 +180,8 @@ frontend/
 ## 📝 Licence
 
 Ce projet est sous licence [MIT](LICENSE).
+
+## 🙏 Remerciements
+
+- L'équipe Axignis pour leur vision et leur expertise
+- Tous les contributeurs qui ont rendu ce projet possible
