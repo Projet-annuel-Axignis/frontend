@@ -1,6 +1,6 @@
 # Axignis Frontend
 
-![Logo Axignis](./public/images/logo/logo-axignis-nb.png)
+![Logo Axignis](./public/images/logo/logo-axignis.png)
 
 Frontend pour l'application Axignis - Spécialiste en sécurité incendie et accessibilité des bâtiments.
 
