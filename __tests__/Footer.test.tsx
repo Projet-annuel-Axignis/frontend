@@ -2,6 +2,30 @@ import Footer from '@/components/Footer';
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 
+// Mock pour i18next
+jest.mock('@/i18n/useTranslation', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const translations: Record<string, string> = {
+        'footer.description': 'Spécialiste en sécurité incendie et accessibilité des bâtiments. Notre expertise au service de votre sécurité.',
+        'footer.quick_links': 'Liens Rapides',
+        'footer.mission': 'Notre Mission',
+        'footer.services': 'Services',
+        'footer.contact': 'Contact',
+        'footer.legal': 'Mentions Légales',
+        'footer.address': '123 Avenue de la République, 75011 Paris, France',
+        'footer.copyright': 'Tous droits réservés.',
+        'homepage.contact.phone': '+33 6 12 34 56 78'
+      };
+      return translations[key] || key;
+    },
+    i18n: {
+      language: 'fr',
+      changeLanguage: jest.fn(),
+    },
+  }),
+}));
+
 // Mock des composants externes
 jest.mock('next/image', () => ({
   __esModule: true,
@@ -43,7 +67,7 @@ describe('Composant Footer', () => {
     expect(contactTitle).toBeInTheDocument();
 
     // Informations de contact
-    expect(screen.getByText(/123 Avenue de la République/)).toBeInTheDocument();
+    expect(screen.getByText('123 Avenue de la République, 75011 Paris, France')).toBeInTheDocument();
     expect(screen.getByText('+33 6 12 34 56 78')).toBeInTheDocument();
     expect(screen.getByText('contact@axignis.fr')).toBeInTheDocument();
   });
