@@ -1,5 +1,5 @@
 # Étape 1: Base node pour les dépendances et la construction
-FROM node:20-alpine AS builder
+FROM node:23-alpine AS builder
 
 # Définir le répertoire de travail
 WORKDIR /app
@@ -17,7 +17,7 @@ COPY . .
 RUN npm run build
 
 # Étape 2: Image de production
-FROM node:20-alpine AS runner
+FROM node:23-alpine AS runner
 
 WORKDIR /app
 
