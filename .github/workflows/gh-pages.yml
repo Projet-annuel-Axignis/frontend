@@ -3,7 +3,7 @@ name: Deploy Next.js site to GitHub Pages
 on:
   # Déclenché lors des pushes sur les branches main et dev
   push:
-    branches: [ main, dev, fix-ghpages ]
+    branches: [ main, dev ]
   # Permet de lancer manuellement le workflow depuis l'interface GitHub
   workflow_dispatch:
     inputs:
