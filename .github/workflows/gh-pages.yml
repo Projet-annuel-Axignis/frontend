@@ -62,7 +62,7 @@ jobs:
         run: npm run build
         env:
           # Configuration spécifique pour GitHub Pages
-          NEXT_PUBLIC_BASE_PATH: /frontend
+          NEXT_PUBLIC_BASE_PATH: /frontend/
           # Autres variables d'environnement pour la production
           NODE_ENV: production
 
