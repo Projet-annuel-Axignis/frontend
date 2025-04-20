@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: Deploy Next.js site to GitHub Pages
 
 on:
   # Déclenché lors des pushes sur les branches main et dev
@@ -30,7 +30,6 @@ concurrency:
 jobs:
   # Job de construction
   build:
-    name: Build pour GitHub Pages
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -42,19 +41,30 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+        with:
+          static_site_generator: next
+
+      - name: Restore cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
+
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
-      - name: Build
+      - name: Build with Next.js
         run: npm run build
         env:
           # Configuration spécifique pour GitHub Pages
           NEXT_PUBLIC_BASE_PATH: /frontend
           # Autres variables d'environnement pour la production
           NODE_ENV: production
-
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v4
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
@@ -63,7 +73,6 @@ jobs:
 
   # Job de déploiement
   deploy:
-    name: Deploy to GitHub Pages
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
