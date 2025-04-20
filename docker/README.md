@@ -103,6 +103,13 @@ Le projet est configuré avec GitHub Actions pour les tests et le déploiement D
   - Applique des tags appropriés selon l'environnement et la branche
   - Envoie une notification après un déploiement réussi
 
+- **Workflow GitHub Pages** (`.github/workflows/gh-pages.yml`) :
+  - Déploie l'application sur GitHub Pages pour les environnements de prévisualisation
+  - Déclenché automatiquement pour les branches `main` et `dev`
+  - Génère une version statique de l'application optimisée pour GitHub Pages
+  - Peut être lancé manuellement via le déclencheur `workflow_dispatch`
+  - L'application déployée est accessible à l'adresse : [https://projet-annuel-axignis.github.io/frontend](https://projet-annuel-axignis.github.io/frontend)
+
 ### Images disponibles
 
 Les images Docker sont publiées aux emplacements suivants :
