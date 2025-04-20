@@ -3,7 +3,7 @@ name: Deploy Next.js site to GitHub Pages
 on:
   # Déclenché lors des pushes sur les branches main et dev
   push:
-    branches: [ main, dev ]
+    branches: [ main, dev, fix-ghpages ]
   # Permet de lancer manuellement le workflow depuis l'interface GitHub
   workflow_dispatch:
     inputs:
@@ -63,6 +63,7 @@ jobs:
         env:
           # Configuration spécifique pour GitHub Pages
           NEXT_PUBLIC_BASE_PATH: /frontend
+          NEXT_ASSET_PREFIX: /frontend/
           # Autres variables d'environnement pour la production
           NODE_ENV: production
 
