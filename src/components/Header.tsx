@@ -3,6 +3,7 @@
 import { useTranslation } from '@/i18n/useTranslation';
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import LanguageSelector from './LanguageSelector';
 
@@ -10,6 +11,7 @@ export default function Header() {
   const { t } = useTranslation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
 
   // Détecter le défilement pour changer le style du header
   useEffect(() => {
@@ -20,6 +22,10 @@ export default function Header() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const isActive = (path: string) => pathname === path;
+  console.log(pathname);
+
 
   return (
     <header
@@ -51,39 +57,42 @@ export default function Header() {
 
         {/* Navigation - Desktop */}
         <nav className="hidden md:flex items-center gap-6">
-          <a
-            href="#mission"
+          <Link
+            href="/mission"
             className={`
               font-medium 
               hover:text-[var(--color-axignis-primary)] 
               transition-colors
               ${isScrolled ? 'text-gray-800 dark:text-white' : 'text-white'}
+              ${isActive('/mission') ? 'active' : ''}
             `}
           >
             {t('footer.mission')}
-          </a>
-          <a
-            href="#services"
+          </Link>
+          <Link
+            href="/services"
             className={`
               font-medium 
               hover:text-[var(--color-axignis-primary)] 
               transition-colors
               ${isScrolled ? 'text-gray-800 dark:text-white' : 'text-white'}
+              ${isActive('/services') ? 'active' : ''}
             `}
           >
             {t('footer.services')}
-          </a>
-          <a
-            href="#contact"
+          </Link>
+          <Link
+            href="/contact"
             className={`
               font-medium 
               hover:text-[var(--color-axignis-primary)] 
               transition-colors
               ${isScrolled ? 'text-gray-800 dark:text-white' : 'text-white'}
+              ${isActive('/contact/') ? 'active' : ''}
             `}
           >
             {t('footer.contact')}
-          </a>
+          </Link>
 
           {/* Sélecteur de langue */}
           <div className={isScrolled ? 'text-gray-800 dark:text-white' : 'text-white'}>
@@ -146,27 +155,54 @@ export default function Header() {
             flex-col
             gap-4
           ">
-            <a
-              href="#mission"
-              className="text-gray-800 dark:text-white font-medium p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
+            <Link
+              href="/mission"
+              className={`
+                text-gray-800 
+                dark:text-white 
+                font-medium 
+                p-2 
+                hover:bg-gray-100 
+                dark:hover:bg-gray-800 
+                rounded
+                ${isActive('/mission') ? 'text-[var(--color-axignis-primary)] font-semibold bg-gray-100 dark:bg-gray-800' : ''}
+              `}
               onClick={() => setIsMobileMenuOpen(false)}
             >
               {t('footer.mission')}
-            </a>
-            <a
-              href="#services"
-              className="text-gray-800 dark:text-white font-medium p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
+            </Link>
+            <Link
+              href="/services"
+              className={`
+                text-gray-800 
+                dark:text-white 
+                font-medium 
+                p-2 
+                hover:bg-gray-100 
+                dark:hover:bg-gray-800 
+                rounded
+                ${isActive('/services') ? 'text-[var(--color-axignis-primary)] font-semibold bg-gray-100 dark:bg-gray-800' : ''}
+              `}
               onClick={() => setIsMobileMenuOpen(false)}
             >
               {t('footer.services')}
-            </a>
-            <a
-              href="#contact"
-              className="text-gray-800 dark:text-white font-medium p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
+            </Link>
+            <Link
+              href="/contact"
+              className={`
+                text-gray-800 
+                dark:text-white 
+                font-medium 
+                p-2 
+                hover:bg-gray-100 
+                dark:hover:bg-gray-800 
+                rounded
+                ${isActive('/contact') ? 'text-[var(--color-axignis-primary)] font-semibold bg-gray-100 dark:bg-gray-800' : ''}
+              `}
               onClick={() => setIsMobileMenuOpen(false)}
             >
               {t('footer.contact')}
-            </a>
+            </Link>
           </div>
         )}
       </div>

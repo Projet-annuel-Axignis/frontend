@@ -1,7 +1,5 @@
 'use client';
 
-import Footer from '@/components/Footer';
-import Header from '@/components/Header';
 import ServiceCard from '@/components/ServiceCard';
 import { useTranslation } from '@/i18n/useTranslation';
 import Image from 'next/image';
@@ -34,7 +32,6 @@ export default function Home() {
 
   return (
     <>
-      <Header />
       <main className="min-h-screen bg-white dark:bg-gray-900 font-sans">
         {/* Hero Section avec image moderne */}
         <section className="
@@ -172,7 +169,7 @@ export default function Home() {
               ">
                 {t('homepage.cta.our_services')}
               </a>
-              <a href="#contact" className="
+              <a href="/contact" className="
                 px-8 
                 py-4
                 backdrop-blur-md 
@@ -544,8 +541,6 @@ export default function Home() {
             </div>
           </div>
         </section>
-
-        <Footer />
       </main>
     </>
   );
