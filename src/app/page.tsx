@@ -28,7 +28,7 @@ export default function Home() {
       title: t('homepage.services.items.2.title'),
       description: t('homepage.services.items.2.description'),
       imageSrc: "/images/services/service-3.jpg",
-      link: "#"
+      link: "/technical-base"
     }
   ];
 
