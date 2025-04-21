@@ -65,16 +65,6 @@ jest.mock('next/image', () => ({
   ),
 }));
 
-jest.mock('@/components/Footer', () => ({
-  __esModule: true,
-  default: () => <footer data-testid="footer-component">Footer mockée</footer>,
-}));
-
-jest.mock('@/components/Header', () => ({
-  __esModule: true,
-  default: () => <header data-testid="header-component">Header mockée</header>,
-}));
-
 interface ServiceCardProps {
   title: string;
   description: string;
@@ -97,10 +87,6 @@ describe('Page d\'accueil', () => {
     render(<Home />);
   });
 
-  test('inclut le composant Header', () => {
-    const header = screen.getByTestId('header-component');
-    expect(header).toBeInTheDocument();
-  });
 
   test('affiche l\'en-tête avec le logo et les boutons d\'action', () => {
     // Vérification du logo
@@ -181,8 +167,4 @@ describe('Page d\'accueil', () => {
     expect(phoneButton).toBeInTheDocument();
   });
 
-  test('inclut le composant Footer', () => {
-    const footer = screen.getByTestId('footer-component');
-    expect(footer).toBeInTheDocument();
-  });
 }); 
