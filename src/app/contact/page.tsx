@@ -1,10 +1,7 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { useTranslation } from '@/i18n/useTranslation';
+import { Box, Button, Card, CardContent, CardHeader, Container, Grid, TextField, Typography } from '@mui/material';
 import { useFormik } from 'formik';
 import Image from 'next/image';
 import * as Yup from 'yup';
@@ -40,295 +37,263 @@ const ContactForm = () => {
   });
 
   return (
-    <main className="min-h-screen bg-white dark:bg-gray-900 font-sans">
+    <Box component="main" sx={{ minHeight: '100vh' }} className='bg-white dark:bg-gray-900'>
       {/* Hero Section */}
-      <section className="
-        relative 
-        overflow-hidden
-        h-[40vh] 
-        min-h-[300px] 
-        flex 
-        items-center 
-        justify-center
-        text-white
-      ">
+      <Box
+        sx={{
+          position: 'relative',
+          overflow: 'hidden',
+          height: '50vh',
+          minHeight: 400,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'white',
+        }}
+      >
         {/* Arrière-plan avec image */}
-        <div className="
-          absolute 
-          inset-0 
-          bg-gray-600
-          z-0
-        ">
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            bgcolor: 'grey.600',
+            zIndex: 0,
+          }}
+        >
           <Image
             src="/images/backgrounds/contact.jpg"
             alt="Contact"
             fill
             priority
-            className="
-              object-cover
-              opacity-50
-              mix-blend-overlay
-            "
+            style={{
+              objectFit: 'cover',
+              opacity: 0.4,
+            }}
           />
-        </div>
+        </Box>
 
         {/* Overlay avec dégradé */}
-        <div className="
-          absolute 
-          inset-0 
-          bg-gradient-to-r 
-          from-[var(--color-axignis-primary)]/70
-          to-[var(--color-axignis-secondary)]/70
-          mix-blend-multiply
-          z-10
-        "></div>
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            background: 'linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.3))',
+            zIndex: 10,
+          }}
+        />
 
         {/* Contenu du hero */}
-        <div className="
-          relative 
-          z-30 
-          max-w-5xl 
-          px-6
-          text-center
-        ">
-          <h1 className="
-            text-4xl 
-            md:text-5xl 
-            lg:text-6xl 
-            font-bold 
-            mb-6
-            drop-shadow-lg
-          ">
+        <Box
+          sx={{
+            position: 'relative',
+            zIndex: 30,
+            maxWidth: '5xl',
+            px: 6,
+            textAlign: 'center',
+          }}
+        >
+          <Typography
+            variant="h1"
+            className='text-4xl 
+              md:text-5xl 
+              lg:text-6xl 
+              font-bold 
+              mb-6
+              drop-shadow-lg'
+
+          >
             {t('title')}
-          </h1>
-          <div className="
-            w-24
-            h-1
-            bg-white
-            mx-auto
-            mb-10
-            opacity-70
-          "></div>
-        </div>
-      </section>
+          </Typography>
+        </Box>
+      </Box>
 
       {/* Formulaire de contact */}
-      <section className="
-        py-16
-        md:py-24 
-        px-4
-        md:px-6
-        bg-white
-        dark:bg-gray-900
-      ">
-        <div className="
-          container 
-          mx-auto 
-          max-w-5xl
-        ">
-          <Card className="
-            max-w-2xl 
-            mx-auto
-            bg-white/80
-            dark:bg-gray-800/80
-            backdrop-blur-sm
-            border-gray-200
-            dark:border-gray-700
-            shadow-xl
-          ">
-            <CardHeader>
-              <CardTitle className="
-                text-2xl
-                sm:text-3xl
-                text-gray-900
-                dark:text-white
-                relative
-                before:content-[''] 
-                before:block 
-                before:w-16 
-                before:h-1 
-                before:bg-[var(--color-axignis-primary)] 
-                before:mb-3
-              ">
+      <Container
+        maxWidth="lg"
+        sx={{ py: { xs: 8, md: 12 } }}
+      >
+        <Card
+          sx={{
+            maxWidth: 800,
+            mx: 'auto',
+            backdropFilter: 'blur(8px)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+            borderRadius: 2,
+            overflow: 'hidden',
+          }}
+
+        >
+          <CardHeader
+            title={
+              <Typography
+                variant="h2"
+                sx={{
+                  fontSize: { xs: '1.5rem', sm: '1.75rem' },
+                  color: 'primary.main',
+                  position: 'relative',
+                  '&:before': {
+                    content: '""',
+                    display: 'block',
+                    width: 64,
+                    height: 4,
+                    bgcolor: 'primary.main',
+                    mb: 2,
+                    borderRadius: 2,
+                  },
+                }}
+              >
                 {t('form.title')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={formik.handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <Input
-                      id="firstName"
-                      name="firstName"
-                      type="text"
-                      placeholder={t('form.firstName.placeholder')}
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      value={formik.values.firstName}
-                      className="
-                        bg-white/50
-                        dark:bg-gray-700/50
-                        border-gray-200
-                        dark:border-gray-600
-                        focus:border-[var(--color-axignis-primary)]
-                        dark:focus:border-[var(--color-axignis-primary)]
-                      "
-                    />
-                    {formik.touched.firstName && formik.errors.firstName && (
-                      <div className="text-red-500 text-sm mt-1">
-                        {formik.errors.firstName}
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <Input
-                      id="lastName"
-                      name="lastName"
-                      type="text"
-                      placeholder={t('form.lastName.placeholder')}
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      value={formik.values.lastName}
-                      className="
-                        bg-white/50
-                        dark:bg-gray-700/50
-                        border-gray-200
-                        dark:border-gray-600
-                        focus:border-[var(--color-axignis-primary)]
-                        dark:focus:border-[var(--color-axignis-primary)]
-                      "
-                    />
-                    {formik.touched.lastName && formik.errors.lastName && (
-                      <div className="text-red-500 text-sm mt-1">
-                        {formik.errors.lastName}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      placeholder={t('form.email.placeholder')}
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      value={formik.values.email}
-                      className="
-                        bg-white/50
-                        dark:bg-gray-700/50
-                        border-gray-200
-                        dark:border-gray-600
-                        focus:border-[var(--color-axignis-primary)]
-                        dark:focus:border-[var(--color-axignis-primary)]
-                      "
-                    />
-                    {formik.touched.email && formik.errors.email && (
-                      <div className="text-red-500 text-sm mt-1">
-                        {formik.errors.email}
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <Input
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      placeholder={t('form.phone.placeholder')}
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      value={formik.values.phone}
-                      className="
-                        bg-white/50
-                        dark:bg-gray-700/50
-                        border-gray-200
-                        dark:border-gray-600
-                        focus:border-[var(--color-axignis-primary)]
-                        dark:focus:border-[var(--color-axignis-primary)]
-                      "
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <Input
-                    id="company"
-                    name="company"
-                    type="text"
-                    placeholder={t('form.company.placeholder')}
+              </Typography>
+            }
+          />
+          <CardContent>
+            <Box component="form" onSubmit={formik.handleSubmit} sx={{ '& > *': { mb: 3 } }}>
+              <Grid container spacing={3}>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    fullWidth
+                    id="firstName"
+                    name="firstName"
+                    label={t('form.firstName.placeholder')}
+                    value={formik.values.firstName}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    value={formik.values.company}
-                    className="
-                      bg-white/50
-                      dark:bg-gray-700/50
-                      border-gray-200
-                      dark:border-gray-600
-                      focus:border-[var(--color-axignis-primary)]
-                      dark:focus:border-[var(--color-axignis-primary)]
-                    "
+                    error={formik.touched.firstName && Boolean(formik.errors.firstName)}
+                    helperText={formik.touched.firstName && formik.errors.firstName}
+                    variant="outlined"
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        '&:hover fieldset': {
+                          borderColor: 'primary.main',
+                        },
+                      },
+                    }}
                   />
-                  {formik.touched.company && formik.errors.company && (
-                    <div className="text-red-500 text-sm mt-1">
-                      {formik.errors.company}
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <Textarea
-                    id="message"
-                    name="message"
-                    placeholder={t('form.message.placeholder')}
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    fullWidth
+                    id="lastName"
+                    name="lastName"
+                    label={t('form.lastName.placeholder')}
+                    value={formik.values.lastName}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    value={formik.values.message}
-                    rows={5}
-                    className="
-                      bg-white/50
-                      dark:bg-gray-700/50
-                      border-gray-200
-                      dark:border-gray-600
-                      focus:border-[var(--color-axignis-primary)]
-                      dark:focus:border-[var(--color-axignis-primary)]
-                    "
+                    error={formik.touched.lastName && Boolean(formik.errors.lastName)}
+                    helperText={formik.touched.lastName && formik.errors.lastName}
+                    variant="outlined"
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        '&:hover fieldset': {
+                          borderColor: 'primary.main',
+                        },
+                      },
+                    }}
                   />
-                  {formik.touched.message && formik.errors.message && (
-                    <div className="text-red-500 text-sm mt-1">
-                      {formik.errors.message}
-                    </div>
-                  )}
-                </div>
-
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    fullWidth
+                    id="email"
+                    name="email"
+                    type="email"
+                    label={t('form.email.placeholder')}
+                    value={formik.values.email}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    error={formik.touched.email && Boolean(formik.errors.email)}
+                    helperText={formik.touched.email && formik.errors.email}
+                    variant="outlined"
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        '&:hover fieldset': {
+                          borderColor: 'primary.main',
+                        },
+                      },
+                    }}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    fullWidth
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    label={t('form.phone.placeholder')}
+                    value={formik.values.phone}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    variant="outlined"
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        '&:hover fieldset': {
+                          borderColor: 'primary.main',
+                        },
+                      },
+                    }}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12 }}></Grid>
+                <TextField
+                  fullWidth
+                  id="company"
+                  name="company"
+                  label={t('form.company.placeholder')}
+                  value={formik.values.company}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={formik.touched.company && Boolean(formik.errors.company)}
+                  helperText={formik.touched.company && formik.errors.company}
+                  variant="outlined"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '&:hover fieldset': {
+                        borderColor: 'primary.main',
+                      },
+                    },
+                  }}
+                />
+              </Grid>
+              <Grid size={{ xs: 12 }}>
+                <TextField
+                  fullWidth
+                  id="message"
+                  name="message"
+                  label={t('form.message.placeholder')}
+                  value={formik.values.message}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={formik.touched.message && Boolean(formik.errors.message)}
+                  helperText={formik.touched.message && formik.errors.message}
+                  multiline
+                  rows={5}
+                  variant="outlined"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '&:hover fieldset': {
+                        borderColor: 'primary.main',
+                      },
+                    },
+                  }}
+                />
+              </Grid>
+              <Grid size={{ xs: 12 }}>
                 <Button
                   type="submit"
-                  className="
-                    w-full
-                    bg-[var(--color-axignis-primary)]
-                    hover:bg-[var(--color-axignis-primary)]/90
-                    text-white
-                    font-semibold
-                    py-3
-                    px-6
-                    rounded-md
-                    transition-all
-                    duration-300
-                    shadow-lg
-                    hover:shadow-[var(--color-axignis-primary)]/30
-                    tracking-wide
-                  "
+                  variant="contained"
+                  color="primary"
+                  size="large"
                   disabled={formik.isSubmitting}
+                  sx={{ mt: 2 }}
                 >
                   {t('form.submit')}
                 </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-    </main>
+              </Grid>
+            </Box>
+          </CardContent>
+        </Card>
+      </Container>
+    </Box >
   );
 };
 
