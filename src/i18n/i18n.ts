@@ -31,7 +31,7 @@ if (typeof window !== 'undefined') {
 
       // Espaces de noms par défaut
       defaultNS: 'common',
-      ns: ['common'],
+      ns: ['common', 'contact'],
 
       // Options de détection de langue
       detection: {

@@ -65,3 +65,8 @@ h6 {
 .animate-float {
   animation: float 6s ease-in-out infinite;
 }
+
+.active {
+  text-decoration: underline;
+  text-underline-offset: 0.25rem;
+}

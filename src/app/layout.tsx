@@ -1,3 +1,5 @@
+import Footer from '@/components/Footer';
+import Header from '@/components/Header';
 import I18nProvider from '@/i18n/I18nProvider';
 import '@fontsource/inter';
 import '@fontsource/roboto/300.css';
@@ -39,7 +41,9 @@ export default function RootLayout({
     >
       <body className="font-sans antialiased">
         <I18nProvider>
+          <Header />
           {children}
+          <Footer />
         </I18nProvider>
       </body>
     </html>
