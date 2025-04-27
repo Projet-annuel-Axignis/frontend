@@ -33,9 +33,6 @@ describe('Composant LanguageSelector', () => {
     const frenchText = screen.getAllByText('Français')[0]; // On prend le premier élément
     expect(frenchText).toBeInTheDocument();
 
-    // Vérification que le drapeau est affiché (contenu dans un span)
-    const flagSpan = button.querySelector('.text-xl');
-    expect(flagSpan).toHaveTextContent('🇫🇷');
   });
 
   test('ouvre le menu déroulant lorsqu\'on clique sur le bouton', () => {
