@@ -1,12 +1,13 @@
 'use client';
 
 import { useTranslation } from '@/i18n/useTranslation';
+import Image from 'next/image'; // Import de Image
 import { useEffect, useState } from 'react';
 
 type Language = {
   code: string;
   name: string;
-  flag: string;
+  flagUrl: string;
 };
 
 export default function LanguageSelector() {
@@ -16,8 +17,8 @@ export default function LanguageSelector() {
 
   // Liste des langues disponibles
   const languages: Language[] = [
-    { code: 'fr', name: t('language_selector.french'), flag: '🇫🇷' },
-    { code: 'en', name: t('language_selector.english'), flag: '🇬🇧' }
+    { code: 'fr', name: t('language_selector.french'), flagUrl: 'https://countryflagsapi.netlify.app/flag/fr.svg' },
+    { code: 'en', name: t('language_selector.english'), flagUrl: 'https://countryflagsapi.netlify.app/flag/gb.svg' }
   ];
 
   // Initialisation de la langue sélectionnée
@@ -39,9 +40,13 @@ export default function LanguageSelector() {
         className="flex items-center gap-2 px-3 py-2 rounded-md bg-white/10 hover:bg-white/20 transition-colors"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <span className="text-xl">
-          {languages.find(l => l.code === selectedLanguage)?.flag || '🌐'}
-        </span>
+        <Image
+          src={languages.find(l => l.code === selectedLanguage)?.flagUrl || ''}
+          alt={selectedLanguage}
+          width={24} // Largeur de l'image
+          height={16} // Hauteur de l'image
+          className="w-6 h-4"
+        />
         <span className="hidden sm:inline-block">
           {languages.find(l => l.code === selectedLanguage)?.name || t('language_selector.select_language')}
         </span>
@@ -68,7 +73,13 @@ export default function LanguageSelector() {
                   }`}
                 onClick={() => changeLanguage(language.code)}
               >
-                <span className="text-xl">{language.flag}</span>
+                <Image
+                  src={language.flagUrl}
+                  alt={language.code}
+                  width={24} // Largeur de l'image
+                  height={16} // Hauteur de l'image
+                  className="w-6 h-4"
+                />
                 <span>{language.name}</span>
               </button>
             ))}
@@ -77,4 +88,4 @@ export default function LanguageSelector() {
       )}
     </div>
   );
-} 
+}
