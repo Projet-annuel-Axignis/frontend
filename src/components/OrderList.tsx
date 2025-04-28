@@ -28,7 +28,7 @@ import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 const listItems = [
   {
     id: 'INV-1234',
-    date: 'Feb 3, 2023',
+    marque: 'Marque',
     status: 'Refunded',
     customer: {
       initial: 'O',
@@ -38,7 +38,7 @@ const listItems = [
   },
   {
     id: 'INV-1233',
-    date: 'Feb 3, 2023',
+    marque: 'Marque',
     status: 'Paid',
     customer: {
       initial: 'S',
@@ -48,7 +48,7 @@ const listItems = [
   },
   {
     id: 'INV-1232',
-    date: 'Feb 3, 2023',
+    marque: 'Marque',
     status: 'Refunded',
     customer: {
       initial: 'C',
@@ -58,7 +58,7 @@ const listItems = [
   },
   {
     id: 'INV-1231',
-    date: 'Feb 3, 2023',
+    marque: 'Marque',
     status: 'Refunded',
     customer: {
       initial: 'M',
@@ -68,7 +68,7 @@ const listItems = [
   },
   {
     id: 'INV-1230',
-    date: 'Feb 3, 2023',
+    marque: 'Marque',
     status: 'Cancelled',
     customer: {
       initial: 'C',
@@ -78,7 +78,7 @@ const listItems = [
   },
   {
     id: 'INV-1229',
-    date: 'Feb 3, 2023',
+    marque: 'Marque',
     status: 'Cancelled',
     customer: {
       initial: 'J',
@@ -140,7 +140,7 @@ export default function OrderList() {
                     mb: 1,
                   }}
                 >
-                  <Typography level="body-xs">{listItem.date}</Typography>
+                  <Typography level="body-xs">{listItem.marque}</Typography>
                   <Typography level="body-xs">&bull;</Typography>
                   <Typography level="body-xs">{listItem.id}</Typography>
                 </Box>

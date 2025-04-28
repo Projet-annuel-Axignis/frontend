@@ -38,185 +38,135 @@ import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
 const rows = [
   {
     id: 'INV-1234',
-    date: 'Feb 3, 2023',
-    status: 'Refunded',
-    customer: {
-      initial: 'O',
-      name: 'Olivia Ryhe',
-      email: 'olivia@email.com',
-    },
+    marque: 'Marque',
+    status: 'Remboursé',
+    type: 'Type',
+    associativity: 'Projets'
   },
   {
     id: 'INV-1233',
-    date: 'Feb 3, 2023',
-    status: 'Paid',
-    customer: {
-      initial: 'S',
-      name: 'Steve Hampton',
-      email: 'steve.hamp@email.com',
-    },
+    marque: 'Marque',
+    status: 'Payé',
+    type: 'Type',
+    associativity: 'Projets'
   },
   {
     id: 'INV-1232',
-    date: 'Feb 3, 2023',
-    status: 'Refunded',
-    customer: {
-      initial: 'C',
-      name: 'Ciaran Murray',
-      email: 'ciaran.murray@email.com',
-    },
+    marque: 'Marque',
+    status: 'Remboursé',
+    type: 'Type',
+    associativity: 'Projets'
   },
   {
     id: 'INV-1231',
-    date: 'Feb 3, 2023',
-    status: 'Refunded',
-    customer: {
-      initial: 'M',
-      name: 'Maria Macdonald',
-      email: 'maria.mc@email.com',
-    },
+    marque: 'Marque',
+    status: 'Remboursé',
+    type: 'Type',
+    associativity: 'Projets'
   },
   {
     id: 'INV-1230',
-    date: 'Feb 3, 2023',
-    status: 'Cancelled',
-    customer: {
-      initial: 'C',
-      name: 'Charles Fulton',
-      email: 'fulton@email.com',
-    },
+    marque: 'Marque',
+    status: 'Annulé',
+    type: 'Type',
+    associativity: 'Projets'
   },
   {
     id: 'INV-1229',
-    date: 'Feb 3, 2023',
-    status: 'Cancelled',
-    customer: {
-      initial: 'J',
-      name: 'Jay Hooper',
-      email: 'hooper@email.com',
-    },
+    marque: 'Marque',
+    status: 'Annulé',
+    type: 'Type',
+    associativity: 'Projets'
   },
   {
     id: 'INV-1228',
-    date: 'Feb 3, 2023',
-    status: 'Refunded',
-    customer: {
-      initial: 'K',
-      name: 'Krystal Stevens',
-      email: 'k.stevens@email.com',
-    },
+    marque: 'Marque',
+    status: 'Remboursé',
+    type: 'Type',
+    associativity: 'Projets'
   },
   {
     id: 'INV-1227',
-    date: 'Feb 3, 2023',
-    status: 'Paid',
-    customer: {
-      initial: 'S',
-      name: 'Sachin Flynn',
-      email: 's.flyn@email.com',
-    },
+    marque: 'Marque',
+    status: 'Payé',
+    type: 'Type',
+    associativity: 'Projets'
   },
   {
     id: 'INV-1226',
-    date: 'Feb 3, 2023',
-    status: 'Cancelled',
-    customer: {
-      initial: 'B',
-      name: 'Bradley Rosales',
-      email: 'brad123@email.com',
-    },
+    marque: 'Marque',
+    status: 'Annulé',
+    type: 'Type',
+    associativity: 'Projets'
   },
   {
     id: 'INV-1225',
-    date: 'Feb 3, 2023',
-    status: 'Paid',
-    customer: {
-      initial: 'O',
-      name: 'Olivia Ryhe',
-      email: 'olivia@email.com',
-    },
+    marque: 'Marque',
+    status: 'Payé',
+    type: 'Type',
+    associativity: 'Projets'
   },
   {
     id: 'INV-1224',
-    date: 'Feb 3, 2023',
-    status: 'Cancelled',
-    customer: {
-      initial: 'S',
-      name: 'Steve Hampton',
-      email: 'steve.hamp@email.com',
-    },
+    marque: 'Marque',
+    status: 'Annulé',
+    type: 'Type',
+    associativity: 'Projets'
   },
   {
     id: 'INV-1223',
-    date: 'Feb 3, 2023',
-    status: 'Paid',
-    customer: {
-      initial: 'C',
-      name: 'Ciaran Murray',
-      email: 'ciaran.murray@email.com',
-    },
+    marque: 'Marque',
+    status: 'Payé',
+    type: 'Type',
+    associativity: 'Projets'
   },
   {
     id: 'INV-1221',
-    date: 'Feb 3, 2023',
-    status: 'Refunded',
-    customer: {
-      initial: 'M',
-      name: 'Maria Macdonald',
-      email: 'maria.mc@email.com',
-    },
+    marque: 'Marque',
+    status: 'Remboursé',
+    type: 'Type',
+    associativity: 'Projets'
   },
   {
     id: 'INV-1220',
-    date: 'Feb 3, 2023',
-    status: 'Paid',
-    customer: {
-      initial: 'C',
-      name: 'Charles Fulton',
-      email: 'fulton@email.com',
-    },
+    marque: 'Marque',
+    status: 'Payé',
+    type: 'Type',
+    associativity: 'Projets'
   },
   {
     id: 'INV-1219',
-    date: 'Feb 3, 2023',
-    status: 'Cancelled',
-    customer: {
-      initial: 'J',
-      name: 'Jay Hooper',
-      email: 'hooper@email.com',
-    },
+    marque: 'Marque',
+    status: 'Annulé',
+    type: 'Type',
+    associativity: 'Projets'
   },
   {
     id: 'INV-1218',
-    date: 'Feb 3, 2023',
-    status: 'Cancelled',
-    customer: {
-      initial: 'K',
-      name: 'Krystal Stevens',
-      email: 'k.stevens@email.com',
-    },
+    marque: 'Marque',
+    status: 'Annulé',
+    type: 'Type',
+    associativity: 'Projets'
   },
   {
     id: 'INV-1217',
-    date: 'Feb 3, 2023',
-    status: 'Paid',
-    customer: {
-      initial: 'S',
-      name: 'Sachin Flynn',
-      email: 's.flyn@email.com',
-    },
+    marque: 'Marque',
+    status: 'Payé',
+    type: 'Type',
+    associativity: 'Projets'
   },
   {
     id: 'INV-1216',
-    date: 'Feb 3, 2023',
-    status: 'Cancelled',
-    customer: {
-      initial: 'B',
-      name: 'Bradley Rosales',
-      email: 'brad123@email.com',
-    },
+    marque: 'Marque',
+    status: 'Annulé',
+    type: 'Type',
+    associativity: 'Projets'
   },
 ];
+
+function handleRowClick(id: string) {
+  location.href = `/technical-base/products/${id}`;
+}
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   if (b[orderBy] < a[orderBy]) {
@@ -252,11 +202,11 @@ function RowMenu() {
         <MoreHorizRoundedIcon />
       </MenuButton>
       <Menu size="sm" sx={{ minWidth: 140 }}>
-        <MenuItem>Edit</MenuItem>
-        <MenuItem>Rename</MenuItem>
-        <MenuItem>Move</MenuItem>
+        <MenuItem>Éditer</MenuItem>
+        <MenuItem>Renommer</MenuItem>
+        <MenuItem>Déplacer</MenuItem>
         <Divider />
-        <MenuItem color="danger">Delete</MenuItem>
+        <MenuItem color="danger">Supprimer</MenuItem>
       </Menu>
     </Dropdown>
   );
@@ -268,37 +218,37 @@ export default function OrderTable() {
   const renderFilters = () => (
     <React.Fragment>
       <FormControl size="sm">
-        <FormLabel>Status</FormLabel>
+        <FormLabel>Statut</FormLabel>
         <Select
           size="sm"
-          placeholder="Filter by status"
+          placeholder="Filtré par statut"
           slotProps={{ button: { sx: { whiteSpace: 'nowrap' } } }}
         >
-          <Option value="paid">Paid</Option>
-          <Option value="pending">Pending</Option>
-          <Option value="refunded">Refunded</Option>
-          <Option value="cancelled">Cancelled</Option>
+          <Option value="paid">Payé</Option>
+          <Option value="pending">En attente</Option>
+          <Option value="refunded">Remboursé</Option>
+          <Option value="cancelled">Annulé</Option>
         </Select>
       </FormControl>
       <FormControl size="sm">
-        <FormLabel>Category</FormLabel>
-        <Select size="sm" placeholder="All">
-          <Option value="all">All</Option>
-          <Option value="refund">Refund</Option>
-          <Option value="purchase">Purchase</Option>
-          <Option value="debit">Debit</Option>
+        <FormLabel>Marque</FormLabel>
+        <Select size="sm" placeholder="Tout">
+          <Option value="tout">Tout</Option>
+          <Option value="marque1">Marque 1</Option>
+          <Option value="marque2">Marque 2</Option>
+          <Option value="marque3">Marque 3</Option>
         </Select>
       </FormControl>
       <FormControl size="sm">
-        <FormLabel>Customer</FormLabel>
-        <Select size="sm" placeholder="All">
-          <Option value="all">All</Option>
-          <Option value="olivia">Olivia Rhye</Option>
-          <Option value="steve">Steve Hampton</Option>
-          <Option value="ciaran">Ciaran Murray</Option>
-          <Option value="marina">Marina Macdonald</Option>
-          <Option value="charles">Charles Fulton</Option>
-          <Option value="jay">Jay Hoper</Option>
+        <FormLabel>Type</FormLabel>
+        <Select size="sm" placeholder="Tout">
+          <Option value="tout">Tout</Option>
+          <Option value="type1">Type 1</Option>
+          <Option value="type2">Type 2</Option>
+          <Option value="type3">Type 3</Option>
+          <Option value="type4">Type 4</Option>
+          <Option value="type5">Type 5</Option>
+          <Option value="type6">Type 6</Option>
         </Select>
       </FormControl>
     </React.Fragment>
@@ -311,7 +261,7 @@ export default function OrderTable() {
       >
         <Input
           size="sm"
-          placeholder="Search"
+          placeholder="Recherche"
           startDecorator={<SearchIcon />}
           sx={{ flexGrow: 1 }}
         />
@@ -353,8 +303,8 @@ export default function OrderTable() {
         }}
       >
         <FormControl sx={{ flex: 1 }} size="sm">
-          <FormLabel>Search for order</FormLabel>
-          <Input size="sm" placeholder="Search" startDecorator={<SearchIcon />} />
+          <FormLabel>Rechercher un produit</FormLabel>
+          <Input size="sm" placeholder="Recherche" startDecorator={<SearchIcon />} />
         </FormControl>
         {renderFilters()}
       </Box>
@@ -425,18 +375,19 @@ export default function OrderTable() {
                       : { '& svg': { transform: 'rotate(180deg)' } },
                   ]}
                 >
-                  Invoice
+                  ID
                 </Link>
               </th>
-              <th style={{ width: 140, padding: '12px 6px' }}>Date</th>
+              <th style={{ width: 140, padding: '12px 6px' }}>Marque</th>
               <th style={{ width: 140, padding: '12px 6px' }}>Status</th>
-              <th style={{ width: 240, padding: '12px 6px' }}>Customer</th>
+              <th style={{ width: 240, padding: '12px 6px' }}>Type</th>
+              <th style={{ width: 240, padding: '12px 6px' }}>Associativité</th>
               <th style={{ width: 140, padding: '12px 6px' }}> </th>
             </tr>
           </thead>
           <tbody>
             {[...rows].sort(getComparator(order, 'id')).map((row) => (
-              <tr key={row.id}>
+              <tr key={row.id} onClick={() => handleRowClick(row.id)} style={{ cursor: 'pointer' }}>
                 <td style={{ textAlign: 'center', width: 120 }}>
                   <Checkbox
                     size="sm"
@@ -457,7 +408,7 @@ export default function OrderTable() {
                   <Typography level="body-xs">{row.id}</Typography>
                 </td>
                 <td>
-                  <Typography level="body-xs">{row.date}</Typography>
+                  <Typography level="body-xs">{row.marque}</Typography>
                 </td>
                 <td>
                   <Chip
@@ -465,16 +416,16 @@ export default function OrderTable() {
                     size="sm"
                     startDecorator={
                       {
-                        Paid: <CheckRoundedIcon />,
-                        Refunded: <AutorenewRoundedIcon />,
-                        Cancelled: <BlockIcon />,
+                        Payé: <CheckRoundedIcon />,
+                        Remboursé: <AutorenewRoundedIcon />,
+                        Annulé: <BlockIcon />,
                       }[row.status]
                     }
                     color={
                       {
-                        Paid: 'success',
-                        Refunded: 'neutral',
-                        Cancelled: 'danger',
+                        Payé: 'success',
+                        Remboursé: 'neutral',
+                        Annulé: 'danger',
                       }[row.status] as ColorPaletteProp
                     }
                   >
@@ -482,18 +433,36 @@ export default function OrderTable() {
                   </Chip>
                 </td>
                 <td>
-                  <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                    <Avatar size="sm">{row.customer.initial}</Avatar>
-                    <div>
-                      <Typography level="body-xs">{row.customer.name}</Typography>
-                      <Typography level="body-xs">{row.customer.email}</Typography>
-                    </div>
-                  </Box>
+                  <Chip
+                    variant="soft"
+                    size="sm"
+                    color={
+                      'neutral' as ColorPaletteProp
+                    }
+                  >
+                    {row.type}
+                  </Chip>
+                </td>
+                <td>
+                  <Chip
+                    variant="soft"
+                    size="sm"
+                    startDecorator={
+                      {
+                        Projets: <CheckRoundedIcon />,
+                      }[row.associativity]
+                    }
+                    color={
+                      'neutral' as ColorPaletteProp
+                    }
+                  >
+                    {row.associativity}
+                  </Chip>
                 </td>
                 <td>
                   <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                     <Link level="body-xs" component="button">
-                      Download
+                      Télécharger
                     </Link>
                     <RowMenu />
                   </Box>
@@ -521,7 +490,7 @@ export default function OrderTable() {
           color="neutral"
           startDecorator={<KeyboardArrowLeftIcon />}
         >
-          Previous
+          Précédent
         </Button>
 
         <Box sx={{ flex: 1 }} />
@@ -542,7 +511,7 @@ export default function OrderTable() {
           color="neutral"
           endDecorator={<KeyboardArrowRightIcon />}
         >
-          Next
+          Suivant
         </Button>
       </Box>
     </React.Fragment>
