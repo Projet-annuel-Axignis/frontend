@@ -55,16 +55,8 @@ export default function JoyOrderDashboardTemplate() {
               >
                 <HomeRoundedIcon />
               </Link>
-              <Link
-                underline="hover"
-                color="neutral"
-                href="#some-link"
-                sx={{ fontSize: 12, fontWeight: 500 }}
-              >
-                Dashboard
-              </Link>
               <Typography color="primary" sx={{ fontWeight: 500, fontSize: 12 }}>
-                Orders
+                Produits
               </Typography>
             </Breadcrumbs>
           </Box>
@@ -80,14 +72,14 @@ export default function JoyOrderDashboardTemplate() {
             }}
           >
             <Typography level="h2" component="h1">
-              Orders
+              Produits
             </Typography>
             <Button
               color="primary"
               startDecorator={<DownloadRoundedIcon />}
               size="sm"
             >
-              Download PDF
+              Télécharger en PDF
             </Button>
           </Box>
           <OrderTable />
