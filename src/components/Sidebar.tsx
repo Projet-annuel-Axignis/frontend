@@ -4,13 +4,10 @@ import Link from 'next/link';
 import GlobalStyles from '@mui/joy/GlobalStyles';
 import Avatar from '@mui/joy/Avatar';
 import Box from '@mui/joy/Box';
-import Button from '@mui/joy/Button';
-import Card from '@mui/joy/Card';
 import Chip from '@mui/joy/Chip';
 import Divider from '@mui/joy/Divider';
 import IconButton from '@mui/joy/IconButton';
 import Input from '@mui/joy/Input';
-import LinearProgress from '@mui/joy/LinearProgress';
 import List from '@mui/joy/List';
 import ListItem from '@mui/joy/ListItem';
 import ListItemButton, { listItemButtonClasses } from '@mui/joy/ListItemButton';
@@ -29,7 +26,6 @@ import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
-import ColorSchemeToggle from './ColorSchemeToggle';
 import { closeSidebar } from './utils';
 
 function Toggler({

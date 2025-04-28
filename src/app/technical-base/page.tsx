@@ -1,9 +1,8 @@
 'use client';
 
-import Footer from '@/components/Footer';
 import Header from '@/components/Header';
 import * as React from 'react';
-import { CssVarsProvider, extendTheme, useColorScheme } from '@mui/joy/styles';
+import { CssVarsProvider } from '@mui/joy/styles';
 import CssBaseline from '@mui/joy/CssBaseline';
 import Box from '@mui/joy/Box';
 import Button from '@mui/joy/Button';
@@ -18,7 +17,6 @@ import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
 import Sidebar from '@/components/Sidebar';
 import OrderTable from '@/components/OrderTable';
 import OrderList from '@/components/OrderList';
-const theme = extendTheme({});
 
 export default function JoyOrderDashboardTemplate() {
   return (
