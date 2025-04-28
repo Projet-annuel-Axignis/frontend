@@ -36,7 +36,7 @@ const ContactForm = () => {
   });
 
   return (
-    <main className="min-h-screen bg-gray-50 font-sans">
+    <main className="min-h-screen bg-white dark:bg-gray-900 font-sans">
       {/* Hero Section */}
       <section className="relative h-[40vh] flex items-center justify-center text-white">
         <Image
@@ -57,7 +57,7 @@ const ContactForm = () => {
         <div className="grid md:grid-cols-2 gap-10">
           <form
             onSubmit={formik.handleSubmit}
-            className="bg-white shadow-xl rounded-xl p-8 space-y-6"
+            className="bg-gray-100 dark:bg-gray-800 shadow-xl rounded-xl p-8 space-y-6"
           >
             {/* Ligne pour Prénom et Nom */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
