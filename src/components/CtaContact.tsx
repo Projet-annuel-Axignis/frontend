@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '@/i18n/useTranslation';
 
 const CtaContact = () => {
   const { t } = useTranslation('common');
@@ -23,7 +23,7 @@ const CtaContact = () => {
               md:text-4xl
               mb-6
             ">
-          {t('homepage.contact.title', { ns: 'common' })}
+          {t('homepage.contact.title')}
         </h2>
         <p className="
               text-xl
