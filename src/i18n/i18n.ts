@@ -20,10 +20,6 @@ if (typeof window !== 'undefined') {
       supportedLngs: ['fr', 'en'],
       debug: process.env.NODE_ENV === 'development',
 
-      interpolation: {
-        escapeValue: false, // non nécessaire pour React
-      },
-
       // Chemins de chargement des traductions
       backend: {
         loadPath: '/locales/{{lng}}/{{ns}}.json',
@@ -32,12 +28,14 @@ if (typeof window !== 'undefined') {
       // Espaces de noms par défaut
       defaultNS: 'common',
       ns: ['common', 'contact'],
+      preload: ['common', 'contact'],
 
       // Options de détection de langue
       detection: {
         order: ['localStorage', 'navigator', 'htmlTag'],
         caches: ['localStorage'],
       },
+
     });
 }
 
