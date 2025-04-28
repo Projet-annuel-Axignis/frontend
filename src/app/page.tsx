@@ -2,9 +2,9 @@
 
 import CtaContact from '@/components/CtaContact';
 import ServiceCard from '@/components/ServiceCard';
+import { useTranslation } from '@/i18n/useTranslation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useTranslation } from 'react-i18next';
 
 export default function Home() {
   const { t } = useTranslation();

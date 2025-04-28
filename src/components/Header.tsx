@@ -1,10 +1,10 @@
 'use client';
 
+import { useTranslation } from '@/i18n/useTranslation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import LanguageSelector from './LanguageSelector';
 
 export default function Header() {

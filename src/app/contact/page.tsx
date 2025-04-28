@@ -1,10 +1,10 @@
 'use client';
 
 import CtaContact from '@/components/CtaContact';
+import { useTranslation } from '@/i18n/useTranslation';
 import { Box, Button, Card, CardContent, CardHeader, Container, Grid, TextField, Typography } from '@mui/material';
 import { useFormik } from 'formik';
 import Image from 'next/image';
-import { useTranslation } from 'react-i18next';
 import * as Yup from 'yup';
 
 const ContactForm = () => {

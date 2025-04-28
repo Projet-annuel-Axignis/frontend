@@ -1,8 +1,8 @@
 'use client';
 
+import { useTranslation } from '@/i18n/useTranslation';
 import Image from 'next/image'; // Import de Image
 import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 
 type Language = {
   code: string;
