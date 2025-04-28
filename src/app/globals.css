@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@plugin "daisyui";
 
 /* Couleurs du thème Axignis comme variables CSS optionnelles */
 /* :root {

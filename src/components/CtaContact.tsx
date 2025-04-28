@@ -1,4 +1,5 @@
 import { useTranslation } from '@/i18n/useTranslation';
+import Link from 'next/link';
 
 const CtaContact = () => {
   const { t } = useTranslation('common');
@@ -39,7 +40,7 @@ const CtaContact = () => {
               gap-4
               justify-center
             ">
-          <a href="mailto:contact@axignis.fr" className="
+          <Link href="/contact" className="
                 px-8
                 py-4
                 bg-white
@@ -53,7 +54,7 @@ const CtaContact = () => {
                 shadow-md
               ">
             {t('homepage.contact.contact_button')}
-          </a>
+          </Link>
           <a href="tel:+33612345678" className="
                 px-8
                 py-4
