@@ -76,15 +76,6 @@ export default function Home() {
             z-10
           "></div>
 
-          {/* Effet de grille */}
-          <div className="
-            absolute
-            inset-0
-            bg-[url('/images/pattern.png')]
-            opacity-20
-            z-20
-          "></div>
-
           {/* Contenu du hero */}
           <div className="
             relative 
