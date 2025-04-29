@@ -49,7 +49,7 @@ export default function ProductDetails({ id }: { id: string }) {
                     <Link
                         underline="none"
                         color="neutral"
-                        href="/technical-base"
+                        href="/base-technique"
                         aria-label="Home"
                     >
                         <Typography sx={{ fontWeight: 500, fontSize: 12 }}>

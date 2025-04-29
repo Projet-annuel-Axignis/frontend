@@ -165,7 +165,7 @@ const rows = [
 ];
 
 function handleRowClick(id: string) {
-  location.href = `/technical-base/products/${id}`;
+  location.href = `/base-technique/produits/${id}`;
 }
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
