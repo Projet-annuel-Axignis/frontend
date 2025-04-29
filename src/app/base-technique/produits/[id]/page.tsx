@@ -1,7 +1,7 @@
 import Header from '@/components/Header';
 import Sidebar from '@/components/Sidebar';
 import { Box, CssBaseline, CssVarsProvider } from '@mui/joy';
-import ProductsDetails from '@/components/technical-base/ProductDetails';
+import ProductsDetails from '@/components/base-technique/ProductDetails';
 import React from 'react';
 
 interface Props {
