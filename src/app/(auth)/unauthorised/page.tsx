@@ -65,11 +65,11 @@ export default function UnauthorisedPage() {
         </Typography>
 
         <Typography level="h3" className="text-xl mb-2 text-gray-900 dark:text-white">
-          {t('error.unauthorised_title')}
+          {t('error_unauthorised.unauthorised_title')}
         </Typography>
 
         <Typography className="mb-8 text-gray-600 dark:text-gray-400">
-          {t('error.unauthorised_message')}
+          {t('error_unauthorised.unauthorised_message')}
         </Typography>
 
         <Box className="flex flex-col sm:flex-row gap-4 justify-center mt-5">
