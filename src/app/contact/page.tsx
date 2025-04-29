@@ -38,7 +38,7 @@ const ContactForm = () => {
   return (
     <main className="min-h-screen bg-white dark:bg-gray-900 font-sans">
       {/* Hero Section */}
-      <section className="relative h-[40vh] flex items-center justify-center text-white">
+      <section className="relative h-[40vh] flex items-center justify-center text-white bg-gray-600">
         <Image
           src="/images/backgrounds/contact.jpg"
           alt="Contact"
@@ -46,7 +46,15 @@ const ContactForm = () => {
           priority
           className="object-cover opacity-50"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-axignis-primary/80 to-axignis-secondary/60"></div>
+        <div className="absolute 
+            inset-0 
+            bg-gradient-to-r 
+            from-[var(--color-axignis-primary)]/70
+            to-[var(--color-axignis-secondary)]/70
+            mix-blend-multiply
+            ">
+
+        </div>
         <h1 className="relative z-10 text-4xl md:text-5xl font-title font-bold drop-shadow-xl">
           {t('title')}
         </h1>
@@ -70,7 +78,7 @@ const ContactForm = () => {
                   value={formik.values.firstName}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  className={`input ${formik.touched.firstName && formik.errors.firstName
+                  className={`input w-full ${formik.touched.firstName && formik.errors.firstName
                     ? 'border-red-500'
                     : 'border-gray-300'
                     }`}
@@ -90,7 +98,7 @@ const ContactForm = () => {
                   value={formik.values.lastName}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  className={`input ${formik.touched.lastName && formik.errors.lastName
+                  className={`input w-full ${formik.touched.lastName && formik.errors.lastName
                     ? 'border-red-500'
                     : 'border-gray-300'
                     }`}
