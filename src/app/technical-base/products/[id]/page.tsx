@@ -1,27 +1,28 @@
-// pages/technical-base/products/[id].tsx
+import Header from '@/components/Header';
+import Sidebar from '@/components/Sidebar';
+import { Box, CssBaseline, CssVarsProvider } from '@mui/joy';
+import ProductsDetails from '@/components/technical-base/ProductDetails';
 import React from 'react';
 
 interface Props {
-    params: { id: string };
+  params: { id: string };
 }
 
 export async function generateStaticParams() {
-  // Ici tu peux récupérer les ids des produits pour générer les pages statiques
   return [
-    { id: '1' },
-    { id: '2' },
-    { id: '3' },
+    { id: 'INV-1234' },
+    { id: 'INV-5678' },
   ];
 }
 
-export default function TechnicalBaseDetail({ params }: Props) {
-    const { id } = params;
-  
-    return (
-    <main style={{ padding: 20 }}>
-      <h1>Détails du produit {id} </h1>
-      {/* Affiche les infos du produit ici */}
-      <p>Ici tu peux charger et afficher les détails du produit avec l'id {id}.</p>
-    </main>
+export default async function TechnicalBaseDetail({ params }: Props) {
+  const { id } = params;
+
+  return (
+    <CssVarsProvider disableTransitionOnChange>
+      <CssBaseline />
+      <Header />
+      <ProductsDetails id={id} />
+    </CssVarsProvider>
   );
 }
