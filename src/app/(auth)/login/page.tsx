@@ -20,6 +20,7 @@ import {
   useMediaQuery
 } from '@mui/material';
 import { Field, Form, Formik } from 'formik';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 import * as Yup from 'yup';
@@ -74,180 +75,209 @@ export default function LoginPage() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Container maxWidth="sm" sx={{
-        py: 8,
+      <Box sx={{
+        position: 'relative',
         minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        background: theme.palette.background.default
+        width: '100%',
+        overflow: 'hidden'
       }}>
-        <Paper
-          elevation={3}
-          sx={{
-            p: 4,
-            borderRadius: 2,
-            background: theme.palette.background.paper,
-            boxShadow: prefersDarkMode
-              ? '0 4px 20px rgba(0,0,0,0.5)'
-              : '0 4px 20px rgba(0,0,0,0.1)'
-          }}
-        >
-          <Box sx={{ textAlign: 'center', mb: 4 }}>
-            <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
-              {t('auth.login')}
-            </Typography>
-            <Typography variant="body1" color="textSecondary">
-              {t('auth.login_instructions')}
-            </Typography>
-          </Box>
+        {/* Image de fond */}
+        <Box sx={{
+          position: 'absolute',
+          inset: 0,
+          bgcolor: 'grey.600',
+          zIndex: 0
+        }}>
+          <Image
+            src="/images/backgrounds/building-facade.jpg"
+            alt="Façade de bâtiment moderne"
+            fill
+            priority
+            style={{
+              objectFit: 'cover',
+              opacity: 0.5,
+              mixBlendMode: 'overlay'
+            }}
+          />
+        </Box>
 
-          {error && (
-            <Alert severity="error" sx={{ mb: 3 }}>
-              {error}
-            </Alert>
-          )}
-
-          <Formik
-            initialValues={{ email: '', password: '' }}
-            validationSchema={LoginSchema}
-            onSubmit={async (values) => {
-              await login(values.email, values.password);
+        {/* Contenu du formulaire */}
+        <Container maxWidth="sm" sx={{
+          py: 8,
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          position: 'relative',
+          zIndex: 1
+        }}>
+          <Paper
+            elevation={3}
+            sx={{
+              p: 4,
+              borderRadius: 2,
+              background: theme.palette.background.paper,
+              boxShadow: prefersDarkMode
+                ? '0 4px 20px rgba(0,0,0,0.5)'
+                : '0 4px 20px rgba(0,0,0,0.1)'
             }}
           >
-            {({ errors, touched, handleChange, handleBlur, values }) => (
-              <Form>
-                <Box mb={3}>
-                  <TextField
-                    fullWidth
-                    id="email"
-                    name="email"
-                    type="email"
-                    label={t('auth.email')}
-                    variant="outlined"
-                    value={values.email}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    error={Boolean(errors.email && touched.email)}
-                    helperText={(errors.email && touched.email) ? errors.email : ''}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Email color="action" />
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                </Box>
+            <Box sx={{ textAlign: 'center', mb: 4 }}>
+              <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
+                {t('auth.login')}
+              </Typography>
+              <Typography variant="body1" color="textSecondary">
+                {t('auth.login_instructions')}
+              </Typography>
+            </Box>
 
-                <Box mb={3}>
-                  <TextField
-                    fullWidth
-                    id="password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    label={t('auth.password')}
-                    variant="outlined"
-                    value={values.password}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    error={Boolean(errors.password && touched.password)}
-                    helperText={(errors.password && touched.password) ? errors.password : ''}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Lock color="action" />
-                        </InputAdornment>
-                      ),
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton
-                            onClick={handleTogglePasswordVisibility}
-                            edge="end"
-                            aria-label="toggle password visibility"
-                          >
-                            {showPassword ? <VisibilityOff /> : <Visibility />}
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                </Box>
-
-                <Box mb={3} display="flex" justifyContent="space-between" alignItems="center">
-                  <Box display="flex" alignItems="center">
-                    <Field
-                      type="checkbox"
-                      name="remember"
-                      id="remember"
-                      className="h-4 w-4 mr-2"
-                    />
-                    <Typography variant="body2" component="label" htmlFor="remember">
-                      {t('auth.remember_me')}
-                    </Typography>
-                  </Box>
-                  <Link href="/forgot-password" passHref>
-                    <Typography
-                      variant="body2"
-                      component="span"
-                      color="primary"
-                      sx={{
-                        cursor: 'pointer',
-                        '&:hover': {
-                          textDecoration: 'underline'
-                        }
-                      }}
-                    >
-                      {t('auth.forgot_password')}
-                    </Typography>
-                  </Link>
-                </Box>
-
-                <Button
-                  type="submit"
-                  fullWidth
-                  variant="contained"
-                  color="primary"
-                  disabled={isLoading}
-                  sx={{
-                    py: 1.5,
-                    fontWeight: 'medium',
-                    fontSize: '1rem'
-                  }}
-                >
-                  {isLoading ? (
-                    <CircularProgress size={24} color="inherit" />
-                  ) : (
-                    t('auth.login_button')
-                  )}
-                </Button>
-              </Form>
+            {error && (
+              <Alert severity="error" sx={{ mb: 3 }}>
+                {error}
+              </Alert>
             )}
-          </Formik>
 
-          <Box mt={4} textAlign="center">
-            <Typography variant="body2" color="textSecondary">
-              {t('auth.no_account')}{' '}
-              <Link href="/register" passHref>
-                <Typography
-                  variant="body2"
-                  component="span"
-                  color="primary"
-                  sx={{
-                    cursor: 'pointer',
-                    fontWeight: 'medium',
-                    '&:hover': {
-                      textDecoration: 'underline'
-                    }
-                  }}
-                >
-                  {t('auth.create_account')}
-                </Typography>
-              </Link>
-            </Typography>
-          </Box>
-        </Paper>
-      </Container>
+            <Formik
+              initialValues={{ email: '', password: '' }}
+              validationSchema={LoginSchema}
+              onSubmit={async (values) => {
+                await login(values.email, values.password);
+              }}
+            >
+              {({ errors, touched, handleChange, handleBlur, values }) => (
+                <Form>
+                  <Box mb={3}>
+                    <TextField
+                      fullWidth
+                      id="email"
+                      name="email"
+                      type="email"
+                      label={t('auth.email')}
+                      variant="outlined"
+                      value={values.email}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(errors.email && touched.email)}
+                      helperText={(errors.email && touched.email) ? errors.email : ''}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Email color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  </Box>
+
+                  <Box mb={3}>
+                    <TextField
+                      fullWidth
+                      id="password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      label={t('auth.password')}
+                      variant="outlined"
+                      value={values.password}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(errors.password && touched.password)}
+                      helperText={(errors.password && touched.password) ? errors.password : ''}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Lock color="action" />
+                          </InputAdornment>
+                        ),
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={handleTogglePasswordVisibility}
+                              edge="end"
+                              aria-label="toggle password visibility"
+                            >
+                              {showPassword ? <VisibilityOff /> : <Visibility />}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  </Box>
+
+                  <Box mb={3} display="flex" justifyContent="space-between" alignItems="center">
+                    <Box display="flex" alignItems="center">
+                      <Field
+                        type="checkbox"
+                        name="remember"
+                        id="remember"
+                        className="h-4 w-4 mr-2"
+                      />
+                      <Typography variant="body2" component="label" htmlFor="remember">
+                        {t('auth.remember_me')}
+                      </Typography>
+                    </Box>
+                    <Link href="/forgot-password" passHref>
+                      <Typography
+                        variant="body2"
+                        component="span"
+                        color="primary"
+                        sx={{
+                          cursor: 'pointer',
+                          '&:hover': {
+                            textDecoration: 'underline'
+                          }
+                        }}
+                      >
+                        {t('auth.forgot_password')}
+                      </Typography>
+                    </Link>
+                  </Box>
+
+                  <Button
+                    type="submit"
+                    fullWidth
+                    variant="contained"
+                    color="primary"
+                    disabled={isLoading}
+                    sx={{
+                      py: 1.5,
+                      fontWeight: 'medium',
+                      fontSize: '1rem'
+                    }}
+                  >
+                    {isLoading ? (
+                      <CircularProgress size={24} color="inherit" />
+                    ) : (
+                      t('auth.login_button')
+                    )}
+                  </Button>
+                </Form>
+              )}
+            </Formik>
+
+            <Box mt={4} textAlign="center">
+              <Typography variant="body2" color="textSecondary">
+                {t('auth.no_account')}{' '}
+                <Link href="/register" passHref>
+                  <Typography
+                    variant="body2"
+                    component="span"
+                    color="primary"
+                    sx={{
+                      cursor: 'pointer',
+                      fontWeight: 'medium',
+                      '&:hover': {
+                        textDecoration: 'underline'
+                      }
+                    }}
+                  >
+                    {t('auth.create_account')}
+                  </Typography>
+                </Link>
+              </Typography>
+            </Box>
+          </Paper>
+        </Container>
+      </Box>
     </ThemeProvider>
   );
 } 
