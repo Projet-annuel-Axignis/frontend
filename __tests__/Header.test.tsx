@@ -22,6 +22,28 @@ jest.mock('@/i18n/useTranslation', () => ({
   }),
 }));
 
+// Mock du UserContext
+jest.mock('@/lib/contexts/UserContext', () => ({
+  useUser: () => ({
+    user: null,
+    isLoading: false,
+    error: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+    register: jest.fn(),
+  }),
+}));
+
+// Mock pour Next.js navigation
+jest.mock('next/navigation', () => ({
+  usePathname: () => '/home',
+  useRouter: () => ({
+    push: jest.fn(),
+    back: jest.fn(),
+    forward: jest.fn(),
+  }),
+}));
+
 // Mock des composants externes
 jest.mock('next/image', () => ({
   __esModule: true,
