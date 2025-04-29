@@ -9,9 +9,16 @@
   "logout": "Déconnexion",
   "profile": "Profil",
   "learn_more": "En savoir plus",
-  "error": {
-    "404": "Page non trouvée",
-    "500": "Erreur serveur"
+  "error404": {
+    "title": "Oups ! Page non trouvée",
+    "subtitle": "La page que vous recherchez semble introuvable ou a été déplacée.",
+    "button_back": "Retour à l'accueil"
+  },
+  "error_unauthorised": {
+    "unauthorised_title": "Accès non autorisé",
+    "unauthorised_message": "Vous n'avez pas les permissions nécessaires pour accéder à cette page. Veuillez contacter l'administrateur si vous pensez que c'est une erreur.",
+    "not_found_title": "Page non trouvée",
+    "not_found_message": "La page que vous recherchez n'existe pas ou a été déplacée."
   },
   "homepage": {
     "hero": {
@@ -131,11 +138,5 @@
     "email_verified": "Email vérifié",
     "joined": "Inscrit le",
     "edit_profile": "Modifier le profil"
-  },
-  "error": {
-    "unauthorised_title": "Accès non autorisé",
-    "unauthorised_message": "Vous n'avez pas les permissions nécessaires pour accéder à cette page. Veuillez contacter l'administrateur si vous pensez que c'est une erreur.",
-    "not_found_title": "Page non trouvée",
-    "not_found_message": "La page que vous recherchez n'existe pas ou a été déplacée."
   }
 }

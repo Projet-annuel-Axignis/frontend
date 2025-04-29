@@ -9,9 +9,16 @@
   "logout": "Logout",
   "profile": "Profile",
   "learn_more": "Learn more",
-  "error": {
-    "404": "Page not found",
-    "500": "Server error"
+  "error404": {
+    "title": "Oups ! Page not found",
+    "subtitle": "The page you are looking for doesn't exist or have been moved.",
+    "button_back": "Back to home"
+  },
+  "error_unauthorised": {
+    "unauthorised_title": "Unauthorized Access",
+    "unauthorised_message": "You don't have the necessary permissions to access this page. Please contact the administrator if you believe this is an error.",
+    "not_found_title": "Page Not Found",
+    "not_found_message": "The page you're looking for doesn't exist or has been moved."
   },
   "homepage": {
     "hero": {
@@ -131,11 +138,5 @@
     "email_verified": "Email Verified",
     "joined": "Joined on",
     "edit_profile": "Edit Profile"
-  },
-  "error": {
-    "unauthorised_title": "Unauthorized Access",
-    "unauthorised_message": "You don't have the necessary permissions to access this page. Please contact the administrator if you believe this is an error.",
-    "not_found_title": "Page Not Found",
-    "not_found_message": "The page you're looking for doesn't exist or has been moved."
   }
 }
