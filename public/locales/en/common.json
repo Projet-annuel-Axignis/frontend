@@ -38,14 +38,19 @@
           "description": "Digital and automated management of mandatory registers with integrated alerts and monitoring for permanent compliance."
         },
         {
-          "title": "SSI Coordination",
-          "description": "Expert support in all phases: design, implementation and acceptance of the Fire Safety System."
+          "title": "Fire Safety Coordination",
+          "description": "Expert support in all phases: design, implementation, and acceptance of the Fire Safety System."
         },
         {
           "title": "Technical Database",
-          "description": "Secure centralization of technical information, user manuals and certificates for safety equipment."
+          "description": "Secure centralization of technical information, user manuals, and certificates for safety equipment."
         }
       ]
+    },
+    "plans": {
+      "title": "Discover our plans tailored to your needs",
+      "description": "Comprehensive and customized solutions to ensure the safety and compliance of your establishment",
+      "cta": "View our plans"
     },
     "founder": {
       "title": "About the founder",
@@ -65,6 +70,7 @@
     "quick_links": "Quick Links",
     "mission": "Our Mission",
     "services": "Services",
+    "plans": "Plans",
     "contact": "Contact",
     "legal": "Legal Notice",
     "address": "123 Avenue de la République, 75011 Paris, France",
