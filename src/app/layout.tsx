@@ -1,4 +1,5 @@
 import Footer from '@/components/Footer';
+import FooterIndicator from '@/components/FooterIndicator';
 import Header from '@/components/Header';
 import I18nProvider from '@/i18n/I18nProvider';
 import { UserProvider } from '@/lib/contexts/UserContext';
@@ -45,6 +46,7 @@ export default function RootLayout({
           <UserProvider>
             <Header />
             {children}
+            <FooterIndicator />
             <Footer />
           </UserProvider>
         </I18nProvider>
