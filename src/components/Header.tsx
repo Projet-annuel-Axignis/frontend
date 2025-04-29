@@ -1,17 +1,20 @@
 'use client';
 
 import { useTranslation } from '@/i18n/useTranslation';
+import { useUser } from '@/lib/contexts/UserContext';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import LanguageSelector from './LanguageSelector';
 
 export default function Header() {
   const { t } = useTranslation();
+  const { user, isAuthenticated, logout } = useUser();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
 
   // Détecter le défilement pour changer le style du header
   useEffect(() => {
@@ -24,8 +27,11 @@ export default function Header() {
   }, []);
 
   const isActive = (path: string) => pathname === path;
-  console.log(pathname);
 
+  const handleLogout = async () => {
+    await logout();
+    router.push('/');
+  };
 
   return (
     <header
@@ -93,6 +99,58 @@ export default function Header() {
           >
             {t('footer.contact')}
           </Link>
+
+          {/* Bouton Login/Logout */}
+          {isAuthenticated ? (
+            <div className="flex items-center gap-2">
+              <Link
+                href="/dashboard"
+                className={`
+                  font-medium 
+                  hover:text-[var(--color-axignis-primary)] 
+                  transition-colors
+                  ${isScrolled ? 'text-gray-800 dark:text-white' : 'text-white'}
+                  ${isActive('/dashboard') ? 'active' : ''}
+                `}
+              >
+                {user?.firstName || t('dashboard.title')}
+              </Link>
+              <button
+                onClick={handleLogout}
+                className={`
+                  ml-3
+                  px-4
+                  py-2
+                  rounded-md
+                  bg-amber-500
+                  hover:bg-amber-400
+                  text-gray-900
+                  font-medium
+                  transition-colors
+                  text-sm
+                `}
+              >
+                {t('auth.logout')}
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              className={`
+                px-4
+                py-2
+                rounded-md
+                bg-amber-500
+                hover:bg-amber-400
+                text-gray-900
+                font-medium
+                transition-colors
+                text-sm
+              `}
+            >
+              {t('auth.login')}
+            </Link>
+          )}
 
           {/* Sélecteur de langue */}
           <div className={isScrolled ? 'text-gray-800 dark:text-white' : 'text-white'}>
@@ -203,6 +261,62 @@ export default function Header() {
             >
               {t('footer.contact')}
             </Link>
+
+            {/* Bouton Login/Logout Mobile */}
+            {isAuthenticated ? (
+              <>
+                <Link
+                  href="/dashboard"
+                  className={`
+                    text-gray-800 
+                    dark:text-white 
+                    font-medium 
+                    p-2 
+                    hover:bg-gray-100 
+                    dark:hover:bg-gray-800 
+                    rounded
+                    ${isActive('/dashboard') ? 'text-[var(--color-axignis-primary)] font-semibold bg-gray-100 dark:bg-gray-800' : ''}
+                  `}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  {user?.firstName || t('dashboard.title')}
+                </Link>
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="
+                    text-gray-800 
+                    dark:text-white 
+                    font-medium 
+                    p-2 
+                    bg-amber-500
+                    hover:bg-amber-400
+                    text-gray-900
+                    rounded
+                  "
+                >
+                  {t('auth.logout')}
+                </button>
+              </>
+            ) : (
+              <Link
+                href="/login"
+                className="
+                  font-medium 
+                  p-2 
+                  bg-amber-500
+                  hover:bg-amber-400
+                  text-gray-900
+                  rounded
+                  text-center
+                "
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {t('auth.login')}
+              </Link>
+            )}
           </div>
         )}
       </div>
