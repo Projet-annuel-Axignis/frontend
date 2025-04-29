@@ -1,13 +1,10 @@
 'use client';
 
-import { useTranslation } from '@/i18n/useTranslation';
 import { CheckCircle } from '@mui/icons-material';
 import Image from 'next/image';
 import Link from 'next/link';
 
 export default function PlansPage() {
-  const { t } = useTranslation();
-
   // Fonctionnalités communes aux deux plans
   const commonFeatures = [
     "Registre de sécurité numérique",
@@ -951,8 +948,10 @@ export default function PlansPage() {
         py-16 
         md:py-24 
         px-6 
-        bg-gray-900
-        text-white
+        bg-gradient-to-r
+          from-[var(--color-axignis-primary)]
+          to-[var(--color-axignis-secondary)]
+          text-white
       ">
         <div className="
           container 
@@ -977,23 +976,48 @@ export default function PlansPage() {
           ">
             Contactez-nous dès aujourd&apos;hui pour une consultation gratuite et sans engagement.
           </p>
-          <Link
-            href="/contact"
-            className="
-              inline-block
-              px-8
-              py-4
-              bg-[var(--color-axignis-primary)]
-              hover:bg-[var(--color-axignis-primary)]/90
-              rounded-md
-              font-semibold
-              transition-colors
-              shadow-lg
-              hover:shadow-[var(--color-axignis-primary)]/30
-            "
-          >
-            Nous contacter
-          </Link>
+          <div className="
+              flex 
+              flex-col 
+              sm:flex-row 
+              gap-5
+              justify-center
+            ">
+            <Link href="/register?serenite" className="
+                px-8 
+                py-4
+                bg-amber-500 
+                rounded-md 
+                font-semibold
+                text-gray-900
+                hover:bg-amber-400
+                hover:translate-y-1
+                transition-all 
+                duration-300
+                shadow-lg
+                hover:shadow-amber-500/30
+                tracking-wide
+              ">
+              Demander un devis
+            </Link>
+            <Link href="/contact" className="
+                px-8 
+                py-4
+                backdrop-blur-md 
+                rounded-md 
+                border 
+                border-white/40
+                hover:bg-white/20
+                hover:translate-y-1
+                transition-all 
+                duration-300
+                shadow-lg
+                tracking-wide
+                font-medium
+              ">
+              Nous contacter
+            </Link>
+          </div>
         </div>
       </section>
     </main>
