@@ -88,6 +88,18 @@ export default function Header() {
             {t('footer.services')}
           </Link>
           <Link
+            href="/plans"
+            className={`
+              font-medium 
+              hover:text-[var(--color-axignis-primary)] 
+              transition-colors
+              ${isScrolled ? 'text-gray-800 dark:text-white' : 'text-white'}
+              ${isActive('/plans') ? 'active' : ''}
+            `}
+          >
+            {t('footer.plans')}
+          </Link>
+          <Link
             href="/contact"
             className={`
               font-medium 
@@ -244,6 +256,22 @@ export default function Header() {
               onClick={() => setIsMobileMenuOpen(false)}
             >
               {t('footer.services')}
+            </Link>
+            <Link
+              href="/plans"
+              className={`
+                text-gray-800 
+                dark:text-white 
+                font-medium 
+                p-2 
+                hover:bg-gray-100 
+                dark:hover:bg-gray-800 
+                rounded
+                ${isActive('/plans') ? 'text-[var(--color-axignis-primary)] font-semibold bg-gray-100 dark:bg-gray-800' : ''}
+              `}
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              {t('footer.plans')}
             </Link>
             <Link
               href="/contact"

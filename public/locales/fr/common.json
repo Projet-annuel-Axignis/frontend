@@ -47,6 +47,11 @@
         }
       ]
     },
+    "plans": {
+      "title": "Découvrez nos forfaits adaptés à vos besoins",
+      "description": "Des solutions complètes et sur mesure pour garantir la sécurité et la conformité de votre établissement",
+      "cta": "Voir nos forfaits"
+    },
     "founder": {
       "title": "À propos du fondateur",
       "name": "Loïc Rome",
@@ -65,6 +70,7 @@
     "quick_links": "Liens Rapides",
     "mission": "Notre Mission",
     "services": "Services",
+    "plans": "Plans",
     "contact": "Contact",
     "legal": "Mentions Légales",
     "address": "123 Avenue de la République, 75011 Paris, France",

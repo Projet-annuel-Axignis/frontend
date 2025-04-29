@@ -327,6 +327,100 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Section CTA pour les plans */}
+        <section className="
+          py-16
+          md:py-20 
+          px-4
+          md:px-6 
+          bg-[var(--color-axignis-primary)]
+          text-white
+          relative
+          overflow-hidden
+        ">
+          {/* Formes décoratives en arrière-plan */}
+          <div className="
+            absolute 
+            top-0 
+            left-0 
+            w-full 
+            h-full 
+            opacity-10
+            pointer-events-none
+          ">
+            <div className="
+              absolute 
+              top-10 
+              left-10 
+              w-40 
+              h-40 
+              rounded-full 
+              bg-white
+            "></div>
+            <div className="
+              absolute 
+              bottom-10 
+              right-10 
+              w-60 
+              h-60 
+              rounded-full 
+              bg-white
+            "></div>
+          </div>
+
+          <div className="
+            container 
+            mx-auto 
+            max-w-4xl
+            relative
+            z-10
+            text-center
+          ">
+            <h2 className="
+              text-3xl 
+              md:text-4xl 
+              font-semibold 
+              mb-6
+            ">
+              {t('homepage.plans.title') || 'Découvrez nos forfaits adaptés à vos besoins'}
+            </h2>
+            <p className="
+              text-lg 
+              md:text-xl 
+              mb-10 
+              max-w-2xl 
+              mx-auto
+              text-white/90
+            ">
+              {t('homepage.plans.description') || 'Des solutions complètes et sur mesure pour garantir la sécurité et la conformité de votre établissement'}
+            </p>
+            <Link
+              href="/plans"
+              className="
+                inline-flex
+                items-center
+                px-8
+                py-4
+                bg-white
+                text-[var(--color-axignis-primary)]
+                font-medium
+                rounded-lg
+                hover:bg-gray-100
+                hover:shadow-lg
+                transition-all
+                duration-300
+                transform
+                hover:-translate-y-1
+              "
+            >
+              {t('homepage.plans.cta') || 'Voir nos forfaits'}
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </Link>
+          </div>
+        </section>
+
         {/* Section à propos du fondateur */}
         <section className="
           py-16
