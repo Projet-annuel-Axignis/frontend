@@ -17,10 +17,8 @@ export default function UnauthorisedPage() {
       items-center
       justify-center
       bg-gradient-to-br
-      from-red-50
-      to-orange-50
-      dark:from-red-900/10
-      dark:to-orange-900/5
+      from-red-900/10
+      to-orange-900/5
       p-4
     ">
       <Box
@@ -74,7 +72,7 @@ export default function UnauthorisedPage() {
           {t('error.unauthorised_message')}
         </Typography>
 
-        <Box className="flex flex-col sm:flex-row gap-4 justify-center">
+        <Box className="flex flex-col sm:flex-row gap-4 justify-center mt-5">
           <Button
             variant="solid"
             color="danger"
