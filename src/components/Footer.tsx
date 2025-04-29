@@ -110,6 +110,15 @@ export default function Footer() {
                 </a>
               </li>
               <li>
+                <a href="/plans" className="
+                  text-gray-300
+                  hover:text-white
+                  transition-colors
+                ">
+                  {t('footer.plans')}
+                </a>
+              </li>
+              <li>
                 <a href="/contact" className="
                   text-gray-300
                   hover:text-white
