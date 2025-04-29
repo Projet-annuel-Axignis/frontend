@@ -155,7 +155,7 @@ export default function Sidebar() {
             <ListItemButton>
               <HomeRoundedIcon />
               <ListItemContent>
-                <Typography level="title-sm">Domaines d'équipements</Typography>
+                <Typography level="title-sm">Domaines d&apos;équipements</Typography>
               </ListItemContent>
             </ListItemButton>
           </ListItem>
@@ -164,7 +164,7 @@ export default function Sidebar() {
             <ListItemButton>
               <DashboardRoundedIcon />
               <ListItemContent>
-                <Typography level="title-sm">Familles d'équipements</Typography>
+                <Typography level="title-sm">Familles d&apos;équipements</Typography>
               </ListItemContent>
             </ListItemButton>
           </ListItem>
@@ -173,7 +173,7 @@ export default function Sidebar() {
             <ListItemButton>
               <ShoppingCartRoundedIcon />
               <ListItemContent>
-                <Typography level="title-sm">Types d'équipements</Typography>
+                <Typography level="title-sm">Types d&apos;équipements</Typography>
               </ListItemContent>
             </ListItemButton>
           </ListItem>

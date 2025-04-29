@@ -249,7 +249,7 @@ export default function ProductDetails({ id }: { id: string }) {
                                                     />
                                                 </Box>
                                                 <Typography level="body-sm" fontWeight="bold" textAlign="center">
-                                                    Notice d'utilisation
+                                                    Notice d&apos;utilisation
                                                 </Typography>
                                                 <Typography level="body-xs" textAlign="center">PDF - 2.4 MB</Typography>
                                                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
@@ -328,7 +328,7 @@ export default function ProductDetails({ id }: { id: string }) {
                         >
                             <Card variant="soft" sx={{ width: '100%', height: '100%' }}>
                                 <CardContent>
-                                    <Typography level="h4" component='h1' sx={{ mb: 2 }}>Détails d'inventaire</Typography>
+                                    <Typography level="h4" component='h1' sx={{ mb: 2 }}>Détails d&apos;inventaire</Typography>
                                     
                                     {/* Informations de stock */}
                                     <Box sx={{ mb: 4 }}>
@@ -403,7 +403,7 @@ export default function ProductDetails({ id }: { id: string }) {
                                     <Box sx={{ mb: 4 }}>
                                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
                                             <Typography level="title-md">Historique des mouvements</Typography>
-                                            <Link level="body-sm" href="#">Voir tout l'historique</Link>
+                                            <Link level="body-sm" href="#">Voir tout l&apos;historique</Link>
                                         </Box>
                                         <Card variant="outlined">
                                             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -629,7 +629,7 @@ export default function ProductDetails({ id }: { id: string }) {
                                                             <Box>
                                                                 <Typography level="title-sm">EN 54-11</Typography>
                                                                 <Typography level="body-xs">
-                                                                    Norme européenne pour les déclencheurs manuels d'alarme incendie.
+                                                                    Norme européenne pour les déclencheurs manuels d&apos;alarme incendie.
                                                                     Ce produit est conforme aux standards européens.
                                                                 </Typography>
                                                             </Box>
@@ -684,7 +684,7 @@ export default function ProductDetails({ id }: { id: string }) {
                                                             </Box>
                                                         </td>
                                                         <td style={{ padding: '12px 16px' }}>
-                                                            <Typography level="body-sm">Nécessite un module d'interface spécifique (IF-200)</Typography>
+                                                            <Typography level="body-sm">Nécessite un module d&apos;interface spécifique (IF-200)</Typography>
                                                         </td>
                                                     </tr>
                                                     <tr>
