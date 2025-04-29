@@ -74,5 +74,62 @@
     "french": "Français",
     "english": "Anglais",
     "select_language": "Sélectionner la langue"
+  },
+  "common": {
+    "yes": "Oui",
+    "no": "Non",
+    "go_back": "Retour",
+    "home": "Accueil",
+    "loading": "Chargement...",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "actions": "Actions",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "view": "Voir"
+  },
+  "auth": {
+    "login": "Connexion",
+    "login_instructions": "Connectez-vous à votre compte pour accéder à votre tableau de bord",
+    "email": "Adresse e-mail",
+    "password": "Mot de passe",
+    "remember_me": "Se souvenir de moi",
+    "forgot_password": "Mot de passe oublié ?",
+    "login_button": "Se connecter",
+    "no_account": "Vous n'avez pas de compte ?",
+    "create_account": "Créer un compte",
+
+    "register": "Inscription",
+    "register_instructions": "Créez votre compte pour rejoindre notre plateforme",
+    "first_name": "Prénom",
+    "last_name": "Nom",
+    "confirm_password": "Confirmer le mot de passe",
+    "register_button": "S'inscrire",
+    "already_have_account": "Vous avez déjà un compte ?",
+    "login_here": "Connectez-vous ici",
+
+    "logout": "Déconnexion",
+    "logout_confirm": "Êtes-vous sûr de vouloir vous déconnecter ?",
+    "password_reset": "Réinitialisation du mot de passe",
+    "password_reset_instructions": "Entrez votre adresse e-mail pour recevoir un lien de réinitialisation"
+  },
+  "dashboard": {
+    "welcome": "Bienvenue",
+    "welcome_message": "Voici votre tableau de bord personnalisé",
+    "logout": "Déconnexion",
+    "activity": "Activité récente",
+    "no_activity": "Aucune activité récente",
+    "activity_empty_message": "Vous n'avez aucune activité à afficher pour le moment",
+    "user_id": "ID Utilisateur",
+    "role": "Rôle",
+    "email_verified": "Email vérifié",
+    "joined": "Inscrit le",
+    "edit_profile": "Modifier le profil"
+  },
+  "error": {
+    "unauthorised_title": "Accès non autorisé",
+    "unauthorised_message": "Vous n'avez pas les permissions nécessaires pour accéder à cette page. Veuillez contacter l'administrateur si vous pensez que c'est une erreur.",
+    "not_found_title": "Page non trouvée",
+    "not_found_message": "La page que vous recherchez n'existe pas ou a été déplacée."
   }
 }
