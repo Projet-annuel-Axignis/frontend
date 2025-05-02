@@ -2,7 +2,6 @@
 
 import Footer from '@/components/Footer';
 import Header from '@/components/Header';
-import Drawer from '@/components/LeftMenu';
 
 export default function Home() {
   return (
@@ -11,9 +10,6 @@ export default function Home() {
       <div className="flex flex-1">
         <main className="flex-1 min-h-full bg-white dark:bg-gray-900 font-sans">
           <div className='flex'> {/* Suppression de flex-wrap et w-full */}
-            <div className="w-64"> {/* Largeur fixe pour le Drawer */}
-              <Drawer />
-            </div>
             <div className='flex-1'> {/* flex-1 pour occuper l'espace restant */}
               <section className="
                                 py-16
