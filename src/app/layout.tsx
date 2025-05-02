@@ -1,6 +1,4 @@
-import Footer from '@/components/Footer';
-import FooterIndicator from '@/components/FooterIndicator';
-import Header from '@/components/Header';
+import ThemeProvider from '@/components/ui/JoyThemeProvider';
 import I18nProvider from '@/i18n/I18nProvider';
 import { UserProvider } from '@/lib/contexts/UserContext';
 import '@fontsource/inter';
@@ -12,7 +10,6 @@ import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import { centuryGothic } from './fonts';
 import "./globals.css";
-import ThemeProvider from '@/components/ui/JoyThemeProvider';
 
 const montserrat = Montserrat({
   weight: ['300', '400', '500', '700'],
@@ -46,10 +43,7 @@ export default function RootLayout({
         <ThemeProvider>
           <I18nProvider>
             <UserProvider>
-              <Header />
               {children}
-              <FooterIndicator />
-              <Footer />
             </UserProvider>
           </I18nProvider>
         </ThemeProvider>
