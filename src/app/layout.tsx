@@ -12,6 +12,7 @@ import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import { centuryGothic } from './fonts';
 import "./globals.css";
+import ThemeProvider from '@/components/ui/JoyThemeProvider';
 
 const montserrat = Montserrat({
   weight: ['300', '400', '500', '700'],
@@ -42,14 +43,16 @@ export default function RootLayout({
       } as React.CSSProperties}
     >
       <body className="font-sans antialiased">
-        <I18nProvider>
-          <UserProvider>
-            <Header />
-            {children}
-            <FooterIndicator />
-            <Footer />
-          </UserProvider>
-        </I18nProvider>
+        <ThemeProvider>
+          <I18nProvider>
+            <UserProvider>
+              <Header />
+              {children}
+              <FooterIndicator />
+              <Footer />
+            </UserProvider>
+          </I18nProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
