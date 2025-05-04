@@ -3,10 +3,21 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
-  role: string;
   isEmailVerified: boolean;
   createdAt: string;
   updatedAt: string;
+  deletedAt: string | null;
+  role: UserRole;
+}
+
+export interface UserRole {
+  id: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  name: string;
+  type: string;
+  description: string;
 }
 
 export interface LoginCredentials {
@@ -21,16 +32,7 @@ export interface RegisterCredentials extends LoginCredentials {
 
 export interface AuthResponse {
   user: User;
-  tokens: {
-    access: {
-      token: string;
-      expires: string;
-    };
-    refresh: {
-      token: string;
-      expires: string;
-    };
-  };
+  accessToken: string;
 }
 
 export interface RefreshTokenResponse {

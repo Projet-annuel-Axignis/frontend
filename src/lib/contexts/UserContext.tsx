@@ -54,7 +54,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     try {
       const response = await authService.login({ email, password });
       setUser(response.user);
-      router.push('/dashboard'); // Rediriger vers le tableau de bord après connexion
+      router.push('/'); // Rediriger vers le tableau de bord après connexion
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
