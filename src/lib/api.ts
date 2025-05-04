@@ -74,8 +74,8 @@ export const authService = {
     const response = await api.post<AuthResponse>('/auth/login', credentials);
 
     // Sauvegarder les tokens
-    localStorage.setItem('accessToken', response.data.tokens.access.token);
-    localStorage.setItem('refreshToken', response.data.tokens.refresh.token);
+    localStorage.setItem('accessToken', response.data.accessToken);
+    localStorage.setItem('refreshToken', response.data.accessToken);
 
     return response.data;
   },
@@ -85,8 +85,8 @@ export const authService = {
     const response = await api.post<AuthResponse>('/auth/register', credentials);
 
     // Sauvegarder les tokens si l'inscription connecte aussi l'utilisateur
-    localStorage.setItem('accessToken', response.data.tokens.access.token);
-    localStorage.setItem('refreshToken', response.data.tokens.refresh.token);
+    localStorage.setItem('accessToken', response.data.accessToken);
+    localStorage.setItem('refreshToken', response.data.accessToken);
 
     return response.data;
   },
