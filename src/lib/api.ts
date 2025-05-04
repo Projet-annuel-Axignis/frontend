@@ -2,7 +2,7 @@ import { AuthResponse, LoginCredentials, RefreshTokenResponse, RegisterCredentia
 import axios from 'axios';
 
 // Créer une instance axios
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.axignis.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://api.axignis.com';
 
 // Créer l'instance axios pour les appels API
 export const api = axios.create({
@@ -82,11 +82,7 @@ export const authService = {
 
   // Inscription
   register: async (credentials: RegisterCredentials): Promise<AuthResponse> => {
-    const response = await api.post<AuthResponse>('/auth/register', credentials);
-
-    // Sauvegarder les tokens si l'inscription connecte aussi l'utilisateur
-    localStorage.setItem('accessToken', response.data.accessToken);
-    localStorage.setItem('refreshToken', response.data.accessToken);
+    const response = await api.post<AuthResponse>('/users', credentials);
 
     return response.data;
   },
