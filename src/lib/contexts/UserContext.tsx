@@ -10,9 +10,16 @@ interface UserContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (firstName: string, lastName: string, email: string, password: string) => Promise<void>;
+  register: (firstName: string, lastName: string, email: string, password: string, confirmPassword: string, role: string) => Promise<void>;
   logout: () => Promise<void>;
   error: string | null;
+}
+
+interface ErrorResponse {
+  status: number;
+  code: string;
+  message: string;
+  timestamp: string;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -55,8 +62,11 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       const response = await authService.login({ email, password });
       setUser(response.user);
       router.push('/'); // Rediriger vers le tableau de bord après connexion
-    } catch (err) {
-      if (err instanceof Error) {
+    } catch (err: unknown) {
+      const errorResponse = err as { response?: { data?: ErrorResponse } };
+      if (errorResponse.response?.data?.message) {
+        setError(errorResponse.response.data.message);
+      } else if (err instanceof Error) {
         setError(err.message);
       } else {
         setError('Une erreur est survenue lors de la connexion');
@@ -67,12 +77,12 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const register = async (firstName: string, lastName: string, email: string, password: string) => {
+  const register = async (firstName: string, lastName: string, email: string, password: string, confirmPassword: string, role: string) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await authService.register({ firstName, lastName, email, password });
+      const response = await authService.register({ firstName, lastName, email, password, confirmPassword, role });
       setUser(response.user);
       router.push('/dashboard'); // Rediriger vers le tableau de bord après inscription
     } catch (err) {
