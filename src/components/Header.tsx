@@ -6,7 +6,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import LanguageSelector from './LanguageSelector';
 
 export default function Header() {
   const { t } = useTranslation();
@@ -63,7 +62,7 @@ export default function Header() {
 
         {/* Navigation - Desktop */}
         <nav className="hidden md:flex items-center gap-6">
-          <Link
+          {/* <Link
             href="/mission"
             className={`
               font-medium 
@@ -86,7 +85,7 @@ export default function Header() {
             `}
           >
             {t('footer.services')}
-          </Link>
+          </Link> */}
           <Link
             href="/plans"
             className={`
@@ -165,16 +164,16 @@ export default function Header() {
           )}
 
           {/* Sélecteur de langue */}
-          <div className={isScrolled ? 'text-gray-800 dark:text-white' : 'text-white'}>
+          {/* <div className={isScrolled ? 'text-gray-800 dark:text-white' : 'text-white'}>
             <LanguageSelector />
-          </div>
+          </div> */}
         </nav>
 
         {/* Menu burger et langue - Mobile */}
         <div className="flex items-center gap-2 md:hidden">
-          <div className={isScrolled ? 'text-gray-800 dark:text-white' : 'text-white'}>
+          {/* <div className={isScrolled ? 'text-gray-800 dark:text-white' : 'text-white'}>
             <LanguageSelector />
-          </div>
+          </div> */}
 
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -225,7 +224,7 @@ export default function Header() {
             flex-col
             gap-4
           ">
-            <Link
+            {/* <Link
               href="/mission"
               className={`
                 text-gray-800 
@@ -256,7 +255,7 @@ export default function Header() {
               onClick={() => setIsMobileMenuOpen(false)}
             >
               {t('footer.services')}
-            </Link>
+            </Link> */}
             <Link
               href="/plans"
               className={`
