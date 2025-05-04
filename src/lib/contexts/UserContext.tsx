@@ -93,7 +93,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     try {
       await authService.logout();
       setUser(null);
-      router.push('/login'); // Rediriger vers la page de connexion
+      router.push('/connexion'); // Rediriger vers la page de connexion
     } catch (err) {
       console.error('Logout error:', err);
     } finally {

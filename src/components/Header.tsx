@@ -147,7 +147,7 @@ export default function Header() {
             </div>
           ) : (
             <Link
-              href="/login"
+              href="/connexion"
               className={`
                 px-4
                 py-2
@@ -330,7 +330,7 @@ export default function Header() {
               </>
             ) : (
               <Link
-                href="/login"
+                href="/connexion"
                 className="
                   font-medium 
                   p-2 

@@ -2,7 +2,7 @@
 
 import { useTranslation } from '@/i18n/useTranslation';
 import { useUser } from '@/lib/contexts/UserContext';
-import { Email, Lock, Person, Visibility, VisibilityOff } from '@mui/icons-material';
+import { Email, Lock, Visibility, VisibilityOff } from '@mui/icons-material';
 import {
   Alert,
   Box,
@@ -19,38 +19,26 @@ import {
   Typography,
   useMediaQuery
 } from '@mui/material';
-import { Form, Formik } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 import * as Yup from 'yup';
 
 // Schéma de validation
-const RegisterSchema = Yup.object().shape({
-  firstName: Yup.string()
-    .required('Prénom requis'),
-  lastName: Yup.string()
-    .required('Nom requis'),
+const LoginSchema = Yup.object().shape({
   email: Yup.string()
     .email('Email invalide')
     .required('Email requis'),
   password: Yup.string()
-    .min(8, 'Le mot de passe doit contenir au moins 8 caractères')
-    .matches(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-      'Le mot de passe doit contenir au moins une minuscule, une majuscule, un chiffre et un caractère spécial'
-    )
+    .min(6, 'Le mot de passe doit contenir au moins 6 caractères')
     .required('Mot de passe requis'),
-  confirmPassword: Yup.string()
-    .oneOf([Yup.ref('password')], 'Les mots de passe doivent correspondre')
-    .required('Confirmation du mot de passe requise'),
 });
 
-export default function RegisterPage() {
-  const { register, isLoading, error } = useUser();
+export default function LoginPage() {
+  const { login, isLoading, error } = useUser();
   const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Détection du mode sombre du système
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
@@ -84,10 +72,6 @@ export default function RegisterPage() {
     setShowPassword(!showPassword);
   };
 
-  const handleToggleConfirmPasswordVisibility = () => {
-    setShowConfirmPassword(!showConfirmPassword);
-  };
-
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -118,7 +102,7 @@ export default function RegisterPage() {
         </Box>
 
         {/* Contenu du formulaire */}
-        <Container maxWidth="md" sx={{
+        <Container maxWidth="sm" sx={{
           py: 8,
           minHeight: '100vh',
           display: 'flex',
@@ -140,10 +124,10 @@ export default function RegisterPage() {
           >
             <Box sx={{ textAlign: 'center', mb: 4 }}>
               <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
-                {t('auth.register')}
+                {t('auth.login')}
               </Typography>
               <Typography variant="body1" color="textSecondary">
-                {t('auth.register_instructions')}
+                {t('auth.login_instructions')}
               </Typography>
             </Box>
 
@@ -154,79 +138,14 @@ export default function RegisterPage() {
             )}
 
             <Formik
-              initialValues={{
-                firstName: '',
-                lastName: '',
-                email: '',
-                password: '',
-                confirmPassword: ''
-              }}
-              validationSchema={RegisterSchema}
+              initialValues={{ email: '', password: '' }}
+              validationSchema={LoginSchema}
               onSubmit={async (values) => {
-                await register(
-                  values.firstName,
-                  values.lastName,
-                  values.email,
-                  values.password
-                );
+                await login(values.email, values.password);
               }}
             >
               {({ errors, touched, handleChange, handleBlur, values }) => (
                 <Form>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexDirection: { xs: 'column', sm: 'row' },
-                      gap: 2,
-                      mb: 3
-                    }}
-                  >
-                    <Box sx={{ flex: 1 }}>
-                      <TextField
-                        fullWidth
-                        id="firstName"
-                        name="firstName"
-                        type="text"
-                        label={t('auth.first_name')}
-                        variant="outlined"
-                        value={values.firstName}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={Boolean(errors.firstName && touched.firstName)}
-                        helperText={(errors.firstName && touched.firstName) ? errors.firstName : ''}
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <Person color="action" />
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
-                    </Box>
-                    <Box sx={{ flex: 1 }}>
-                      <TextField
-                        fullWidth
-                        id="lastName"
-                        name="lastName"
-                        type="text"
-                        label={t('auth.last_name')}
-                        variant="outlined"
-                        value={values.lastName}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={Boolean(errors.lastName && touched.lastName)}
-                        helperText={(errors.lastName && touched.lastName) ? errors.lastName : ''}
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <Person color="action" />
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
-                    </Box>
-                  </Box>
-
                   <Box mb={3}>
                     <TextField
                       fullWidth
@@ -284,38 +203,33 @@ export default function RegisterPage() {
                     />
                   </Box>
 
-                  <Box mb={4}>
-                    <TextField
-                      fullWidth
-                      id="confirmPassword"
-                      name="confirmPassword"
-                      type={showConfirmPassword ? "text" : "password"}
-                      label={t('auth.confirm_password')}
-                      variant="outlined"
-                      value={values.confirmPassword}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      error={Boolean(errors.confirmPassword && touched.confirmPassword)}
-                      helperText={(errors.confirmPassword && touched.confirmPassword) ? errors.confirmPassword : ''}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <Lock color="action" />
-                          </InputAdornment>
-                        ),
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <IconButton
-                              onClick={handleToggleConfirmPasswordVisibility}
-                              edge="end"
-                              aria-label="toggle password visibility"
-                            >
-                              {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                            </IconButton>
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
+                  <Box mb={3} display="flex" justifyContent="space-between" alignItems="center">
+                    <Box display="flex" alignItems="center">
+                      <Field
+                        type="checkbox"
+                        name="remember"
+                        id="remember"
+                        className="h-4 w-4 mr-2"
+                      />
+                      <Typography variant="body2" component="label" htmlFor="remember">
+                        {t('auth.remember_me')}
+                      </Typography>
+                    </Box>
+                    <Link href="/forgot-password" passHref>
+                      <Typography
+                        variant="body2"
+                        component="span"
+                        color="primary"
+                        sx={{
+                          cursor: 'pointer',
+                          '&:hover': {
+                            textDecoration: 'underline'
+                          }
+                        }}
+                      >
+                        {t('auth.forgot_password')}
+                      </Typography>
+                    </Link>
                   </Box>
 
                   <Button
@@ -333,7 +247,7 @@ export default function RegisterPage() {
                     {isLoading ? (
                       <CircularProgress size={24} color="inherit" />
                     ) : (
-                      t('auth.register_button')
+                      t('auth.login_button')
                     )}
                   </Button>
                 </Form>
@@ -342,8 +256,8 @@ export default function RegisterPage() {
 
             <Box mt={4} textAlign="center">
               <Typography variant="body2" color="textSecondary">
-                {t('auth.already_have_account')}{' '}
-                <Link href="/login" passHref>
+                {t('auth.no_account')}{' '}
+                <Link href="/creation-compte" passHref>
                   <Typography
                     variant="body2"
                     component="span"
@@ -356,7 +270,7 @@ export default function RegisterPage() {
                       }
                     }}
                   >
-                    {t('auth.login_here')}
+                    {t('auth.create_account')}
                   </Typography>
                 </Link>
               </Typography>

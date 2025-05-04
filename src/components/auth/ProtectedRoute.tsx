@@ -20,13 +20,13 @@ export default function ProtectedRoute({
   useEffect(() => {
     // Si l'utilisateur n'est pas en cours de chargement et n'est pas authentifié, rediriger vers la connexion
     if (!isLoading && !isAuthenticated) {
-      router.push('/login');
+      router.push('/connexion');
     }
 
     // Si des rôles sont spécifiés et que l'utilisateur n'a pas le rôle requis, rediriger vers une page interdite
     if (!isLoading && isAuthenticated && allowedRoles && user) {
       if (!allowedRoles.includes(user.role)) {
-        router.push('/unauthorised');
+        router.push('/acces-non-autorise');
       }
     }
   }, [isLoading, isAuthenticated, router, user, allowedRoles]);
