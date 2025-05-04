@@ -58,7 +58,7 @@ api.interceptors.response.use(
         // En cas d'échec du rafraîchissement, déconnecter l'utilisateur
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
-        window.location.href = '/login';
+        window.location.href = '/connexion';
         return Promise.reject(refreshError);
       }
     }
