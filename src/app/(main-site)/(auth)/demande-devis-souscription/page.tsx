@@ -20,6 +20,7 @@ import {
   useMediaQuery
 } from '@mui/material';
 import { Form, Formik } from 'formik';
+import { MuiTelInput } from 'mui-tel-input';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -31,9 +32,14 @@ const RegisterSchema = Yup.object().shape({
     .required('Prénom requis'),
   lastName: Yup.string()
     .required('Nom requis'),
+  company: Yup.string()
+    .required('Entreprise requise'),
   email: Yup.string()
     .email('Email invalide')
     .required('Email requis'),
+  phone: Yup.string()
+    .matches(/^\+?[\d\s]{10,20}$/, 'Numéro de téléphone invalide')
+    .required('Numéro de téléphone requis'), // Validation pour le numéro de téléphone
   password: Yup.string()
     .min(8, 'Le mot de passe doit contenir au moins 8 caractères')
     .matches(
@@ -45,6 +51,13 @@ const RegisterSchema = Yup.object().shape({
     .oneOf([Yup.ref('password')], 'Les mots de passe doivent correspondre')
     .required('Confirmation du mot de passe requise'),
 });
+
+// Ajoutez cette fonction utilitaire pour ajouter un astérisque aux labels des champs obligatoires
+const requiredLabel = (label: string) => (
+  <span>
+    {label} <span style={{ color: '#f44336' }}>*</span>
+  </span>
+);
 
 export default function RegisterPage() {
   const { register, isLoading, error } = useUser();
@@ -157,7 +170,9 @@ export default function RegisterPage() {
               initialValues={{
                 firstName: '',
                 lastName: '',
+                company: '',
                 email: '',
+                phone: '', // Ajout du champ téléphone dans les valeurs initiales
                 password: '',
                 confirmPassword: ''
               }}
@@ -166,7 +181,9 @@ export default function RegisterPage() {
                 await register(
                   values.firstName,
                   values.lastName,
+                  values.company,
                   values.email,
+                  values.phone, // Ajout du champ téléphone dans la soumission
                   values.password
                 );
               }}
@@ -181,13 +198,15 @@ export default function RegisterPage() {
                       mb: 3
                     }}
                   >
+
+                    {/* Prénom */}
                     <Box sx={{ flex: 1 }}>
                       <TextField
                         fullWidth
                         id="firstName"
                         name="firstName"
                         type="text"
-                        label={t('auth.first_name')}
+                        label={requiredLabel(t('auth.first_name'))}
                         variant="outlined"
                         value={values.firstName}
                         onChange={handleChange}
@@ -203,13 +222,15 @@ export default function RegisterPage() {
                         }}
                       />
                     </Box>
+
+                    {/* Nom */}
                     <Box sx={{ flex: 1 }}>
                       <TextField
                         fullWidth
                         id="lastName"
                         name="lastName"
                         type="text"
-                        label={t('auth.last_name')}
+                        label={requiredLabel(t('auth.last_name'))}
                         variant="outlined"
                         value={values.lastName}
                         onChange={handleChange}
@@ -227,13 +248,37 @@ export default function RegisterPage() {
                     </Box>
                   </Box>
 
+                  {/* Entreprise */}
+                  <Box mb={3}>
+                    <TextField
+                      fullWidth
+                      id="company"
+                      name="company"
+                      type="text"
+                      label={requiredLabel(t('auth.company_name'))}
+                      variant="outlined"
+                      value={values.company}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(errors.company && touched.company)}
+                      helperText={(errors.company && touched.company) ? errors.company : ''}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Person color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  </Box>
+
                   <Box mb={3}>
                     <TextField
                       fullWidth
                       id="email"
                       name="email"
                       type="email"
-                      label={t('auth.email')}
+                      label={requiredLabel(t('auth.email'))}
                       variant="outlined"
                       value={values.email}
                       onChange={handleChange}
@@ -250,13 +295,30 @@ export default function RegisterPage() {
                     />
                   </Box>
 
+                  {/* Numéro de téléphone */}
+                  <Box mb={3}>
+                    <MuiTelInput
+                      fullWidth
+                      id="phone"
+                      name="phone"
+                      defaultCountry="FR"
+                      label={requiredLabel(t('auth.phone'))}
+                      value={values.phone}
+                      variant="outlined"
+                      onChange={(value) => handleChange({ target: { name: 'phone', value } })}
+                      onBlur={handleBlur}
+                      error={Boolean(errors.phone && touched.phone)}
+                      helperText={(errors.phone && touched.phone) ? errors.phone : ''}
+                    />
+                  </Box>
+
                   <Box mb={3}>
                     <TextField
                       fullWidth
                       id="password"
                       name="password"
                       type={showPassword ? "text" : "password"}
-                      label={t('auth.password')}
+                      label={requiredLabel(t('auth.password'))}
                       variant="outlined"
                       value={values.password}
                       onChange={handleChange}
@@ -290,7 +352,7 @@ export default function RegisterPage() {
                       id="confirmPassword"
                       name="confirmPassword"
                       type={showConfirmPassword ? "text" : "password"}
-                      label={t('auth.confirm_password')}
+                      label={requiredLabel(t('auth.confirm_password'))}
                       variant="outlined"
                       value={values.confirmPassword}
                       onChange={handleChange}
@@ -366,4 +428,4 @@ export default function RegisterPage() {
       </Box>
     </ThemeProvider>
   );
-} 
+}

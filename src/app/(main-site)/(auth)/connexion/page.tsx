@@ -257,7 +257,7 @@ export default function LoginPage() {
             <Box mt={4} textAlign="center">
               <Typography variant="body2" color="textSecondary">
                 {t('auth.no_account')}{' '}
-                <Link href="/creation-compte" passHref>
+                <Link href="/demande-devis-souscription" passHref>
                   <Typography
                     variant="body2"
                     component="span"

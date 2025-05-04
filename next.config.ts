@@ -17,6 +17,7 @@ const nextConfig: NextConfig = {
   },
   // Ajoute le trailing slash pour la compatibilité avec GitHub Pages
   trailingSlash: true,
+  transpilePackages: ['mui-tel-input'],
 };
 
 export default nextConfig;

@@ -312,7 +312,7 @@ export default function PlansPage() {
 
               <div className="px-8 pb-8">
                 <Link
-                  href="/creation-compte?p=autonomie"
+                  href="/demande-devis-souscription?p=autonomie"
                   className="
                     block
                     w-full
@@ -426,7 +426,7 @@ export default function PlansPage() {
 
               <div className="px-8 pb-8">
                 <Link
-                  href="/creation-compte?p=serenite"
+                  href="/demande-devis-souscription?p=serenite"
                   className="
                     block
                     w-full
@@ -983,7 +983,7 @@ export default function PlansPage() {
               gap-5
               justify-center
             ">
-            <Link href="/creation-compte?serenite" className="
+            <Link href="/demande-devis-souscription?serenite" className="
                 px-8 
                 py-4
                 bg-amber-500 
