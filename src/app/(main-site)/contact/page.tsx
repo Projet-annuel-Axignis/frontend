@@ -1,23 +1,23 @@
 'use client';
 
 import CtaContact from '@/components/CtaContact';
-import { useTranslation } from '@/i18n/useTranslation';
 import { useFormik } from 'formik';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import * as Yup from 'yup';
 
 const ContactForm = () => {
-  const { t } = useTranslation(['contact']);
+  const t = useTranslations();
 
   const validationSchema = Yup.object({
-    firstName: Yup.string().required(t('form.firstName.required')),
-    lastName: Yup.string().required(t('form.lastName.required')),
+    firstName: Yup.string().required(t('contact.form.firstName.required')),
+    lastName: Yup.string().required(t('contact.form.lastName.required')),
     email: Yup.string()
-      .email(t('form.email.invalid'))
-      .required(t('form.email.required')),
+      .email(t('contact.form.email.invalid'))
+      .required(t('contact.form.email.required')),
     phone: Yup.string(),
-    company: Yup.string().required(t('form.company.required')),
-    message: Yup.string().required(t('form.message.required')),
+    company: Yup.string().required(t('contact.form.company.required')),
+    message: Yup.string().required(t('contact.form.message.required')),
   });
 
   const formik = useFormik({
@@ -56,7 +56,7 @@ const ContactForm = () => {
 
         </div>
         <h1 className="relative z-10 text-4xl md:text-5xl font-title font-bold drop-shadow-xl">
-          {t('title')}
+          {t('contact.title')}
         </h1>
       </section>
 
@@ -70,7 +70,7 @@ const ContactForm = () => {
             {/* Ligne pour Prénom et Nom */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <fieldset className="fieldset">
-                <legend className="fieldset-legend">{t('form.firstName.placeholder')}</legend>
+                <legend className="fieldset-legend">{t('contact.form.firstName.placeholder')}</legend>
                 <input
                   id="firstName"
                   name="firstName"
@@ -90,7 +90,7 @@ const ContactForm = () => {
               </fieldset>
 
               <fieldset className="fieldset">
-                <legend className="fieldset-legend">{t('form.lastName.placeholder')}</legend>
+                <legend className="fieldset-legend">{t('contact.form.lastName.placeholder')}</legend>
                 <input
                   id="lastName"
                   name="lastName"
@@ -113,7 +113,7 @@ const ContactForm = () => {
             {/* Autres champs */}
             {(['email', 'phone', 'company', 'message'] as Array<keyof typeof formik.values>).map((field) => (
               <fieldset key={field} className="fieldset">
-                <legend className="fieldset-legend">{t(`form.${field}.placeholder`)}</legend>
+                <legend className="fieldset-legend">{t(`contact.form.${field}.placeholder`)}</legend>
                 {field !== 'message' ? (
                   <input
                     id={field}
@@ -153,7 +153,7 @@ const ContactForm = () => {
               disabled={formik.isSubmitting}
               className="w-full bg-axignis-primary hover:bg-axignis-secondary text-white py-2 px-4 rounded-lg shadow-md transition-all"
             >
-              {t('form.submit')}
+              {t('contact.form.submit')}
             </button>
           </form>
           <div className="hidden md:flex relative rounded-xl overflow-hidden items-center justify-end">

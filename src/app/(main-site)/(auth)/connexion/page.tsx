@@ -1,6 +1,5 @@
 'use client';
 
-import { useTranslation } from '@/i18n/useTranslation';
 import { useUser } from '@/lib/contexts/UserContext';
 import { Email, Lock, Visibility, VisibilityOff } from '@mui/icons-material';
 import {
@@ -20,6 +19,7 @@ import {
   useMediaQuery
 } from '@mui/material';
 import { Field, Form, Formik } from 'formik';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -37,7 +37,7 @@ const LoginSchema = Yup.object().shape({
 
 export default function LoginPage() {
   const { login, isLoading, error } = useUser();
-  const { t } = useTranslation();
+  const t = useTranslations();
   const [showPassword, setShowPassword] = useState(false);
 
   // Détection du mode sombre du système
@@ -124,7 +124,7 @@ export default function LoginPage() {
           >
             <Box sx={{ textAlign: 'center', mb: 4 }}>
               <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
-                {t('auth.login')}
+                {t('common.login')}
               </Typography>
               <Typography variant="body1" color="textSecondary">
                 {t('auth.login_instructions')}

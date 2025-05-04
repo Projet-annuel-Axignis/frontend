@@ -1,5 +1,4 @@
 import ThemeProvider from '@/components/ui/JoyThemeProvider';
-import I18nProvider from '@/i18n/I18nProvider';
 import { UserProvider } from '@/lib/contexts/UserContext';
 import '@fontsource/inter';
 import '@fontsource/roboto/300.css';
@@ -7,6 +6,7 @@ import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import type { Metadata } from "next";
+import { NextIntlClientProvider } from 'next-intl';
 import { Montserrat } from "next/font/google";
 import { centuryGothic } from './fonts';
 import "./globals.css";
@@ -41,11 +41,11 @@ export default function RootLayout({
     >
       <body className="font-sans antialiased">
         <ThemeProvider>
-          <I18nProvider>
+          <NextIntlClientProvider>
             <UserProvider>
               {children}
             </UserProvider>
-          </I18nProvider>
+          </NextIntlClientProvider>
         </ThemeProvider>
       </body>
     </html>
