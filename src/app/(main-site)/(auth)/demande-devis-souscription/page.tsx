@@ -1,6 +1,5 @@
 'use client';
 
-import { useTranslation } from '@/i18n/useTranslation';
 import { useUser } from '@/lib/contexts/UserContext';
 import { Email, Lock, Person, Visibility, VisibilityOff } from '@mui/icons-material';
 import {
@@ -21,6 +20,7 @@ import {
 } from '@mui/material';
 import { Form, Formik } from 'formik';
 import { MuiTelInput } from 'mui-tel-input';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -61,7 +61,7 @@ const requiredLabel = (label: string) => (
 
 export default function RegisterPage() {
   const { register, isLoading, error } = useUser();
-  const { t } = useTranslation();
+  const t = useTranslations();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 

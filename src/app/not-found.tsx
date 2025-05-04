@@ -1,12 +1,12 @@
 "use client"
 import Footer from '@/components/Footer';
 import Header from '@/components/Header';
-import { useTranslation } from '@/i18n/useTranslation';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
 
 export default function NotFound() {
-  const { t } = useTranslation("common")
+  const t = useTranslations("common")
   return (
     <>
       <Header />

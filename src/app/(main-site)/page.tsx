@@ -1,13 +1,11 @@
-'use client';
-
 import CtaContact from '@/components/CtaContact';
 import ServiceCard from '@/components/ServiceCard';
-import { useTranslation } from '@/i18n/useTranslation';
+import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
 import Link from 'next/link';
 
-export default function Home() {
-  const { t } = useTranslation();
+export default async function Home() {
+  const t = await getTranslations();
 
   // Définition des données des services
   const services = [
@@ -159,7 +157,7 @@ export default function Home() {
                 hover:shadow-amber-500/30
                 tracking-wide
               ">
-                {t('homepage.cta.our_services')}
+                {t('homepage.hero.cta.our_services')}
               </a>
               <a href="/contact" className="
                 px-8 
@@ -176,7 +174,7 @@ export default function Home() {
                 tracking-wide
                 font-medium
               ">
-                {t('homepage.cta.contact_us')}
+                {t('homepage.hero.cta.contact_us')}
               </a>
             </div>
           </div>

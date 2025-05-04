@@ -1,8 +1,8 @@
-import { useTranslation } from '@/i18n/useTranslation';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
 const CtaContact = () => {
-  const { t } = useTranslation('common');
+  const t = useTranslations();
   return (
 
     <section id="contact" className="
@@ -24,14 +24,14 @@ const CtaContact = () => {
               md:text-4xl
               mb-6
             ">
-          {t('homepage.contact.title')}
+          {t('homepage.cta_contact.title')}
         </h2>
         <p className="
               text-xl
               mb-10
               opacity-90
             ">
-          {t('homepage.contact.subtitle')}
+          {t('homepage.cta_contact.subtitle')}
         </p>
         <div className="
               flex
@@ -53,7 +53,7 @@ const CtaContact = () => {
                 duration-300
                 shadow-md
               ">
-            {t('homepage.contact.contact_button')}
+            {t('homepage.cta_contact.contact_button')}
           </Link>
           <a href="tel:+33612345678" className="
                 px-8
@@ -68,7 +68,7 @@ const CtaContact = () => {
                 transition-all
                 duration-300
               ">
-            {t('homepage.contact.phone')}
+            {t('homepage.cta_contact.phone')}
           </a>
         </div>
       </div>

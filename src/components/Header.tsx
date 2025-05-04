@@ -1,14 +1,14 @@
 'use client';
 
-import { useTranslation } from '@/i18n/useTranslation';
 import { useUser } from '@/lib/contexts/UserContext';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 export default function Header() {
-  const { t } = useTranslation();
+  const t = useTranslations();
   const { user, isAuthenticated, logout } = useUser();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -72,7 +72,7 @@ export default function Header() {
               ${isActive('/mission') ? 'active' : ''}
             `}
           >
-            {t('footer.mission')}
+            {t('common.mission')}
           </Link>
           <Link
             href="/services"
@@ -84,7 +84,7 @@ export default function Header() {
               ${isActive('/services') ? 'active' : ''}
             `}
           >
-            {t('footer.services')}
+            {t('common.services')}
           </Link> */}
           <Link
             href="/plans"
@@ -93,10 +93,10 @@ export default function Header() {
               hover:text-[var(--color-axignis-primary)] 
               transition-colors
               ${isScrolled ? 'text-gray-800 dark:text-white' : 'text-white'}
-              ${isActive('/plans') ? 'active' : ''}
+              ${isActive('/plans/') ? 'active' : ''}
             `}
           >
-            {t('footer.plans')}
+            {t('common.plans')}
           </Link>
           <Link
             href="/contact"
@@ -108,7 +108,7 @@ export default function Header() {
               ${isActive('/contact/') ? 'active' : ''}
             `}
           >
-            {t('footer.contact')}
+            {t('common.contact')}
           </Link>
 
           {/* Bouton Login/Logout */}
@@ -124,7 +124,7 @@ export default function Header() {
                   ${isActive('/dashboard') ? 'active' : ''}
                 `}
               >
-                {user?.firstName || t('dashboard.title')}
+                {user?.firstName || t('common.profile')}
               </Link>
               <button
                 onClick={handleLogout}
@@ -141,7 +141,7 @@ export default function Header() {
                   text-sm
                 `}
               >
-                {t('auth.logout')}
+                {t('common.logout')}
               </button>
             </div>
           ) : (
@@ -159,7 +159,7 @@ export default function Header() {
                 text-sm
               `}
             >
-              {t('auth.login')}
+              {t('common.login')}
             </Link>
           )}
 
@@ -238,7 +238,7 @@ export default function Header() {
               `}
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              {t('footer.mission')}
+              {t('common.mission')}
             </Link>
             <Link
               href="/services"
@@ -254,7 +254,7 @@ export default function Header() {
               `}
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              {t('footer.services')}
+              {t('common.services')}
             </Link> */}
             <Link
               href="/plans"
@@ -270,7 +270,7 @@ export default function Header() {
               `}
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              {t('footer.plans')}
+              {t('common.plans')}
             </Link>
             <Link
               href="/contact"
@@ -286,7 +286,7 @@ export default function Header() {
               `}
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              {t('footer.contact')}
+              {t('common.contact')}
             </Link>
 
             {/* Bouton Login/Logout Mobile */}
@@ -306,7 +306,7 @@ export default function Header() {
                   `}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  {user?.firstName || t('dashboard.title')}
+                  {user?.firstName || t('common.profile')}
                 </Link>
                 <button
                   onClick={() => {
@@ -323,7 +323,7 @@ export default function Header() {
                     rounded
                   "
                 >
-                  {t('auth.logout')}
+                  {t('common.logout')}
                 </button>
               </>
             ) : (
@@ -340,7 +340,7 @@ export default function Header() {
                 "
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                {t('auth.login')}
+                {t('common.login')}
               </Link>
             )}
           </div>

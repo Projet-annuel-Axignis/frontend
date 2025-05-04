@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import createNextIntlPlugin from 'next-intl/plugin';
 
 // Récupère le préfixe de chemin pour GitHub Pages
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
@@ -19,5 +20,6 @@ const nextConfig: NextConfig = {
   trailingSlash: true,
   transpilePackages: ['mui-tel-input'],
 };
+const withNextIntl = createNextIntlPlugin();
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

@@ -1,14 +1,27 @@
 {
-  "welcome": "Bienvenue sur notre application",
-  "home": "Accueil",
-  "about": "À propos",
-  "contact": "Contact",
-  "settings": "Paramètres",
-  "language": "Langue",
-  "login": "Connexion",
-  "logout": "Déconnexion",
-  "profile": "Profil",
-  "learn_more": "En savoir plus",
+  "common": {
+    "yes": "Oui",
+    "no": "Non",
+    "go_back": "Retour",
+    "home": "Accueil",
+    "loading": "Chargement...",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "actions": "Actions",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "view": "Voir",
+    "about": "À propos",
+    "contact": "Contact",
+    "settings": "Paramètres",
+    "language": "Langue",
+    "login": "Connexion",
+    "logout": "Déconnexion",
+    "profile": "Profil",
+    "mission": "Notre Mission",
+    "services": "Services",
+    "plans": "Plans"
+  },
   "error404": {
     "title": "Oups ! Page non trouvée",
     "subtitle": "La page que vous recherchez semble introuvable ou a été déplacée.",
@@ -25,11 +38,11 @@
       "specialist": "Spécialiste en",
       "fire_safety": "sécurité incendie",
       "and": "et",
-      "building_accessibility": "accessibilité des bâtiments"
-    },
-    "cta": {
-      "our_services": "Nos Services",
-      "contact_us": "Contactez-nous"
+      "building_accessibility": "accessibilité des bâtiments",
+      "cta": {
+        "our_services": "Nos Services",
+        "contact_us": "Contactez-nous"
+      }
     },
     "mission": {
       "title": "Notre Mission",
@@ -52,7 +65,8 @@
           "title": "Base Technique",
           "description": "Centralisation sécurisée des informations techniques, notices d'utilisation et certificats des équipements de sécurité."
         }
-      ]
+      ],
+      "learn_more": "En savoir plus"
     },
     "plans": {
       "title": "Découvrez nos forfaits adaptés à vos besoins",
@@ -65,20 +79,16 @@
       "description": "Fondateur et expert en sécurité incendie et accessibilité, Loïc Rome accompagne depuis 2017 les entreprises dans leurs démarches réglementaires avec passion et expertise.",
       "linkedin": "Voir le profil LinkedIn"
     },
-    "contact": {
+    "cta_contact": {
       "title": "Prêt à sécuriser votre établissement?",
       "subtitle": "Contactez-nous dès aujourd'hui pour une consultation gratuite et sans engagement.",
       "contact_button": "Nous contacter",
-      "phone": "+33 6 12 34 56 78"
+      "phone": "06 12 34 56 78"
     }
   },
   "footer": {
     "description": "Spécialiste en sécurité incendie et accessibilité des bâtiments. Notre expertise au service de votre sécurité.",
     "quick_links": "Liens Rapides",
-    "mission": "Notre Mission",
-    "services": "Services",
-    "plans": "Plans",
-    "contact": "Contact",
     "legal": "Mentions Légales",
     "address": "123 Avenue de la République, 75011 Paris, France",
     "copyright": "Tous droits réservés."
@@ -88,21 +98,7 @@
     "english": "Anglais",
     "select_language": "Sélectionner la langue"
   },
-  "common": {
-    "yes": "Oui",
-    "no": "Non",
-    "go_back": "Retour",
-    "home": "Accueil",
-    "loading": "Chargement...",
-    "save": "Enregistrer",
-    "cancel": "Annuler",
-    "actions": "Actions",
-    "delete": "Supprimer",
-    "edit": "Modifier",
-    "view": "Voir"
-  },
   "auth": {
-    "login": "Connexion",
     "login_instructions": "Connectez-vous à votre compte pour accéder à votre tableau de bord",
     "email": "Adresse e-mail",
     "password": "Mot de passe",
@@ -132,22 +128,45 @@
     "already_have_account": "Vous avez déjà un compte ?",
     "login_here": "Connectez-vous ici",
 
-    "logout": "Déconnexion",
     "logout_confirm": "Êtes-vous sûr de vouloir vous déconnecter ?",
     "password_reset": "Réinitialisation du mot de passe",
     "password_reset_instructions": "Entrez votre adresse e-mail pour recevoir un lien de réinitialisation"
   },
-  "dashboard": {
-    "welcome": "Bienvenue",
-    "welcome_message": "Voici votre tableau de bord personnalisé",
-    "logout": "Déconnexion",
-    "activity": "Activité récente",
-    "no_activity": "Aucune activité récente",
-    "activity_empty_message": "Vous n'avez aucune activité à afficher pour le moment",
-    "user_id": "ID Utilisateur",
-    "role": "Rôle",
-    "email_verified": "Email vérifié",
-    "joined": "Inscrit le",
-    "edit_profile": "Modifier le profil"
+  "contact": {
+    "title": "Contactez-nous",
+    "form": {
+      "title": "Formulaire de contact",
+      "firstName": {
+        "label": "Prénom",
+        "placeholder": "Entrez votre prénom",
+        "required": "Le prénom est requis"
+      },
+      "lastName": {
+        "label": "Nom",
+        "placeholder": "Entrez votre nom",
+        "required": "Le nom est requis"
+      },
+      "email": {
+        "label": "Email",
+        "placeholder": "Entrez votre email",
+        "required": "L'email est requis",
+        "invalid": "Veuillez entrer une adresse email valide"
+      },
+      "phone": {
+        "label": "Téléphone",
+        "placeholder": "Entrez votre numéro de téléphone"
+      },
+      "company": {
+        "label": "Société",
+        "placeholder": "Entrez le nom de votre société",
+        "required": "Le nom de la société est requis"
+      },
+      "message": {
+        "label": "Message",
+        "placeholder": "Entrez votre message",
+        "required": "Le message est requis"
+      },
+      "submit": "Envoyer"
+    }
   }
 }
