@@ -314,8 +314,7 @@ export default function Header() {
                     handleLogout();
                     setIsMobileMenuOpen(false);
                   }}
-                  className="
-                    text-gray-800 
+                  className=" 
                     dark:text-white 
                     font-medium 
                     p-2 
