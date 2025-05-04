@@ -111,7 +111,7 @@ export const authService = {
   // Récupérer l'utilisateur courant
   getCurrentUser: async () => {
     try {
-      const response = await api.get('/auth/me');
+      const response = await api.get('/auth/profile');
       return response.data;
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
