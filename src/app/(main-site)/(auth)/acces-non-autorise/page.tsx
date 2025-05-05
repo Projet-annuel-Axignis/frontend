@@ -1,13 +1,13 @@
 'use client';
 
-import { useTranslation } from '@/i18n/useTranslation';
 import { Lock } from '@mui/icons-material';
 import { Box, Button, Typography } from '@mui/joy';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 export default function UnauthorisedPage() {
-  const { t } = useTranslation();
+  const t = useTranslations();
   const router = useRouter();
 
   return (
@@ -65,11 +65,11 @@ export default function UnauthorisedPage() {
         </Typography>
 
         <Typography level="h3" className="text-xl mb-2 text-gray-900 dark:text-white">
-          {t('error_unauthorised.unauthorised_title')}
+          {t('error_pages.error_unauthorised.unauthorised_title')}
         </Typography>
 
         <Typography className="mb-8 text-gray-600 dark:text-gray-400">
-          {t('error_unauthorised.unauthorised_message')}
+          {t('error_pages.error_unauthorised.unauthorised_message')}
         </Typography>
 
         <Box className="flex flex-col sm:flex-row gap-4 justify-center mt-5">

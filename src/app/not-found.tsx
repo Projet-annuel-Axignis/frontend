@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 export default function NotFound() {
-  const t = useTranslations("common")
+  const t = useTranslations()
   return (
     <>
       <Header />
@@ -24,16 +24,16 @@ export default function NotFound() {
           />
 
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-            {t("error404.title")}
+            {t("error_pages.error404.title")}
           </h1>
 
           <p className="text-lg text-gray-600 mb-8">
-            {t("error404.subtitle")}
+            {t("error_pages.error404.subtitle")}
           </p>
 
           <Link href="/">
             <button className="bg-axignis-primary hover:bg-axignis-secondary text-white font-semibold px-6 py-3 rounded-lg shadow-md transition">
-              {t("error404.button_back")}
+              {t("error_pages.error404.button_back")}
             </button>
           </Link>
         </div>
