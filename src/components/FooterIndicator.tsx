@@ -1,7 +1,8 @@
 'use client';
 
 import { KeyboardArrowDown } from '@mui/icons-material';
-import { Box, Tooltip } from '@mui/material';
+import Tooltip from '@mui/joy/Tooltip';
+import { Box } from '@mui/material';
 import { useEffect, useState } from 'react';
 
 export default function FooterIndicator() {
@@ -57,7 +58,7 @@ export default function FooterIndicator() {
           borderTopLeftRadius: '25px',
           borderTopRightRadius: '25px',
           backgroundColor: 'black',
-          display: 'flex',
+          display: { xs: 'none', md: 'flex' }, // Hide on xs and sm screens, show on md and up
           justifyContent: 'center',
           alignItems: 'center',
           cursor: 'pointer',
