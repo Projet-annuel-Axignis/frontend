@@ -170,5 +170,29 @@
       },
       "submit": "Envoyer"
     }
+  },
+  "errors": {
+    "generic": "Une erreur inattendue est survenue",
+    "api": {
+      "invalid_credentials": "Identifiants incorrects. Veuillez vérifier votre email et mot de passe.",
+      "user_not_found": "Utilisateur non trouvé.",
+      "email_already_exists": "Cette adresse email est déjà utilisée.",
+      "invalid_token": "Votre session a expiré. Veuillez vous reconnecter.",
+      "access_denied": "Accès refusé. Vous n'avez pas les droits nécessaires.",
+      "validation_error": "Certaines informations saisies sont incorrectes.",
+      "server_error": "Une erreur s'est produite sur nos serveurs. Veuillez réessayer plus tard.",
+      "password_too_weak": "Le mot de passe est trop faible. Il doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.",
+      "passwords_dont_match": "Les mots de passe ne correspondent pas.",
+      "registration_failed": "L'inscription a échoué. Veuillez réessayer ultérieurement.",
+      "invalid_dto": "Certaines informations saisies sont incorrectes. Veuillez vérifier tous les champs.",
+      "validation_failed": "La validation a échoué. Veuillez vérifier vos informations.",
+      "bad_request": "Requête invalide. Veuillez vérifier les informations saisies.",
+      "unauthorized": "Accès non autorisé. Veuillez vous connecter.",
+      "forbidden": "Accès refusé. Vous n'avez pas les droits nécessaires.",
+      "not_found": "Ressource non trouvée.",
+      "method_not_allowed": "Méthode non autorisée.",
+      "conflict": "Conflit avec l'état actuel de la ressource.",
+      "internal_server_error": "Erreur interne du serveur. Veuillez réessayer ultérieurement."
+    }
   }
 }
