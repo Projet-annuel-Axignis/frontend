@@ -1,6 +1,6 @@
 'use client';
 
-import { useUser } from '@/lib/contexts/UserContext';
+import { useUser } from '@/app/_providers';
 import { Email, Lock, Visibility, VisibilityOff } from '@mui/icons-material';
 import {
   Alert,

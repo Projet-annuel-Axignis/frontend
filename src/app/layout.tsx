@@ -1,5 +1,5 @@
+import { Providers } from '@/app/_providers';
 import ThemeProvider from '@/components/ui/JoyThemeProvider';
-import { UserProvider } from '@/lib/contexts/UserContext';
 import '@fontsource/inter';
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
@@ -42,9 +42,9 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         <ThemeProvider>
           <NextIntlClientProvider>
-            <UserProvider>
+            <Providers>
               {children}
-            </UserProvider>
+            </Providers>
           </NextIntlClientProvider>
         </ThemeProvider>
       </body>
