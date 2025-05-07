@@ -161,7 +161,15 @@ export default function RegisterPage() {
             </Box>
 
             {error && (
-              <Alert severity="error" sx={{ mb: 3 }}>
+              <Alert
+                severity="error"
+                sx={{
+                  mb: 3,
+                  '& .MuiAlert-message': {
+                    fontWeight: 'medium'
+                  }
+                }}
+              >
                 {error}
               </Alert>
             )}
