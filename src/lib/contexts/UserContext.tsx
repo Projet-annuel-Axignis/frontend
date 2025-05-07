@@ -1,7 +1,7 @@
 'use client';
 
-import { authService } from '@/lib/api';
 import { getErrorMessage } from '@/lib/utils';
+import authService from '@/services/authService';
 import { User } from '@/types/auth';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
