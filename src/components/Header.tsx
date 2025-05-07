@@ -1,6 +1,6 @@
 'use client';
 
-import { useUser } from '@/lib/contexts/UserContext';
+import { useUser } from '@/app/_providers';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';

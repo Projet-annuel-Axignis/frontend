@@ -1,6 +1,6 @@
 'use client';
 
-import { useUser } from '@/lib/contexts/UserContext';
+import { useUser } from '@/app/_providers';
 import { Box, CircularProgress } from '@mui/joy';
 import { useRouter } from 'next/navigation';
 import { ReactNode, useEffect } from 'react';
@@ -25,7 +25,7 @@ export default function ProtectedRoute({
 
     // Si des rôles sont spécifiés et que l'utilisateur n'a pas le rôle requis, rediriger vers une page interdite
     if (!isLoading && isAuthenticated && allowedRoles && user) {
-      if (!allowedRoles.includes(user.role)) {
+      if (!allowedRoles.includes(user.role.name)) {
         router.push('/acces-non-autorise');
       }
     }
@@ -51,7 +51,7 @@ export default function ProtectedRoute({
   }
 
   // Si des rôles sont requis et que l'utilisateur n'a pas le bon rôle, ne pas afficher le contenu
-  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+  if (allowedRoles && user && !allowedRoles.includes(user.role.name)) {
     return null;
   }
 
