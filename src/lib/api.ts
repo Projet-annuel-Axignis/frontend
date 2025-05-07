@@ -1,9 +1,25 @@
+/**
+ * Configuration de l'API et des intercepteurs pour les requêtes HTTP
+ * 
+ * Ce module configure une instance axios avec des intercepteurs pour :
+ * - Ajouter automatiquement les tokens d'authentification aux requêtes
+ * - Gérer le rafraîchissement des tokens expirés
+ * - Transmettre correctement les erreurs aux gestionnaires
+ */
 import axios from 'axios';
 
-// Créer une instance axios
+/**
+ * URL de base de l'API
+ * Récupérée depuis les variables d'environnement ou utilise une valeur par défaut
+ */
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://api.axignis.com';
 
-// Créer l'instance axios pour les appels API
+/**
+ * Instance axios préconfigurée pour les appels API
+ * 
+ * Cette instance est utilisée pour toutes les requêtes API de l'application
+ * et bénéficie des intercepteurs pour la gestion des tokens.
+ */
 export const api = axios.create({
   baseURL: API_URL,
   headers: {
@@ -11,7 +27,12 @@ export const api = axios.create({
   },
 });
 
-// Intercepteur pour ajouter le token JWT à chaque requête
+/**
+ * Intercepteur pour ajouter automatiquement le token JWT à chaque requête
+ * 
+ * Vérifie la présence d'un token d'accès dans le localStorage et l'ajoute 
+ * à l'en-tête Authorization des requêtes sortantes.
+ */
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('accessToken');
@@ -23,7 +44,16 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Intercepteur pour rafraîchir le token si nécessaire
+/**
+ * Intercepteur pour gérer automatiquement les tokens expirés
+ * 
+ * Si une requête échoue avec un code 401 (non autorisé), cet intercepteur :
+ * 1. Tente de rafraîchir le token d'accès
+ * 2. Relance la requête originale avec le nouveau token si le rafraîchissement réussit
+ * 3. Propage l'erreur jusqu'au gestionnaire d'erreurs si le rafraîchissement échoue
+ * 
+ * L'importation dynamique du service d'authentification évite les dépendances circulaires.
+ */
 api.interceptors.response.use(
   (response) => response,
   async (error) => {

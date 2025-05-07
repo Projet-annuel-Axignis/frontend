@@ -5,9 +5,23 @@ import axios from 'axios';
 // L'URL de l'API, récupérée depuis les variables d'environnement ou valeur par défaut
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://api.axignis.com';
 
-// Service d'authentification
+/**
+ * Service d'authentification
+ * 
+ * Ensemble de fonctions pour gérer l'authentification des utilisateurs
+ * et les opérations associées (connexion, inscription, déconnexion, etc.)
+ */
 const authService = {
-  // Connexion
+  /**
+   * Authentifie un utilisateur avec ses identifiants
+   * 
+   * Envoie une requête POST à l'endpoint /auth/login et stocke 
+   * les tokens d'authentification dans le localStorage si la connexion réussit.
+   * 
+   * @param credentials - Objet contenant l'email et le mot de passe de l'utilisateur
+   * @returns Promesse contenant les données de l'utilisateur et le token d'accès
+   * @throws Erreur en cas d'échec de connexion (identifiants incorrects, serveur indisponible, etc.)
+   */
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
     try {
       const response = await api.post<AuthResponse>('/auth/login', credentials);
@@ -23,7 +37,16 @@ const authService = {
     }
   },
 
-  // Inscription
+  /**
+   * Inscrit un nouvel utilisateur
+   * 
+   * Envoie une requête POST à l'endpoint /users avec les informations du nouvel utilisateur.
+   * Si l'inscription réussit et que des tokens sont fournis, ils sont stockés dans le localStorage.
+   * 
+   * @param credentials - Objet contenant les informations du nouvel utilisateur (nom, prénom, email, mot de passe, etc.)
+   * @returns Promesse contenant les données de l'utilisateur créé et le token d'accès (si fourni)
+   * @throws Erreur en cas d'échec d'inscription (email déjà utilisé, validation échouée, etc.)
+   */
   register: async (credentials: RegisterCredentials): Promise<AuthResponse> => {
     try {
       const response = await api.post<AuthResponse>('/users', credentials);
@@ -41,7 +64,14 @@ const authService = {
     }
   },
 
-  // Déconnexion
+  /**
+   * Déconnecte l'utilisateur actuellement authentifié
+   * 
+   * Envoie une requête POST à l'endpoint /auth/logout avec le refresh token,
+   * puis supprime les tokens du localStorage.
+   * 
+   * @returns Promesse vide qui se résout lorsque la déconnexion est terminée
+   */
   logout: async (): Promise<void> => {
     const refreshToken = localStorage.getItem('refreshToken');
 
@@ -58,7 +88,14 @@ const authService = {
     localStorage.removeItem('refreshToken');
   },
 
-  // Récupérer l'utilisateur courant
+  /**
+   * Récupère les informations de l'utilisateur actuellement authentifié
+   * 
+   * Envoie une requête GET à l'endpoint /auth/profile en utilisant le token d'accès
+   * stocké dans le localStorage.
+   * 
+   * @returns Promesse contenant les données de l'utilisateur ou null si non authentifié
+   */
   getCurrentUser: async () => {
     try {
       const response = await api.get('/auth/profile');
@@ -69,12 +106,27 @@ const authService = {
     }
   },
 
-  // Vérifier si l'utilisateur est connecté
+  /**
+   * Vérifie si un utilisateur est actuellement authentifié
+   * 
+   * Cette fonction vérifie simplement la présence d'un token d'accès dans le localStorage.
+   * Elle ne garantit pas que le token est valide ou non expiré.
+   * 
+   * @returns true si un token d'accès est présent dans le localStorage, false sinon
+   */
   isAuthenticated: (): boolean => {
     return !!localStorage.getItem('accessToken');
   },
 
-  // Rafraîchir le token
+  /**
+   * Rafraîchit le token d'accès à l'aide du refresh token
+   * 
+   * Envoie une requête POST à l'endpoint /auth/refresh-token avec le refresh token
+   * stocké dans le localStorage pour obtenir un nouveau token d'accès.
+   * 
+   * @returns Promesse contenant le nouveau token d'accès
+   * @throws Erreur si le refresh token est invalide ou expiré, avec redirection vers la page de connexion
+   */
   refreshToken: async (): Promise<string> => {
     try {
       const refreshToken = localStorage.getItem('refreshToken');

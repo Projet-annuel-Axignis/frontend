@@ -2,6 +2,25 @@ import { ApiError } from '@/types/auth';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
+/**
+ * Utilitaire pour combiner des classes CSS de façon conditionnelle
+ * 
+ * Cette fonction utilise clsx et twMerge pour :
+ * - Combiner plusieurs classes ou expressions conditionnelles
+ * - Résoudre automatiquement les conflits entre classes Tailwind
+ * - Supprimer les doublons et gérer intelligemment les variantes
+ * 
+ * @example
+ * // Classes de base + conditionnelles + props externes
+ * cn('px-2 py-1', isActive && 'bg-blue-500', className)
+ * 
+ * // Résolution automatique des conflits
+ * cn('text-red-500', override && 'text-blue-500')
+ * // → 'text-blue-500' (quand override est true)
+ * 
+ * @param inputs - Liste de classes CSS ou d'expressions conditionnelles
+ * @returns Chaîne de classes CSS optimisée et fusionnée
+ */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
