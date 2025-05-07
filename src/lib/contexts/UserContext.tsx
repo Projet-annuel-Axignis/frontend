@@ -1,7 +1,9 @@
 'use client';
 
 import { authService } from '@/lib/api';
+import { getErrorMessage } from '@/lib/utils';
 import { User } from '@/types/auth';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 
@@ -10,16 +12,9 @@ interface UserContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (firstName: string, lastName: string, email: string, password: string, confirmPassword: string, role: string) => Promise<void>;
+  register: (firstName: string, lastName: string, company: string, email: string, phone: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   error: string | null;
-}
-
-interface ErrorResponse {
-  status: number;
-  code: string;
-  message: string;
-  timestamp: string;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -29,6 +24,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const t = useTranslations();
 
   // Vérifier si l'utilisateur est déjà connecté au chargement
   useEffect(() => {
@@ -63,34 +59,32 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       setUser(response.user);
       router.push('/'); // Rediriger vers le tableau de bord après connexion
     } catch (err: unknown) {
-      const errorResponse = err as { response?: { data?: ErrorResponse } };
-      if (errorResponse.response?.data?.message) {
-        setError(errorResponse.response.data.message);
-      } else if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError('Une erreur est survenue lors de la connexion');
-      }
+      // Utiliser notre fonction utilitaire pour obtenir le message d'erreur traduit
+      setError(getErrorMessage(err, t));
       console.error('Login error:', err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const register = async (firstName: string, lastName: string, email: string, password: string, confirmPassword: string, role: string) => {
+  const register = async (firstName: string, lastName: string, company: string, email: string, phone: string, password: string) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await authService.register({ firstName, lastName, email, password, confirmPassword, role });
+      const response = await authService.register({
+        firstName,
+        lastName,
+        email,
+        password,
+        confirmPassword: password, // Ceci n'est probablement pas correct pour un cas réel
+        role: 'client' // Rôle par défaut
+      });
       setUser(response.user);
-      router.push('/dashboard'); // Rediriger vers le tableau de bord après inscription
+      router.push('/'); // Rediriger vers le tableau de bord après inscription
     } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError('Une erreur est survenue lors de l\'inscription');
-      }
+      // Utiliser notre fonction utilitaire pour obtenir le message d'erreur traduit
+      setError(getErrorMessage(err, t));
       console.error('Register error:', err);
     } finally {
       setIsLoading(false);

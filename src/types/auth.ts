@@ -35,6 +35,7 @@ export interface RegisterCredentials extends LoginCredentials {
 export interface AuthResponse {
   user: User;
   accessToken: string;
+  refreshToken?: string;
 }
 
 export interface RefreshTokenResponse {
@@ -42,4 +43,25 @@ export interface RefreshTokenResponse {
     token: string;
     expires: string;
   };
+}
+
+// Interface pour la structure d'erreur de validation dans un champ
+export interface ValidationFieldError {
+  field: string;
+  messages: string[];
+  value: any;
+}
+
+// Interface pour les erreurs de validation (utilisée dans 'details')
+export interface ValidationErrorDetails {
+  errors: ValidationFieldError[];
+}
+
+// Interface pour les erreurs API
+export interface ApiError {
+  status: number;
+  code: string;
+  message: string;
+  timestamp: number;
+  details?: any; // Champ optionnel pour les détails supplémentaires d'erreur
 } 

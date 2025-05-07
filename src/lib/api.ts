@@ -63,6 +63,8 @@ api.interceptors.response.use(
       }
     }
 
+    // Transmettre l'erreur telle quelle (avec ses données d'erreur) pour être traitée 
+    // par notre utilitaire getErrorMessage
     return Promise.reject(error);
   }
 );
@@ -71,20 +73,36 @@ api.interceptors.response.use(
 export const authService = {
   // Connexion
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
-    const response = await api.post<AuthResponse>('/auth/login', credentials);
+    try {
+      const response = await api.post<AuthResponse>('/auth/login', credentials);
 
-    // Sauvegarder les tokens
-    localStorage.setItem('accessToken', response.data.accessToken);
-    localStorage.setItem('refreshToken', response.data.accessToken);
+      // Sauvegarder les tokens
+      localStorage.setItem('accessToken', response.data.accessToken);
+      localStorage.setItem('refreshToken', response.data.refreshToken || response.data.accessToken);
 
-    return response.data;
+      return response.data;
+    } catch (error) {
+      // Laisser l'erreur se propager pour être traitée par notre gestionnaire d'erreurs
+      throw error;
+    }
   },
 
   // Inscription
   register: async (credentials: RegisterCredentials): Promise<AuthResponse> => {
-    const response = await api.post<AuthResponse>('/users', credentials);
+    try {
+      const response = await api.post<AuthResponse>('/users', credentials);
 
-    return response.data;
+      // Sauvegarder les tokens si fournis
+      if (response.data.accessToken) {
+        localStorage.setItem('accessToken', response.data.accessToken);
+        localStorage.setItem('refreshToken', response.data.refreshToken || response.data.accessToken);
+      }
+
+      return response.data;
+    } catch (error) {
+      // Laisser l'erreur se propager pour être traitée par notre gestionnaire d'erreurs
+      throw error;
+    }
   },
 
   // Déconnexion
@@ -109,8 +127,8 @@ export const authService = {
     try {
       const response = await api.get('/auth/profile');
       return response.data;
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
+      console.error('Get current user error:', error);
       return null;
     }
   },
