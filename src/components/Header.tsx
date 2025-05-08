@@ -15,15 +15,19 @@ export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
 
+  // Déterminer si nous sommes sur la page d'accueil
+  const isHomePage = pathname === '/';
+
   // Détecter le défilement pour changer le style du header
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
 
+    // N'ajouter l'écouteur d'événement que sur la page d'accueil
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [isHomePage]);
 
   const isActive = (path: string) => pathname === path;
 
@@ -31,6 +35,9 @@ export default function Header() {
     await logout();
     router.push('/');
   };
+
+  // Déterminer le style du header en fonction de la page et du défilement
+  const shouldBeTransparent = isHomePage && !isScrolled;
 
   return (
     <header
@@ -42,20 +49,24 @@ export default function Header() {
         z-50
         transition-all
         duration-300
-        ${isScrolled ? 'bg-white/90 dark:bg-gray-900/90 shadow-md backdrop-blur-md py-2' : 'bg-transparent py-4'}
+        ${isScrolled ? 'py-2' : 'py-4'}
+        ${shouldBeTransparent
+          ? 'bg-transparent'
+          : 'bg-white/90 dark:bg-gray-900/90 shadow-md backdrop-blur-md'
+        }
       `}
     >
       <div className="container mx-auto px-4 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="relative h-12 w-32">
           <Image
-            src={isScrolled ? "/images/logo/logo-axignis.png" : "/images/logo/logo-axignis-nb.png"}
+            src={shouldBeTransparent ? "/images/logo/logo-axignis-nb.png" : "/images/logo/logo-axignis.png"}
             alt="Axignis Logo"
             fill
             className={`
               object-contain
               transition-opacity
-              ${isScrolled ? '' : 'brightness-0 invert'}
+              ${shouldBeTransparent ? 'brightness-0 invert' : ''}
             `}
           />
         </Link>
@@ -68,7 +79,7 @@ export default function Header() {
               font-medium 
               hover:text-[var(--color-axignis-primary)] 
               transition-colors
-              ${isScrolled ? 'text-gray-800 dark:text-white' : 'text-white'}
+              ${shouldBeTransparent ? 'text-white' : 'text-gray-800 dark:text-white'}
               ${isActive('/mission') ? 'active' : ''}
             `}
           >
@@ -80,7 +91,7 @@ export default function Header() {
               font-medium 
               hover:text-[var(--color-axignis-primary)] 
               transition-colors
-              ${isScrolled ? 'text-gray-800 dark:text-white' : 'text-white'}
+              ${shouldBeTransparent ? 'text-white' : 'text-gray-800 dark:text-white'}
               ${isActive('/services') ? 'active' : ''}
             `}
           >
@@ -92,7 +103,7 @@ export default function Header() {
               font-medium 
               hover:text-[var(--color-axignis-primary)] 
               transition-colors
-              ${isScrolled ? 'text-gray-800 dark:text-white' : 'text-white'}
+              ${shouldBeTransparent ? 'text-white' : 'text-gray-800 dark:text-white'}
               ${isActive('/plans/') ? 'active' : ''}
             `}
           >
@@ -104,7 +115,7 @@ export default function Header() {
               font-medium 
               hover:text-[var(--color-axignis-primary)] 
               transition-colors
-              ${isScrolled ? 'text-gray-800 dark:text-white' : 'text-white'}
+              ${shouldBeTransparent ? 'text-white' : 'text-gray-800 dark:text-white'}
               ${isActive('/contact/') ? 'active' : ''}
             `}
           >
@@ -120,7 +131,7 @@ export default function Header() {
                   font-medium 
                   hover:text-[var(--color-axignis-primary)] 
                   transition-colors
-                  ${isScrolled ? 'text-gray-800 dark:text-white' : 'text-white'}
+                  ${shouldBeTransparent ? 'text-white' : 'text-gray-800 dark:text-white'}
                   ${isActive('/dashboard') ? 'active' : ''}
                 `}
               >
@@ -164,14 +175,14 @@ export default function Header() {
           )}
 
           {/* Sélecteur de langue */}
-          {/* <div className={isScrolled ? 'text-gray-800 dark:text-white' : 'text-white'}>
+          {/* <div className={shouldBeTransparent ? 'text-white' : 'text-gray-800 dark:text-white'}>
             <LanguageSelector />
           </div> */}
         </nav>
 
         {/* Menu burger et langue - Mobile */}
         <div className="flex items-center gap-2 md:hidden">
-          {/* <div className={isScrolled ? 'text-gray-800 dark:text-white' : 'text-white'}>
+          {/* <div className={shouldBeTransparent ? 'text-white' : 'text-gray-800 dark:text-white'}>
             <LanguageSelector />
           </div> */}
 
@@ -179,7 +190,7 @@ export default function Header() {
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className={`
               p-2
-              ${isScrolled ? 'text-gray-800 dark:text-white' : 'text-white'}
+              ${shouldBeTransparent ? 'text-white' : 'text-gray-800 dark:text-white'}
             `}
           >
             <svg
