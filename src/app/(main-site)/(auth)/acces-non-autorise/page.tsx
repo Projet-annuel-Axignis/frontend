@@ -12,14 +12,13 @@ export default function UnauthorisedPage() {
 
   return (
     <div className="
+      bg-white dark:bg-gray-900
       min-h-screen
       flex
       items-center
       justify-center
-      bg-gradient-to-br
-      from-red-900/10
-      to-orange-900/5
       p-4
+      pt-5
     ">
       <Box
         className="
