@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslation } from '@/i18n/useTranslation';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image'; // Import de Image
 import { useEffect, useState } from 'react';
 
@@ -11,7 +11,7 @@ type Language = {
 };
 
 export default function LanguageSelector() {
-  const { i18n, t } = useTranslation();
+  const t = useTranslations();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState<string>('fr');
 
@@ -23,12 +23,12 @@ export default function LanguageSelector() {
 
   // Initialisation de la langue sélectionnée
   useEffect(() => {
-    setSelectedLanguage(i18n.language || 'fr');
-  }, [i18n.language]);
+    //setSelectedLanguage(i18n.language || 'fr');
+  }, []);
 
   // Changement de langue
   const changeLanguage = (lng: string) => {
-    i18n.changeLanguage(lng);
+    //i18n.changeLanguage(lng);
     setSelectedLanguage(lng);
     setIsOpen(false);
   };
