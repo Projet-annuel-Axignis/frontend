@@ -1,5 +1,6 @@
 'use client';
 
+import HeroHeader from '@/components/commons/HeroHeader';
 import CtaContact from '@/components/CtaContact';
 import { useFormik } from 'formik';
 import { useTranslations } from 'next-intl';
@@ -38,27 +39,12 @@ const ContactForm = () => {
   return (
     <main className="min-h-screen bg-white dark:bg-gray-900 font-sans">
       {/* Hero Section */}
-      <section className="relative h-[40vh] flex items-center justify-center text-white bg-gray-600">
-        <Image
-          src="/images/backgrounds/contact.jpg"
-          alt="Contact"
-          fill
-          priority
-          className="object-cover opacity-50"
-        />
-        <div className="absolute 
-            inset-0 
-            bg-gradient-to-r 
-            from-[var(--color-axignis-primary)]/70
-            to-[var(--color-axignis-secondary)]/70
-            mix-blend-multiply
-            ">
-
-        </div>
-        <h1 className="relative z-10 text-4xl md:text-5xl font-title font-bold drop-shadow-xl">
-          {t('contact.title')}
-        </h1>
-      </section>
+      <HeroHeader
+        title={t('contact.title')}
+        description={t('contact.description')}
+        image="/images/backgrounds/contact.jpg"
+        imageAlt="Contact"
+      />
 
       {/* Form Section */}
       <section className="container mx-auto px-4 md:px-8 py-10">
