@@ -41,7 +41,7 @@ const ContactForm = () => {
       {/* Hero Section */}
       <HeroHeader
         title={t('contact.title')}
-        description={t('contact.description')}
+        description={t('contact.form.title')}
         image="/images/backgrounds/contact.jpg"
         imageAlt="Contact"
       />
