@@ -19,7 +19,16 @@ const config: Config = {
   testMatch: ['**/__tests__/**/*.test.[jt]s?(x)'],
   watchPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/.next/'],
   // Désactiver watchman car il peut causer des problèmes avec --watch
-  watchman: false
+  watchman: false,
+  transform: {
+    '^.+\\.(ts|tsx)$': ['babel-jest', { presets: ['next/babel'] }],
+  },
+  transformIgnorePatterns: [
+    '/node_modules/',
+    '^.+\\.module\\.(css|sass|scss)$',
+  ],
+  testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/'],
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
 }
 
 // createJestConfig est exporté de cette façon pour garantir que next/jest
