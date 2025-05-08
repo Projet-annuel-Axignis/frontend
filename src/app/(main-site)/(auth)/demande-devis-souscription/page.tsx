@@ -23,7 +23,8 @@ import { MuiTelInput } from 'mui-tel-input';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import * as Yup from 'yup';
 
 // Schéma de validation
@@ -34,6 +35,10 @@ const RegisterSchema = Yup.object().shape({
     .required('Nom requis'),
   company: Yup.string()
     .required('Entreprise requise'),
+  siretNumber: Yup.string()
+    .required('Siret requis'),
+  plan: Yup.string()
+    .required('Plan requis'),
   email: Yup.string()
     .email('Email invalide')
     .required('Email requis'),
@@ -60,10 +65,24 @@ const requiredLabel = (label: string) => (
 );
 
 export default function RegisterPage() {
-  const { register, isLoading, error } = useUser();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname(); const { register, isLoading, error } = useUser();
   const t = useTranslations();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  useEffect(() => {
+    const parametreP = searchParams.get('p');
+
+    if (parametreP) {
+      // Ici tu utilises ta valeur comme tu le souhaites
+      console.log('Paramètre P récupéré :', parametreP);
+
+      // Ensuite, on nettoie l'URL en retirant les paramètres :
+      router.replace(pathname, { scroll: false });
+    }
+  }, [searchParams, router, pathname]);
 
   // Détection du mode sombre du système
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
