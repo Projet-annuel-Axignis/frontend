@@ -10,18 +10,29 @@ export default function NotFound() {
   return (
     <>
       <Header />
-      <main className="flex items-center justify-center min-h-screen bg-white dark:bg-gray-900 px-4">
-        <div className='dark:hidden absolute top-0 left-0 w-full h-20 bg-gradient-to-b from-axignis-primary to-axignis-secondary opacity-50'></div>
+      <main className="flex items-center justify-center min-h-screen bg-white dark:bg-gray-900 px-4 pt-20">
 
         <div className="text-center max-w-xl">
-          <Image
-            src="/images/404.png"
-            alt="Page non trouvée"
-            width={400}
-            height={400}
-            priority
-            className="mx-auto mb-8"
-          />
+          <div className="
+              w-[200px]
+              h-[200px]
+              md:w-[400px]
+              md:h-[400px]
+              relative
+              mx-auto
+              mb-8
+              animate-float
+            ">
+            <Image
+              src="/images/404.png"
+              alt="Page non trouvée"
+              fill
+              className="
+                  object-contain 
+                  drop-shadow-2xl
+                "
+            />
+          </div>
 
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
             {t("error_pages.error404.title")}

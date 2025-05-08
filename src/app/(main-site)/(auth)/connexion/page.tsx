@@ -79,7 +79,8 @@ export default function LoginPage() {
         position: 'relative',
         minHeight: '100vh',
         width: '100%',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        paddingTop: '40px'
       }}>
         {/* Image de fond */}
         <Box sx={{
