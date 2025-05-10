@@ -111,7 +111,7 @@
     "create_account": "Demandez un devis",
 
     "register": "Demande de devis",
-    "register_instructions": "Remplissez le formulaire ci-dessous pour demander un devis",
+    "register_instructions": "Remplissez le formulaire ci-dessous pour demander un devis pour le plan {plan}",
     "first_name": "Prénom",
     "last_name": "Nom",
     "company_name": "Nom de l'entreprise",
@@ -174,8 +174,8 @@
     }
   },
   "plans": {
-    "self_managed": "Gestion Autonomie",
-    "admin_managed": "Gestion Sérénité",
+    "self_managed": "Autonomie",
+    "admin_managed": "Sérénité",
     "recommended": "Recommandé",
     "self_managed_description": "Gérez vous-même vos registres de sécurité avec notre plateforme intuitive",
     "admin_managed_description": "Laissez nos experts gérer vos registres de sécurité pour une conformité optimale"
