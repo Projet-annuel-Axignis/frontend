@@ -1,11 +1,13 @@
 'use client';
 
 import { useUser } from '@/app/_providers';
-import { Email, Lock, Person, Visibility, VisibilityOff } from '@mui/icons-material';
+import { Plans } from '@/types/plans';
+import { Email, Info as InfoIcon, Lock, Person, Visibility, VisibilityOff } from '@mui/icons-material';
 import {
   Alert,
   Box,
   Button,
+  Chip,
   CircularProgress,
   Container,
   createTheme,
@@ -15,6 +17,9 @@ import {
   Paper,
   TextField,
   ThemeProvider,
+  ToggleButton,
+  ToggleButtonGroup,
+  Tooltip,
   Typography,
   useMediaQuery
 } from '@mui/material';
@@ -42,6 +47,7 @@ const RegisterSchema = Yup.object().shape({
   email: Yup.string()
     .email('Email invalide')
     .required('Email requis'),
+  comment: Yup.string(),
   phone: Yup.string()
     .matches(/^\+?[\d\s]{10,20}$/, 'Numéro de téléphone invalide')
     .required('Numéro de téléphone requis'), // Validation pour le numéro de téléphone
@@ -71,13 +77,17 @@ export default function RegisterPage() {
   const t = useTranslations();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [plan, setPlan] = useState<Plans>(Plans.ADMIN_MANAGED);
 
   useEffect(() => {
     const parametreP = searchParams.get('p');
 
     if (parametreP) {
-      // Ici tu utilises ta valeur comme tu le souhaites
-      console.log('Paramètre P récupéré :', parametreP);
+      if (parametreP === Plans.SELF_MANAGED) {
+        setPlan(Plans.SELF_MANAGED);
+      } else if (parametreP === Plans.ADMIN_MANAGED) {
+        setPlan(Plans.ADMIN_MANAGED);
+      }
 
       // Ensuite, on nettoie l'URL en retirant les paramètres :
       router.replace(pathname, { scroll: false });
@@ -199,8 +209,11 @@ export default function RegisterPage() {
                 firstName: '',
                 lastName: '',
                 company: '',
+                siretNumber: '',
+                plan: plan,
                 email: '',
-                phone: '', // Ajout du champ téléphone dans les valeurs initiales
+                phone: '',
+                comment: '',
                 password: '',
                 confirmPassword: ''
               }}
@@ -211,12 +224,12 @@ export default function RegisterPage() {
                   values.lastName,
                   values.company,
                   values.email,
-                  values.phone, // Ajout du champ téléphone dans la soumission
+                  values.phone,
                   values.password
                 );
               }}
             >
-              {({ errors, touched, handleChange, handleBlur, values }) => (
+              {({ errors, touched, handleChange, handleBlur, values, setFieldValue }) => (
                 <Form>
                   <Box
                     sx={{
@@ -297,6 +310,150 @@ export default function RegisterPage() {
                           </InputAdornment>
                         ),
                       }}
+                    />
+                  </Box>
+
+                  {/* Siret */}
+                  <Box mb={3}>
+                    <TextField
+                      fullWidth
+                      id="siretNumber"
+                      name="siretNumber"
+                      type="text"
+                      label={requiredLabel(t('auth.siret_number'))}
+                      variant="outlined"
+                      value={values.siretNumber}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(errors.siretNumber && touched.siretNumber)}
+                      helperText={(errors.siretNumber && touched.siretNumber) ? errors.siretNumber : ''}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Person color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  </Box>
+
+                  {/* Plan */}
+                  <Box mb={3}>
+                    <Box display="flex" alignItems="center" gap={1} mb={1}>
+                      <Typography variant="subtitle1">
+                        {requiredLabel(t('auth.plan'))}
+                      </Typography>
+                      <Tooltip title={t('auth.plan_tooltip')} arrow placement="top">
+                        <InfoIcon color="action" fontSize="small" />
+                      </Tooltip>
+                      <Link href="/plans" passHref>
+                        <Typography
+                          variant="body2"
+                          component="span"
+                          color="primary"
+                          sx={{
+                            cursor: 'pointer',
+                            ml: 'auto',
+                            '&:hover': {
+                              textDecoration: 'underline'
+                            }
+                          }}
+                        >
+                          {t('auth.view_plans')}
+                        </Typography>
+                      </Link>
+                    </Box>
+                    <ToggleButtonGroup
+                      value={values.plan}
+                      exclusive
+                      onChange={(_, newValue) => {
+                        if (newValue !== null) {
+                          setFieldValue('plan', newValue);
+                          setPlan(newValue);
+                        }
+                      }}
+                      fullWidth
+                      sx={{
+                        '& .MuiToggleButton-root': {
+                          flex: 1,
+                          py: 1.5,
+                          position: 'relative',
+                          '&.Mui-selected': {
+                            backgroundColor: theme.palette.primary.main,
+                            color: theme.palette.primary.contrastText,
+                            '&:hover': {
+                              backgroundColor: theme.palette.primary.dark,
+                            },
+                          },
+                        },
+                      }}
+                    >
+                      <ToggleButton value={Plans.SELF_MANAGED}>
+                        <Box>
+                          <Typography variant="subtitle1" gutterBottom align="center">
+                            {t('plans.self_managed')}
+                          </Typography>
+                          <Typography variant="body2" color="textSecondary" align="center">
+                            {t('plans.self_managed_description')}
+                          </Typography>
+                        </Box>
+                      </ToggleButton>
+                      <Box sx={{ position: 'relative', flex: 1 }}>
+                        <ToggleButton value={Plans.ADMIN_MANAGED} sx={{ width: '100%' }}>
+                          <Box sx={{ width: '100%' }}>
+                            <Box display="flex" alignItems="center" justifyContent="center" gap={1} mb={1}>
+                              <Typography variant="subtitle1" align="center">
+                                {t('plans.admin_managed')}
+                              </Typography>
+                            </Box>
+                            <Typography variant="body2" color="textSecondary" align="center">
+                              {t('plans.admin_managed_description')}
+                            </Typography>
+                          </Box>
+                        </ToggleButton>
+                        <Chip
+                          label={t('plans.recommended')}
+                          size="small"
+                          color="primary"
+                          sx={{
+                            position: 'absolute',
+                            top: -10,
+                            right: -10,
+                            height: 24,
+                            zIndex: 2,
+                            boxShadow: 2,
+                            '& .MuiChip-label': {
+                              px: 1.5,
+                              fontSize: '0.75rem',
+                              fontWeight: 'bold',
+                            },
+                          }}
+                        />
+                      </Box>
+                    </ToggleButtonGroup>
+                    {errors.plan && touched.plan && (
+                      <Typography color="error" variant="caption">
+                        {errors.plan}
+                      </Typography>
+                    )}
+                  </Box>
+
+                  {/* Commentaire */}
+                  <Box mb={3}>
+                    <TextField
+                      fullWidth
+                      id="comment"
+                      name="comment"
+                      type="text"
+                      label={t('auth.comment')}
+                      variant="outlined"
+                      value={values.comment}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(errors.comment && touched.comment)}
+                      helperText={(errors.comment && touched.comment) ? errors.comment : ''}
+                      multiline
+                      rows={4}
                     />
                   </Box>
 

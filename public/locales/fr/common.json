@@ -120,9 +120,11 @@
     "city": "Ville",
     "postal_code": "Code postal",
     "country": "Pays",
-    "siret": "Numéro SIRET",
-    "siren": "Numéro SIREN",
+    "siret_number": "Numéro SIRET",
     "comment": "Commentaire",
+    "plan": "Plan",
+    "plan_tooltip": "Choisissez le plan qui correspond le mieux à vos besoins",
+    "view_plans": "Voir tous les plans",
     "terms_and_conditions": "J'accepte les termes et conditions",
     "privacy_policy": "J'accepte la politique de confidentialité",
     "confirm_password": "Confirmer le mot de passe",
@@ -170,6 +172,13 @@
       },
       "submit": "Envoyer"
     }
+  },
+  "plans": {
+    "self_managed": "Gestion Autonomie",
+    "admin_managed": "Gestion Sérénité",
+    "recommended": "Recommandé",
+    "self_managed_description": "Gérez vous-même vos registres de sécurité avec notre plateforme intuitive",
+    "admin_managed_description": "Laissez nos experts gérer vos registres de sécurité pour une conformité optimale"
   },
   "errors": {
     "generic": "Une erreur inattendue est survenue",
