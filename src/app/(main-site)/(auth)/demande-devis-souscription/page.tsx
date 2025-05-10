@@ -73,23 +73,23 @@ const requiredLabel = (label: string) => (
 export default function RegisterPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const pathname = usePathname(); const { register, isLoading, error } = useUser();
+  const pathname = usePathname();
+  const { register, isLoading, error } = useUser();
   const t = useTranslations();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [plan, setPlan] = useState<Plans>(Plans.ADMIN_MANAGED);
+
+  // Initialisation du plan en fonction du paramètre URL
+  const initialPlan = searchParams.get('p') === Plans.SELF_MANAGED
+    ? Plans.SELF_MANAGED
+    : Plans.ADMIN_MANAGED;
+  const [plan, setPlan] = useState<Plans>(initialPlan);
 
   useEffect(() => {
     const parametreP = searchParams.get('p');
 
     if (parametreP) {
-      if (parametreP === Plans.SELF_MANAGED) {
-        setPlan(Plans.SELF_MANAGED);
-      } else if (parametreP === Plans.ADMIN_MANAGED) {
-        setPlan(Plans.ADMIN_MANAGED);
-      }
-
-      // Ensuite, on nettoie l'URL en retirant les paramètres :
+      // Nettoyage de l'URL en retirant les paramètres
       router.replace(pathname, { scroll: false });
     }
   }, [searchParams, router, pathname]);
@@ -186,7 +186,9 @@ export default function RegisterPage() {
                 {t('auth.register')}
               </Typography>
               <Typography variant="body1" color="textSecondary">
-                {t('auth.register_instructions')}
+                {t('auth.register_instructions', {
+                  plan: plan === Plans.SELF_MANAGED ? t('plans.self_managed') : t('plans.admin_managed')
+                })}
               </Typography>
             </Box>
 
@@ -346,7 +348,7 @@ export default function RegisterPage() {
                       <Tooltip title={t('auth.plan_tooltip')} arrow placement="top">
                         <InfoIcon color="action" fontSize="small" />
                       </Tooltip>
-                      <Link href="/plans" passHref>
+                      <Link href="/plans" target="_blank" passHref>
                         <Typography
                           variant="body2"
                           component="span"
