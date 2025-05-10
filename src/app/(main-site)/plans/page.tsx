@@ -1,6 +1,7 @@
 'use client';
 
 import HeroHeader from '@/components/commons/HeroHeader';
+import { Plans } from '@/types/plans';
 import { CheckCircle } from '@mui/icons-material';
 import Link from 'next/link';
 
@@ -239,7 +240,7 @@ export default function PlansPage() {
 
               <div className="px-8 pb-8">
                 <Link
-                  href="/demande-devis-souscription?p=autonomie"
+                  href={`/demande-devis-souscription?p=${Plans.SELF_MANAGED}`}
                   className="
                     block
                     w-full
@@ -353,7 +354,7 @@ export default function PlansPage() {
 
               <div className="px-8 pb-8">
                 <Link
-                  href="/demande-devis-souscription?p=serenite"
+                  href={`/demande-devis-souscription?p=${Plans.ADMIN_MANAGED}`}
                   className="
                     block
                     w-full
