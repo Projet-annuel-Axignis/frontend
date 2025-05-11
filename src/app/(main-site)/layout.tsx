@@ -1,6 +1,7 @@
 import Footer from '@/components/Footer';
 import FooterIndicator from '@/components/FooterIndicator';
 import Header from '@/components/Header';
+import ThemeRegistry from './ThemeRegistry';
 
 export default function RootLayout({
   children,
@@ -9,10 +10,12 @@ export default function RootLayout({
 }>) {
   return (
     <>
-      <Header />
-      {children}
-      <FooterIndicator />
-      <Footer />
+      <ThemeRegistry options={{ key: 'joy' }}>
+        <Header />
+        {children}
+        <FooterIndicator />
+        <Footer />
+      </ThemeRegistry>
     </>
   );
 }

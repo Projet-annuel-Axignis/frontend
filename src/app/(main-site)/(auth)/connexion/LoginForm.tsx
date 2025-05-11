@@ -1,23 +1,9 @@
 'use client';
 
 import { useUser } from '@/app/_providers';
-import { Email, Lock, Visibility, VisibilityOff } from '@mui/icons-material';
-import {
-  Alert,
-  Box,
-  Button,
-  CircularProgress,
-  Container,
-  createTheme,
-  CssBaseline,
-  IconButton,
-  InputAdornment,
-  Paper,
-  TextField,
-  ThemeProvider,
-  Typography,
-  useMediaQuery
-} from '@mui/material';
+import { Email, Key, Visibility, VisibilityOff } from '@mui/icons-material';
+import { Alert, Box, Button, CircularProgress, Container, FormControl, IconButton, Input, Typography } from '@mui/joy';
+
 import { Field, Form, Formik } from 'formik';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
@@ -40,253 +26,190 @@ export default function LoginForm() {
   const t = useTranslations();
   const [showPassword, setShowPassword] = useState(false);
 
-  // Détection du mode sombre du système
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-
-  // Création d'un thème qui respecte la préférence du système
-  const theme = createTheme({
-    palette: {
-      mode: prefersDarkMode ? 'dark' : 'light',
-      primary: {
-        main: '#F59E0B', // amber-500
-      },
-      secondary: {
-        main: '#D97706', // amber-600
-      },
-      warning: {
-        main: '#F59E0B', // amber-500
-        dark: '#D97706', // amber-600
-      },
-      background: {
-        default: prefersDarkMode ? '#1F2937' : '#F9FAFB',
-        paper: prefersDarkMode ? '#111827' : '#FFFFFF',
-      },
-      text: {
-        primary: prefersDarkMode ? '#F9FAFB' : '#111827',
-        secondary: prefersDarkMode ? '#D1D5DB' : '#6B7280',
-      },
-    },
-  });
-
   const handleTogglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
+    <Box sx={{
+      position: 'relative',
+      minHeight: '100vh',
+      width: '100%',
+      overflow: 'hidden',
+      paddingTop: '40px'
+    }}>
+      {/* Image de fond */}
       <Box sx={{
-        position: 'relative',
-        minHeight: '100vh',
-        width: '100%',
-        overflow: 'hidden',
-        paddingTop: '40px'
+        position: 'absolute',
+        inset: 0,
+        bgcolor: 'grey.600',
+        zIndex: 0
       }}>
-        {/* Image de fond */}
-        <Box sx={{
-          position: 'absolute',
-          inset: 0,
-          bgcolor: 'grey.600',
-          zIndex: 0
-        }}>
-          <Image
-            src="/images/backgrounds/building-facade.jpg"
-            alt="Façade de bâtiment moderne"
-            fill
-            priority
-            style={{
-              objectFit: 'cover',
-              opacity: 0.5,
-              mixBlendMode: 'overlay'
-            }}
-          />
+        <Image
+          src="/images/backgrounds/building-facade.jpg"
+          alt="Façade de bâtiment moderne"
+          fill
+          priority
+          style={{
+            objectFit: 'cover',
+            opacity: 0.5,
+            mixBlendMode: 'overlay'
+          }}
+        />
+      </Box>
+      {/* Contenu du formulaire */}
+      <Container maxWidth="sm" sx={{
+        py: 8,
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        position: 'relative',
+        zIndex: 1
+      }}>
+        <Box sx={{ textAlign: 'center', mb: 4 }}>
+          <Typography level="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
+            {t('common.login')}
+          </Typography>
+          <Typography level="body-sm" color="primary">
+            {t('auth.login_instructions')}
+          </Typography>
         </Box>
 
-        {/* Contenu du formulaire */}
-        <Container maxWidth="sm" sx={{
-          py: 8,
-          minHeight: '100vh',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          position: 'relative',
-          zIndex: 1
-        }}>
-          <Paper
-            elevation={3}
+        {error && (
+          <Alert
+            color='danger'
             sx={{
-              p: 4,
-              borderRadius: 2,
-              background: theme.palette.background.paper,
-              boxShadow: prefersDarkMode
-                ? '0 4px 20px rgba(0,0,0,0.5)'
-                : '0 4px 20px rgba(0,0,0,0.1)'
+              mb: 3,
+              '& .MuiAlert-message': {
+                fontWeight: 'medium'
+              }
             }}
           >
-            <Box sx={{ textAlign: 'center', mb: 4 }}>
-              <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
-                {t('common.login')}
-              </Typography>
-              <Typography variant="body1" color="textSecondary">
-                {t('auth.login_instructions')}
-              </Typography>
-            </Box>
+            {error}
+          </Alert>
+        )}
 
-            {error && (
-              <Alert
-                severity="error"
-                sx={{
-                  mb: 3,
-                  '& .MuiAlert-message': {
-                    fontWeight: 'medium'
-                  }
-                }}
-              >
-                {error}
-              </Alert>
-            )}
-
-            <Formik
-              initialValues={{ email: '', password: '' }}
-              validationSchema={LoginSchema}
-              onSubmit={async (values) => {
-                await login(values.email, values.password);
-              }}
-            >
-              {({ errors, touched, handleChange, handleBlur, values }) => (
-                <Form>
-                  <Box mb={3}>
-                    <TextField
-                      fullWidth
-                      id="email"
-                      name="email"
-                      type="email"
-                      label={t('auth.email')}
-                      variant="outlined"
-                      value={values.email}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      error={Boolean(errors.email && touched.email)}
-                      helperText={(errors.email && touched.email) ? errors.email : ''}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <Email color="action" />
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
-                  </Box>
-
-                  <Box mb={3}>
-                    <TextField
-                      fullWidth
-                      id="password"
-                      name="password"
-                      type={showPassword ? "text" : "password"}
-                      label={t('auth.password')}
-                      variant="outlined"
-                      value={values.password}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      error={Boolean(errors.password && touched.password)}
-                      helperText={(errors.password && touched.password) ? errors.password : ''}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <Lock color="action" />
-                          </InputAdornment>
-                        ),
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <IconButton
-                              onClick={handleTogglePasswordVisibility}
-                              edge="end"
-                              aria-label="toggle password visibility"
-                            >
-                              {showPassword ? <VisibilityOff /> : <Visibility />}
-                            </IconButton>
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
-                  </Box>
-
-                  <Box mb={3} display="flex" justifyContent="space-between" alignItems="center">
-                    <Box display="flex" alignItems="center">
-                      <Field
-                        type="checkbox"
-                        name="remember"
-                        id="remember"
-                        className="h-4 w-4 mr-2"
-                      />
-                      <Typography variant="body2" component="label" htmlFor="remember">
-                        {t('auth.remember_me')}
-                      </Typography>
-                    </Box>
-                    <Link href="/forgot-password" passHref>
-                      <Typography
-                        variant="body2"
-                        component="span"
-                        color="primary"
-                        sx={{
-                          cursor: 'pointer',
-                          '&:hover': {
-                            textDecoration: 'underline'
-                          }
-                        }}
-                      >
-                        {t('auth.forgot_password')}
-                      </Typography>
-                    </Link>
-                  </Box>
-
-                  <Button
-                    type="submit"
+        <Formik
+          initialValues={{ email: '', password: '' }}
+          validationSchema={LoginSchema}
+          onSubmit={async (values) => {
+            await login(values.email, values.password);
+          }}
+        >
+          {({ errors, touched, handleChange, handleBlur, values }) => (
+            <Form>
+              <Box mb={3}>
+                <FormControl id="email">
+                  <Input
                     fullWidth
-                    variant="contained"
-                    color="primary"
-                    disabled={isLoading}
-                    sx={{
-                      py: 1.5,
-                      fontWeight: 'medium',
-                      fontSize: '1rem'
-                    }}
-                  >
-                    {isLoading ? (
-                      <CircularProgress size={24} color="inherit" />
-                    ) : (
-                      t('auth.login_button')
-                    )}
-                  </Button>
-                </Form>
-              )}
-            </Formik>
+                    name="email"
+                    type="email"
+                    variant="outlined"
+                    value={values.email}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={Boolean(errors.email && touched.email)}
+                    startDecorator={<Email color='action' />}
+                  />
+                </FormControl>
+              </Box>
 
-            <Box mt={4} textAlign="center">
-              <Typography variant="body2" color="textSecondary">
-                {t('auth.no_account')}{' '}
-                <Link href="/demande-devis-souscription" passHref>
+              <Box mb={3}>
+                <FormControl id="password">
+                  <Input
+                    fullWidth
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    variant="outlined"
+                    value={values.password}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={Boolean(errors.password && touched.password)}
+                    startDecorator={<Key />}
+                    endDecorator={<IconButton
+                      onClick={handleTogglePasswordVisibility}
+                      aria-label="toggle password visibility"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>}
+                  />
+
+                </FormControl>
+              </Box>
+
+              <Box mb={3} display="flex" justifyContent="space-between" alignItems="center">
+                <Box display="flex" alignItems="center">
+                  <Field
+                    type="checkbox"
+                    name="remember"
+                    id="remember"
+                    className="h-4 w-4 mr-2"
+                  />
+                  <Typography component="label" htmlFor="remember">
+                    {t('auth.remember_me')}
+                  </Typography>
+                </Box>
+                <Link href="/forgot-password" passHref>
                   <Typography
-                    variant="body2"
                     component="span"
                     color="primary"
                     sx={{
                       cursor: 'pointer',
-                      fontWeight: 'medium',
                       '&:hover': {
                         textDecoration: 'underline'
                       }
                     }}
                   >
-                    {t('auth.create_account')}
+                    {t('auth.forgot_password')}
                   </Typography>
                 </Link>
+              </Box>
+
+              <Button
+                type="submit"
+                fullWidth
+                variant="solid"
+                color="primary"
+                disabled={isLoading}
+                sx={{
+                  py: 1.5,
+                  fontWeight: 'medium',
+                  fontSize: '1rem'
+                }}
+              >
+                {isLoading ? (
+                  <CircularProgress size="sm" color="neutral" />
+                ) : (
+                  t('auth.login_button')
+                )}
+              </Button>
+            </Form>
+          )}
+        </Formik>
+
+        <Box mt={4} textAlign="center">
+          <Typography level="body-sm" color="neutral">
+            {t('auth.no_account')}{' '}
+            <Link href="/demande-devis-souscription" passHref>
+              <Typography
+                level="body-sm"
+                component="span"
+                color="primary"
+                sx={{
+                  cursor: 'pointer',
+                  fontWeight: 'medium',
+                  '&:hover': {
+                    textDecoration: 'underline'
+                  }
+                }}
+              >
+                {t('auth.create_account')}
               </Typography>
-            </Box>
-          </Paper>
-        </Container>
-      </Box>
-    </ThemeProvider>
+            </Link>
+          </Typography>
+        </Box>
+      </Container>
+    </Box>
   );
 } 
