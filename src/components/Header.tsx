@@ -63,6 +63,7 @@ export default function Header() {
             src={shouldBeTransparent ? "/images/logo/logo-axignis-nb.png" : "/images/logo/logo-axignis.png"}
             alt="Axignis Logo"
             fill
+            sizes="100%"
             className={`
               object-contain
               transition-opacity
