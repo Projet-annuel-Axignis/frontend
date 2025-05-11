@@ -1,14 +1,16 @@
-'use client';
-
+import ButtonBack from '@/components/commons/ButtonBack';
 import { Lock } from '@mui/icons-material';
 import { Box, Button, Typography } from '@mui/joy';
+import { Metadata } from 'next';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+
+export const metadata: Metadata = {
+  title: "Axignis - Sécurité incendie et accessibilité des bâtiments - Page non autorisée",
+};
 
 export default function UnauthorisedPage() {
   const t = useTranslations();
-  const router = useRouter();
 
   return (
     <div className="
@@ -72,13 +74,9 @@ export default function UnauthorisedPage() {
         </Typography>
 
         <Box className="flex flex-col sm:flex-row gap-4 justify-center mt-5">
-          <Button
-            variant="solid"
-            color="danger"
-            onClick={() => router.back()}
-          >
+          <ButtonBack>
             {t('common.go_back')}
-          </Button>
+          </ButtonBack>
 
           <Link href="/" passHref>
             <Button
