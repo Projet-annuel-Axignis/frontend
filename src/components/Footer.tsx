@@ -33,6 +33,7 @@ export default function Footer() {
                 src="/images/logo/logo-axignis.png"
                 alt="Logo Axignis"
                 fill
+                sizes="100%"
                 className="object-contain"
               />
             </div>
