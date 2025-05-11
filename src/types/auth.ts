@@ -8,6 +8,8 @@
  * - La gestion des erreurs
  */
 
+import { Plans } from "./plans";
+
 /**
  * Interface représentant un utilisateur de l'application
  * 
@@ -62,7 +64,12 @@ export interface RegisterCredentials extends LoginCredentials {
   firstName: string;
   lastName: string;
   confirmPassword: string;
-  role: string;
+  role?: string;
+  siretNumber: string;
+  plan: Plans;
+  comment?: string;
+  company: string;
+  phone: string;
 }
 
 /**

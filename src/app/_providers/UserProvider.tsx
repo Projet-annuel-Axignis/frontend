@@ -2,7 +2,7 @@
 
 import { getErrorMessage } from '@/lib/utils';
 import authService from '@/services/authService';
-import { User } from '@/types/auth';
+import { RegisterCredentials, User } from '@/types/auth';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
@@ -20,7 +20,7 @@ interface UserContextType {
   /** Fonction pour connecter un utilisateur avec email et mot de passe */
   login: (email: string, password: string) => Promise<void>;
   /** Fonction pour inscrire un nouvel utilisateur */
-  register: (firstName: string, lastName: string, company: string, email: string, phone: string, password: string) => Promise<void>;
+  register: (credentials: RegisterCredentials) => Promise<void>;
   /** Fonction pour déconnecter l'utilisateur actuel */
   logout: () => Promise<void>;
   /** Message d'erreur lié à l'authentification ou null */
@@ -111,28 +111,36 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
    * En cas de succès, l'utilisateur est stocké dans le contexte et redirigé vers la page d'accueil.
    * En cas d'échec, un message d'erreur est affiché.
    * 
-   * @param firstName - Le prénom de l'utilisateur
-   * @param lastName - Le nom de famille de l'utilisateur
-   * @param company - L'entreprise de l'utilisateur
-   * @param email - L'adresse email de l'utilisateur
-   * @param phone - Le numéro de téléphone de l'utilisateur
-   * @param password - Le mot de passe de l'utilisateur
+   * @param credentials - Les informations d'inscription de l'utilisateur
+   * @param credentials.firstName - Le prénom de l'utilisateur
+   * @param credentials.lastName - Le nom de famille de l'utilisateur
+   * @param credentials.company - L'entreprise de l'utilisateur
+   * @param credentials.email - L'adresse email de l'utilisateur
+   * @param credentials.phone - Le numéro de téléphone de l'utilisateur
+   * @param credentials.password - Le mot de passe de l'utilisateur
+   * @param credentials.siretNumber - Le numéro SIRET de l'utilisateur
+   * @param credentials.plan - Le plan de l'utilisateur (Plans.SELF_MANAGED ou Plans.ADMIN_MANAGED)
+   * @param credentials.comment - Le commentaire de l'utilisateur
    */
-  const register = async (firstName: string, lastName: string, company: string, email: string, phone: string, password: string) => {
+  const register = async (credentials: RegisterCredentials) => {
     setIsLoading(true);
     setError(null);
-
     try {
       const response = await authService.register({
-        firstName,
-        lastName,
-        email,
-        password,
-        confirmPassword: password, // Ceci n'est probablement pas correct pour un cas réel
-        role: 'client' // Rôle par défaut
+        firstName: credentials.firstName,
+        lastName: credentials.lastName,
+        company: credentials.company,
+        email: credentials.email,
+        phone: credentials.phone,
+        password: credentials.password,
+        confirmPassword: credentials.password, // Ceci n'est probablement pas correct pour un cas réel
+        role: 'VISITOR', // Rôle par défaut
+        siretNumber: credentials.siretNumber,
+        plan: credentials.plan,
+        comment: credentials.comment
       });
       setUser(response.user);
-      router.push('/'); // Rediriger vers le tableau de bord après inscription
+      //router.push('/'); // Rediriger vers le tableau de bord après inscription
     } catch (err) {
       // Utiliser notre fonction utilitaire pour obtenir le message d'erreur traduit
       setError(getErrorMessage(err, t));
