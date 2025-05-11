@@ -87,10 +87,18 @@ const axignisTheme = extendTheme({
     },
     JoyCard: {
       styleOverrides: {
-        root: {
+        root: ({ theme }) => ({
           borderRadius: '12px',
-          boxShadow: '0px 3px 6px rgba(0,0,0,0.1)',
-        },
+          boxShadow: theme.palette.mode === 'dark'
+            ? '0 4px 20px rgba(0, 0, 0, 0.3)'
+            : '0 4px 20px rgba(0, 0, 0, 0.1)',
+          '&.glass': {
+            backdropFilter: 'blur(8px)',
+            backgroundColor: `rgba(var(--joy-palette-background-surface-rgb), 0.9)`,
+            borderColor: 'primary.200',
+            padding: theme.spacing(4),
+          }
+        }),
       },
     },
   },

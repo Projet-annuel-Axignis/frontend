@@ -1,9 +1,9 @@
 // app/ThemeRegistry.tsx
 'use client';
-import axignisTheme from '@/theme/joyTheme';
 import createCache from '@emotion/cache';
 import { CacheProvider } from '@emotion/react';
 import CssBaseline from '@mui/joy/CssBaseline';
+import InitColorSchemeScript from '@mui/joy/InitColorSchemeScript';
 import { CssVarsProvider } from '@mui/joy/styles';
 import { useServerInsertedHTML } from 'next/navigation';
 import { useState } from 'react';
@@ -53,7 +53,9 @@ export default function ThemeRegistry(props: { options: any; children: React.Rea
 
   return (
     <CacheProvider value={cache}>
-      <CssVarsProvider theme={axignisTheme}>
+      <InitColorSchemeScript />
+      {/* <CssVarsProvider theme={axignisTheme}> */}
+      <CssVarsProvider>
         {/* the custom theme is optional */}
         <CssBaseline />
         {children}

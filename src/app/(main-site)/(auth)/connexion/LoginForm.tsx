@@ -2,7 +2,7 @@
 
 import { useUser } from '@/app/_providers';
 import { Email, Key, Visibility, VisibilityOff } from '@mui/icons-material';
-import { Alert, Box, Button, CircularProgress, Container, FormControl, IconButton, Input, Typography } from '@mui/joy';
+import { Alert, Box, Button, Card, CardContent, CircularProgress, Container, FormControl, FormLabel, IconButton, Input, Typography } from '@mui/joy';
 
 import { Field, Form, Formik } from 'formik';
 import { useTranslations } from 'next-intl';
@@ -67,148 +67,185 @@ export default function LoginForm() {
         position: 'relative',
         zIndex: 1
       }}>
-        <Box sx={{ textAlign: 'center', mb: 4 }}>
-          <Typography level="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
-            {t('common.login')}
-          </Typography>
-          <Typography level="body-sm" color="primary">
-            {t('auth.login_instructions')}
-          </Typography>
-        </Box>
-
-        {error && (
-          <Alert
-            color='danger'
-            sx={{
-              mb: 3,
-              '& .MuiAlert-message': {
-                fontWeight: 'medium'
-              }
-            }}
-          >
-            {error}
-          </Alert>
-        )}
-
-        <Formik
-          initialValues={{ email: '', password: '' }}
-          validationSchema={LoginSchema}
-          onSubmit={async (values) => {
-            await login(values.email, values.password);
+        <Card
+          variant="outlined"
+          className=""
+          sx={{
+            width: '100%'
           }}
         >
-          {({ errors, touched, handleChange, handleBlur, values }) => (
-            <Form>
-              <Box mb={3}>
-                <FormControl id="email">
-                  <Input
+          <CardContent>
+            <Box sx={{ textAlign: 'center', mb: 4 }}>
+              <Typography level="h2" component="h1" gutterBottom sx={{
+                fontWeight: 'bold',
+
+              }}>
+                {t('common.login')}
+              </Typography>
+              <Typography level="body-md" sx={{ color: 'neutral.500' }}>
+                {t('auth.login_instructions')}
+              </Typography>
+            </Box>
+
+            {error && (
+              <Alert
+                color='danger'
+                variant="soft"
+                sx={{
+                  mb: 3,
+                  '& .MuiAlert-message': {
+                    fontWeight: 'medium'
+                  }
+                }}
+              >
+                {error}
+              </Alert>
+            )}
+
+            <Formik
+              initialValues={{ email: '', password: '' }}
+              validationSchema={LoginSchema}
+              onSubmit={async (values) => {
+                await login(values.email, values.password);
+              }}
+            >
+              {({ errors, touched, handleChange, handleBlur, values }) => (
+                <Form>
+                  <Box mb={3}>
+                    <FormControl>
+                      <FormLabel>Email</FormLabel>
+                      <Input
+                        size="lg"
+                        fullWidth
+                        name="email"
+                        type="email"
+                        variant="outlined"
+                        value={values.email}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        error={Boolean(errors.email && touched.email)}
+                        startDecorator={<Email />}
+                        sx={{
+                          '&:hover': {
+                            borderColor: 'primary.400'
+                          }
+                        }}
+                      />
+                    </FormControl>
+                  </Box>
+
+                  <Box mb={3}>
+                    <FormControl>
+                      <FormLabel>Mot de passe</FormLabel>
+                      <Input
+                        size="lg"
+                        fullWidth
+                        name="password"
+                        type={showPassword ? "text" : "password"}
+                        variant="outlined"
+                        value={values.password}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        error={Boolean(errors.password && touched.password)}
+                        startDecorator={<Key />}
+                        endDecorator={
+                          <IconButton
+                            onClick={handleTogglePasswordVisibility}
+                            aria-label="toggle password visibility"
+                            variant="plain"
+                            color="neutral"
+                          >
+                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        }
+                        sx={{
+                          '&:hover': {
+                            borderColor: 'primary.400'
+                          }
+                        }}
+                      />
+                    </FormControl>
+                  </Box>
+
+                  <Box mb={3} display="flex" flexDirection={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} gap={2}>
+                    <Box display="flex" alignItems="center">
+                      <Field
+                        type="checkbox"
+                        name="remember"
+                        id="remember"
+                        className="h-4 w-4 mr-2"
+                      />
+                      <Typography level="body-sm" component="label" htmlFor="remember">
+                        {t('auth.remember_me')}
+                      </Typography>
+                    </Box>
+                    <Link href="/forgot-password" passHref>
+                      <Typography
+                        level="body-sm"
+                        component="span"
+                        color="primary"
+                        sx={{
+                          cursor: 'pointer',
+                          '&:hover': {
+                            textDecoration: 'underline'
+                          }
+                        }}
+                      >
+                        {t('auth.forgot_password')}
+                      </Typography>
+                    </Link>
+                  </Box>
+
+                  <Button
+                    type="submit"
                     fullWidth
-                    name="email"
-                    type="email"
-                    variant="outlined"
-                    value={values.email}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    error={Boolean(errors.email && touched.email)}
-                    startDecorator={<Email color='action' />}
-                  />
-                </FormControl>
-              </Box>
+                    variant="solid"
+                    color="primary"
+                    disabled={isLoading}
+                    sx={{
+                      py: 1.5,
+                      fontWeight: 'medium',
+                      fontSize: '1rem',
+                      transition: 'all 0.2s ease-in-out',
+                      '&:hover': {
+                        transform: 'translateY(-1px)',
+                        boxShadow: '0 4px 12px rgba(55, 127, 189, 0.2)'
+                      }
+                    }}
+                  >
+                    {isLoading ? (
+                      <CircularProgress size="sm" color="neutral" />
+                    ) : (
+                      t('auth.login_button')
+                    )}
+                  </Button>
+                </Form>
+              )}
+            </Formik>
 
-              <Box mb={3}>
-                <FormControl id="password">
-                  <Input
-                    fullWidth
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    variant="outlined"
-                    value={values.password}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    error={Boolean(errors.password && touched.password)}
-                    startDecorator={<Key />}
-                    endDecorator={<IconButton
-                      onClick={handleTogglePasswordVisibility}
-                      aria-label="toggle password visibility"
-                    >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>}
-                  />
-
-                </FormControl>
-              </Box>
-
-              <Box mb={3} display="flex" justifyContent="space-between" alignItems="center">
-                <Box display="flex" alignItems="center">
-                  <Field
-                    type="checkbox"
-                    name="remember"
-                    id="remember"
-                    className="h-4 w-4 mr-2"
-                  />
-                  <Typography component="label" htmlFor="remember">
-                    {t('auth.remember_me')}
-                  </Typography>
-                </Box>
-                <Link href="/forgot-password" passHref>
+            <Box mt={4} textAlign="center">
+              <Typography level="body-sm" color="neutral">
+                {t('auth.no_account')}{' '}
+                <Link href="/demande-devis-souscription" passHref>
                   <Typography
+                    level="body-sm"
                     component="span"
                     color="primary"
                     sx={{
                       cursor: 'pointer',
+                      fontWeight: 'medium',
                       '&:hover': {
                         textDecoration: 'underline'
                       }
                     }}
                   >
-                    {t('auth.forgot_password')}
+                    {t('auth.create_account')}
                   </Typography>
                 </Link>
-              </Box>
-
-              <Button
-                type="submit"
-                fullWidth
-                variant="solid"
-                color="primary"
-                disabled={isLoading}
-                sx={{
-                  py: 1.5,
-                  fontWeight: 'medium',
-                  fontSize: '1rem'
-                }}
-              >
-                {isLoading ? (
-                  <CircularProgress size="sm" color="neutral" />
-                ) : (
-                  t('auth.login_button')
-                )}
-              </Button>
-            </Form>
-          )}
-        </Formik>
-
-        <Box mt={4} textAlign="center">
-          <Typography level="body-sm" color="neutral">
-            {t('auth.no_account')}{' '}
-            <Link href="/demande-devis-souscription" passHref>
-              <Typography
-                level="body-sm"
-                component="span"
-                color="primary"
-                sx={{
-                  cursor: 'pointer',
-                  fontWeight: 'medium',
-                  '&:hover': {
-                    textDecoration: 'underline'
-                  }
-                }}
-              >
-                {t('auth.create_account')}
               </Typography>
-            </Link>
-          </Typography>
-        </Box>
+            </Box>
+          </CardContent>
+        </Card>
       </Container>
     </Box>
   );
