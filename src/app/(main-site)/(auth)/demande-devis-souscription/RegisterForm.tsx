@@ -28,7 +28,8 @@ import { MuiTelInput } from 'mui-tel-input';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import * as Yup from 'yup';
 
 // Schéma de validation
@@ -75,6 +76,17 @@ export default function RegisterForm({ initialPlan }: RegisterFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [plan, setPlan] = useState<Plans>(initialPlan);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const parametreP = searchParams.get('p');
+    if (parametreP) {
+      // Nettoyage de l'URL en retirant les paramètres
+      router.replace(pathname, { scroll: false });
+    }
+  }, [searchParams, router, pathname]);
 
   // Détection du mode sombre du système
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
