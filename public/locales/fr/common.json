@@ -178,7 +178,73 @@
     "admin_managed": "Sérénité",
     "recommended": "Recommandé",
     "self_managed_description": "Gérez vous-même vos registres de sécurité avec notre plateforme intuitive",
-    "admin_managed_description": "Laissez nos experts gérer vos registres de sécurité pour une conformité optimale"
+    "admin_managed_description": "Laissez nos experts gérer vos registres de sécurité pour une conformité optimale",
+    "hero": {
+      "title": "Plans Axignis",
+      "description": "Choisissez la solution adaptée à vos besoins"
+    },
+    "main_features": {
+      "title": "Fonctionnalités principales",
+      "items": ["Registre de sécurité numérique", "Tableau de bord", "Gestion documentaire intégrée", "Export facile des données"]
+    },
+    "plans_section": {
+      "title": "Nos Plans",
+      "description": "Choisissez entre une gestion autonome ou une prise en charge complète par nos experts",
+      "autonomy": {
+        "title": "Autonomie",
+        "description": "Pour ceux qui souhaitent gérer eux-mêmes leur sécurité",
+        "features": ["Contrôle total", "Gestion autonome", "Alertes automatisées", "Export des registres", "Assistance Axignis limitée"],
+        "cta": "Demander un devis"
+      },
+      "serenity": {
+        "title": "Sérénité",
+        "description": "Délégation complète à nos experts Axignis",
+        "features": ["Gestion déléguée complète", "Alertes personnalisées et proactives", "Accompagnement dédié", "Rapports et synthèses personnalisés", "Accès premium au dashboard Axignis"],
+        "cta": "Demander un devis"
+      }
+    },
+    "comparison": {
+      "title": "Comparatif détaillé",
+      "features": {
+        "full_access": "Accès complet à l'application",
+        "autonomous_management": "Gestion autonome des interventions",
+        "automated_alerts": "Alertes automatisées",
+        "proactive_management": "Gestion proactive et délégation intégrale",
+        "customer_support": "Support client",
+        "dedicated_contact": "Interlocuteur dédié Axignis"
+      },
+      "support_types": {
+        "email": "Email",
+        "phone_email": "Téléphone & Email"
+      }
+    },
+    "added_value": {
+      "title": "Nos valeurs ajoutées",
+      "items": {
+        "reliability": {
+          "title": "Fiabilité et conformité",
+          "description": "Application répondant strictement aux normes réglementaires ERP, IGH, HAB, etc."
+        },
+        "productivity": {
+          "title": "Gain de temps et productivité",
+          "description": "Dématérialisation et centralisation des documents techniques."
+        },
+        "security": {
+          "title": "Sécurité des données",
+          "description": "Stockage sécurisé avec accès personnalisé par rôles et permissions."
+        },
+        "user_experience": {
+          "title": "Expérience utilisateur optimisée",
+          "description": "Interface accessible, intuitive et responsive adaptée à tous supports."
+        }
+      }
+    },
+    "cta": {
+      "title": "Prêt à sécuriser votre établissement ?",
+      "description": "Contactez-nous dès aujourd'hui pour une consultation gratuite et sans engagement.",
+      "request_quote": "Demander un devis",
+      "contact_us": "Nous contacter"
+    }
   },
   "errors": {
     "generic": "Une erreur inattendue est survenue",
