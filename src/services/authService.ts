@@ -28,7 +28,7 @@ const authService = {
 
       // Sauvegarder les tokens
       localStorage.setItem('accessToken', response.data.accessToken);
-      localStorage.setItem('refreshToken', response.data.refreshToken || response.data.accessToken);
+      //localStorage.setItem('refreshToken', response.data.refreshToken || response.data.accessToken);
 
       return response.data;
     } catch (error) {
@@ -48,13 +48,14 @@ const authService = {
    * @throws Erreur en cas d'échec d'inscription (email déjà utilisé, validation échouée, etc.)
    */
   register: async (credentials: RegisterCredentials): Promise<AuthResponse> => {
+    console.log('credentials', credentials);
     try {
       const response = await api.post<AuthResponse>('/users', credentials);
 
       // Sauvegarder les tokens si fournis
       if (response.data.accessToken) {
         localStorage.setItem('accessToken', response.data.accessToken);
-        localStorage.setItem('refreshToken', response.data.refreshToken || response.data.accessToken);
+        //localStorage.setItem('refreshToken', response.data.refreshToken || response.data.accessToken);
       }
 
       return response.data;
@@ -128,6 +129,7 @@ const authService = {
    * @throws Erreur si le refresh token est invalide ou expiré, avec redirection vers la page de connexion
    */
   refreshToken: async (): Promise<string> => {
+    return 'test';
     try {
       const refreshToken = localStorage.getItem('refreshToken');
 

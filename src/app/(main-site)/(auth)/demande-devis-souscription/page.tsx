@@ -53,10 +53,10 @@ const RegisterSchema = Yup.object().shape({
     .required('Numéro de téléphone requis'), // Validation pour le numéro de téléphone
   password: Yup.string()
     .min(8, 'Le mot de passe doit contenir au moins 8 caractères')
-    .matches(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-      'Le mot de passe doit contenir au moins une minuscule, une majuscule, un chiffre et un caractère spécial'
-    )
+    // .matches(
+    //   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+    //   'Le mot de passe doit contenir au moins une minuscule, une majuscule, un chiffre et un caractère spécial'
+    // )
     .required('Mot de passe requis'),
   confirmPassword: Yup.string()
     .oneOf([Yup.ref('password')], 'Les mots de passe doivent correspondre')
@@ -222,12 +222,18 @@ export default function RegisterPage() {
               validationSchema={RegisterSchema}
               onSubmit={async (values) => {
                 await register(
-                  values.firstName,
-                  values.lastName,
-                  values.company,
-                  values.email,
-                  values.phone,
-                  values.password
+                  {
+                    firstName: values.firstName,
+                    lastName: values.lastName,
+                    company: values.company,
+                    email: values.email,
+                    phone: values.phone,
+                    password: values.password,
+                    confirmPassword: values.confirmPassword,
+                    siretNumber: values.siretNumber,
+                    plan: plan,
+                    comment: values.comment
+                  }
                 );
               }}
             >
