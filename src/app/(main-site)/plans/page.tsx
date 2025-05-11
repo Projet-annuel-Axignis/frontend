@@ -1,9 +1,12 @@
-'use client';
-
 import HeroHeader from '@/components/commons/HeroHeader';
 import { Plans } from '@/types/plans';
 import { CheckCircle } from '@mui/icons-material';
+import { Metadata } from 'next';
 import Link from 'next/link';
+
+export const metadata: Metadata = {
+  title: "Axignis - Plans",
+};
 
 export default function PlansPage() {
   // Fonctionnalités communes aux deux plans
