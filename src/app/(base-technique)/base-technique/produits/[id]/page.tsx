@@ -1,5 +1,3 @@
-import Header from '@/components/Header';
-import { CssBaseline, CssVarsProvider } from '@mui/joy';
 import ProductsDetails from '@/components/base-technique/ProductDetails';
 import React from 'react';
 
@@ -17,10 +15,8 @@ export default async function TechnicalBaseDetail({ params }: { params: Promise<
   const { id } = await params;
 
   return (
-    <CssVarsProvider disableTransitionOnChange>
-      <CssBaseline />
-      <Header />
+    <>
       <ProductsDetails id={id} />
-    </CssVarsProvider>
+    </>
   );
 }

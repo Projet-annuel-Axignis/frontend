@@ -2,8 +2,6 @@
 
 import { Box, Breadcrumbs, Card, CardContent, Grid, Link, Tab, tabClasses, TabList, TabPanel, Tabs, Typography, Button } from '@mui/joy';
 import React from 'react';
-import Image from 'next/image';
-import Sidebar from '../Sidebar';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import VerifiedIcon from '@mui/icons-material/Verified';
@@ -15,185 +13,169 @@ export default function ProductDetails({ id }: { id: string }) {
     const [index, setIndex] = React.useState(0);
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100dvh' }}>
-        <Sidebar />
+    <>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Breadcrumbs
+            size="sm"
+            aria-label="breadcrumbs"
+            separator={<ChevronRightRoundedIcon />}
+            sx={{ pl: 0 }}
+            >
+                <Link
+                    underline="none"
+                    color="neutral"
+                    href="/"
+                    aria-label="Home"
+                >
+                    <HomeRoundedIcon />
+                </Link>
+                <Link
+                    underline="none"
+                    color="neutral"
+                    href="/base-technique"
+                    aria-label="Home"
+                >
+                    <Typography sx={{ fontWeight: 500, fontSize: 12 }}>
+                        Produits
+                    </Typography>
+                </Link>
+                <Typography color="primary" sx={{ fontWeight: 500, fontSize: 12 }}>
+                    {id}
+                </Typography>
+            </Breadcrumbs>
+        </Box>
         <Box
-            component="main"
-            className="MainContent"
             sx={{
-            px: { xs: 2, md: 6 },
-            pt: { xs: '84px', sm: '84px', md: '84px' },
-            pb: { xs: 2, sm: 2, md: 3 },
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            minWidth: 0,
-            height: '100dvh',
-            gap: 1,
+                display: 'flex',
+                mb: 1,
+                gap: 1,
+                flexDirection: { xs: 'column', sm: 'row' },
+                alignItems: { xs: 'start', sm: 'center' },
+                flexWrap: 'wrap',
+                justifyContent: 'space-between',
             }}
         >
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Breadcrumbs
-                size="sm"
-                aria-label="breadcrumbs"
-                separator={<ChevronRightRoundedIcon />}
-                sx={{ pl: 0 }}
-                >
-                    <Link
-                        underline="none"
-                        color="neutral"
-                        href="/"
-                        aria-label="Home"
-                    >
-                        <HomeRoundedIcon />
-                    </Link>
-                    <Link
-                        underline="none"
-                        color="neutral"
-                        href="/base-technique"
-                        aria-label="Home"
-                    >
-                        <Typography sx={{ fontWeight: 500, fontSize: 12 }}>
-                            Produits
-                        </Typography>
-                    </Link>
-                    <Typography color="primary" sx={{ fontWeight: 500, fontSize: 12 }}>
-                        {id}
-                    </Typography>
-                </Breadcrumbs>
-            </Box>
-            <Box
-                sx={{
-                    display: 'flex',
-                    mb: 1,
-                    gap: 1,
-                    flexDirection: { xs: 'column', sm: 'row' },
-                    alignItems: { xs: 'start', sm: 'center' },
-                    flexWrap: 'wrap',
-                    justifyContent: 'space-between',
-                }}
+            <Typography level="h2" component="h1">
+                {id} JOD-1 - LBXJOD110017 - Déclencheur Manuel Incendie Rouge NF
+            </Typography>
+        </Box>
+        <Box sx={{ flexGrow: 1, m: -2, overflowX: 'hidden', my: 2, borderRadius: '8px' }}>
+            <Tabs
+                aria-label="Pipeline"
+                value={index}
+                onChange={(event, value) => setIndex(value as number)}
             >
-                <Typography level="h2" component="h1">
-                    {id} JOD-1 - LBXJOD110017 - Déclencheur Manuel Incendie Rouge NF
-                </Typography>
-            </Box>
-            <Box sx={{ flexGrow: 1, m: -2, overflowX: 'hidden', my: 2, borderRadius: '8px' }}>
-                <Tabs
-                    aria-label="Pipeline"
-                    value={index}
-                    onChange={(event, value) => setIndex(value as number)}
-                >
-                    <TabList
-                    sx={{
-                        pt: 1,
-                        justifyContent: 'flex-start',
-                        [`&& .${tabClasses.root}`]: {
-                        flex: 'initial',
+                <TabList
+                sx={{
+                    pt: 1,
+                    justifyContent: 'flex-start',
+                    [`&& .${tabClasses.root}`]: {
+                    flex: 'initial',
+                    bgcolor: 'transparent',
+                    '&:hover': {
                         bgcolor: 'transparent',
-                        '&:hover': {
-                            bgcolor: 'transparent',
+                    },
+                    [`&.${tabClasses.selected}`]: {
+                        color: 'primary.plainColor',
+                        '&::after': {
+                        height: 2,
+                        borderTopLeftRadius: 3,
+                        borderTopRightRadius: 3,
+                        bgcolor: 'primary.500',
                         },
-                        [`&.${tabClasses.selected}`]: {
-                            color: 'primary.plainColor',
-                            '&::after': {
-                            height: 2,
-                            borderTopLeftRadius: 3,
-                            borderTopRightRadius: 3,
-                            bgcolor: 'primary.500',
-                            },
-                        },
-                        },
-                        borderRadius: '0px 0px 0px 0px',
-                    }}
-                    >
-                    <Tab indicatorInset>
-                        Informations
-                    </Tab>
-                    <Tab indicatorInset>
-                        Documents
-                    </Tab>
-                    <Tab indicatorInset>
-                        Inventaire
-                    </Tab>
-                    <Tab indicatorInset>
-                        Compatibilités
-                    </Tab>
-                    </TabList>
-                    <Box
-                    sx={(theme) => ({
-                        '--bg': theme.vars.palette.background.surface,
-                        background: 'var(--bg)',
-                        boxShadow: '0 0 0 100vmax var(--bg)',
-                        clipPath: 'inset(0 -100vmax)',
-                    })}
-                    >
-                    <TabPanel value={0}>
-                    <Box
-                    sx={{
-                        width: '100%',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        flexGrow: 1,
-                        height: '100%'
-                    }}
-                    >
-                        <Card variant="soft">
-                            <CardContent>
-                                <Typography level="h4" component='h1' sx={{ mb: 2 }}>Informations générales</Typography>
-                                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2 }}>
-                                    {/* Ligne 1 */}
-                                    <Box>
-                                        <Typography level="body-sm" fontWeight="bold">Référence</Typography>
-                                        <Typography level="body-md">JOD-1</Typography>
-                                    </Box>
-                                    <Box>
-                                        <Typography level="body-sm" fontWeight="bold">Modèle</Typography>
-                                        <Typography level="body-md">LBXJOD110017</Typography>
-                                    </Box>
-                                    <Box>
-                                        <Typography level="body-sm" fontWeight="bold">Marque</Typography>
-                                        <Typography level="body-md">Legrand</Typography>
-                                    </Box>
-                                    <Box>
-                                        <Typography level="body-sm" fontWeight="bold">Type</Typography>
-                                        <Typography level="body-md">Déclencheur</Typography>
-                                    </Box>
+                    },
+                    },
+                    borderRadius: '0px 0px 0px 0px',
+                }}
+                >
+                <Tab indicatorInset>
+                    Informations
+                </Tab>
+                <Tab indicatorInset>
+                    Documents
+                </Tab>
+                <Tab indicatorInset>
+                    Inventaire
+                </Tab>
+                <Tab indicatorInset>
+                    Compatibilités
+                </Tab>
+                </TabList>
+                <Box
+                sx={(theme) => ({
+                    '--bg': theme.vars.palette.background.surface,
+                    background: 'var(--bg)',
+                    boxShadow: '0 0 0 100vmax var(--bg)',
+                    clipPath: 'inset(0 -100vmax)',
+                })}
+                >
+                <TabPanel value={0}>
+                <Box
+                sx={{
+                    width: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    flexGrow: 1,
+                    height: '100%'
+                }}
+                >
+                    <Card variant="soft">
+                        <CardContent>
+                            <Typography level="h4" component='h1' sx={{ mb: 2 }}>Informations générales</Typography>
+                            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2 }}>
+                                {/* Ligne 1 */}
+                                <Box>
+                                    <Typography level="body-sm" fontWeight="bold">Référence</Typography>
+                                    <Typography level="body-md">JOD-1</Typography>
+                                </Box>
+                                <Box>
+                                    <Typography level="body-sm" fontWeight="bold">Modèle</Typography>
+                                    <Typography level="body-md">LBXJOD110017</Typography>
+                                </Box>
+                                <Box>
+                                    <Typography level="body-sm" fontWeight="bold">Marque</Typography>
+                                    <Typography level="body-md">Legrand</Typography>
+                                </Box>
+                                <Box>
+                                    <Typography level="body-sm" fontWeight="bold">Type</Typography>
+                                    <Typography level="body-md">Déclencheur</Typography>
+                                </Box>
 
-                                    {/* Ligne 2 */}
-                                    <Box>
-                                        <Typography level="body-sm" fontWeight="bold">Gamme</Typography>
-                                        <Typography level="body-md">Sécurité</Typography>
-                                    </Box>
-                                    <Box>
-                                        <Typography level="body-sm" fontWeight="bold">Certification</Typography>
-                                        <Typography level="body-md">NF</Typography>
-                                    </Box>
-                                    <Box>
-                                        <Typography level="body-sm" fontWeight="bold">Couleur</Typography>
-                                        <Typography level="body-md">Rouge</Typography>
-                                    </Box>
-                                    <Box>
-                                        <Typography level="body-sm" fontWeight="bold">Statut</Typography>
-                                        <Typography level="body-md">Actif</Typography>
-                                    </Box>
+                                {/* Ligne 2 */}
+                                <Box>
+                                    <Typography level="body-sm" fontWeight="bold">Gamme</Typography>
+                                    <Typography level="body-md">Sécurité</Typography>
+                                </Box>
+                                <Box>
+                                    <Typography level="body-sm" fontWeight="bold">Certification</Typography>
+                                    <Typography level="body-md">NF</Typography>
+                                </Box>
+                                <Box>
+                                    <Typography level="body-sm" fontWeight="bold">Couleur</Typography>
+                                    <Typography level="body-md">Rouge</Typography>
+                                </Box>
+                                <Box>
+                                    <Typography level="body-sm" fontWeight="bold">Statut</Typography>
+                                    <Typography level="body-md">Actif</Typography>
+                                </Box>
 
-                                    {/* Ligne 3 */}
-                                    <Box>
-                                        <Typography level="body-sm" fontWeight="bold">Date de création</Typography>
-                                        <Typography level="body-md">15/01/2023</Typography>
-                                    </Box>
-                                    <Box>
-                                        <Typography level="body-sm" fontWeight="bold">Dernière modification</Typography>
-                                        <Typography level="body-md">20/03/2023</Typography>
-                                    </Box>
-                                    <Box>
-                                        <Typography level="body-sm" fontWeight="bold">Prix unitaire</Typography>
-                                        <Typography level="body-md">45,99 €</Typography>
-                                    </Box>
-                                    <Box>
-                                        <Typography level="body-sm" fontWeight="bold">Stock</Typography>
-                                        <Typography level="body-md">128 unités</Typography>
-                                    </Box>
+                                {/* Ligne 3 */}
+                                <Box>
+                                    <Typography level="body-sm" fontWeight="bold">Date de création</Typography>
+                                    <Typography level="body-md">15/01/2023</Typography>
+                                </Box>
+                                <Box>
+                                    <Typography level="body-sm" fontWeight="bold">Dernière modification</Typography>
+                                    <Typography level="body-md">20/03/2023</Typography>
+                                </Box>
+                                <Box>
+                                    <Typography level="body-sm" fontWeight="bold">Prix unitaire</Typography>
+                                    <Typography level="body-md">45,99 €</Typography>
+                                </Box>
+                                <Box>
+                                    <Typography level="body-sm" fontWeight="bold">Stock</Typography>
+                                    <Typography level="body-md">128 unités</Typography>
+                                </Box>
 
                                     {/* Ligne 4 */}
                                     <Box>
@@ -526,8 +508,7 @@ export default function ProductDetails({ id }: { id: string }) {
                                                                 width={63}
                                                                 height={63}
                                                                 style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain' }}
-                                                            />
-                                                        </Box>
+                                                            />                                                        </Box>
                                                         <Box sx={{ flexGrow: 1 }}>
                                                             <Typography level="body-sm" fontWeight="bold">Clé de réarmement DMI</Typography>
                                                             <Typography level="body-xs" sx={{ mb: 1 }}>Réf: CRM-01</Typography>
@@ -568,7 +549,7 @@ export default function ProductDetails({ id }: { id: string }) {
                                                                 width={63}
                                                                 height={63}
                                                                 style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain' }}
-                                                            />
+                                                            />  
                                                         </Box>
                                                         <Box sx={{ flexGrow: 1 }}>
                                                             <Typography level="body-sm" fontWeight="bold">Centrale incendie 4 zones</Typography>
@@ -589,7 +570,7 @@ export default function ProductDetails({ id }: { id: string }) {
                                                                 width={63}
                                                                 height={63}
                                                                 style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain' }}
-                                                            />
+                                                            />  
                                                         </Box>
                                                         <Box sx={{ flexGrow: 1 }}>
                                                             <Typography level="body-sm" fontWeight="bold">Câble résistant au feu</Typography>
@@ -745,7 +726,6 @@ export default function ProductDetails({ id }: { id: string }) {
                     </Box>
                 </Tabs>
                 </Box>
-        </Box>
-    </Box>
+    </>
   );
 }

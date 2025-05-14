@@ -1,3 +1,5 @@
+'use client';
+
 import * as React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -7,14 +9,12 @@ import Box from '@mui/joy/Box';
 import Chip from '@mui/joy/Chip';
 import Divider from '@mui/joy/Divider';
 import IconButton from '@mui/joy/IconButton';
-import Input from '@mui/joy/Input';
 import List from '@mui/joy/List';
 import ListItem from '@mui/joy/ListItem';
 import ListItemButton, { listItemButtonClasses } from '@mui/joy/ListItemButton';
 import ListItemContent from '@mui/joy/ListItemContent';
 import Typography from '@mui/joy/Typography';
 import Sheet from '@mui/joy/Sheet';
-import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
@@ -130,7 +130,9 @@ export default function Sidebar() {
           />
         </Link>
       </div>
-      <Input size="sm" startDecorator={<SearchRoundedIcon />} placeholder="Recherche" />
+      <div className="flex flex-col items-center justify-between w-full p-px">
+        <Chip size='lg' variant='solid' sx={{ marginBottom: 2.5 }} color='primary'>Base technique</Chip>
+      </div>
       <Box
         sx={{
           minHeight: 0,
