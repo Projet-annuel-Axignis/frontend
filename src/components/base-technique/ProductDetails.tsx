@@ -2,6 +2,7 @@
 
 import { Box, Breadcrumbs, Card, CardContent, Grid, Link, Tab, tabClasses, TabList, TabPanel, Tabs, Typography, Button } from '@mui/joy';
 import React from 'react';
+import Image from 'next/image';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import VerifiedIcon from '@mui/icons-material/Verified';
@@ -549,7 +550,7 @@ export default function ProductDetails({ id }: { id: string }) {
                                                                 width={63}
                                                                 height={63}
                                                                 style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain' }}
-                                                            />  
+                                                            />
                                                         </Box>
                                                         <Box sx={{ flexGrow: 1 }}>
                                                             <Typography level="body-sm" fontWeight="bold">Centrale incendie 4 zones</Typography>
@@ -570,7 +571,7 @@ export default function ProductDetails({ id }: { id: string }) {
                                                                 width={63}
                                                                 height={63}
                                                                 style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain' }}
-                                                            />  
+                                                            />
                                                         </Box>
                                                         <Box sx={{ flexGrow: 1 }}>
                                                             <Typography level="body-sm" fontWeight="bold">Câble résistant au feu</Typography>
