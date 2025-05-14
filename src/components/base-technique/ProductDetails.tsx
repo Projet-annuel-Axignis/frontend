@@ -2,6 +2,7 @@
 
 import { Box, Breadcrumbs, Card, CardContent, Grid, Link, Tab, tabClasses, TabList, TabPanel, Tabs, Typography, Button } from '@mui/joy';
 import React from 'react';
+import Image from 'next/image';
 import Sidebar from '../Sidebar';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
@@ -232,19 +233,21 @@ export default function ProductDetails({ id }: { id: string }) {
                                         <Typography level="h4" component='h1'>Documents</Typography>
                                         <Typography level="body-sm" sx={{ ml: 1 }}>(3)</Typography>
                                     </Box>
-                                    
+
                                     {/* Liste des documents */}
                                     <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2 }}>
                                         <Card variant="outlined">
                                             <CardContent sx={{ p: 2 }}>
                                                 <Box sx={{ mb: 1, display: 'flex', justifyContent: 'center' }}>
-                                                    <img 
-                                                        src="/pdf-icon.png" 
-                                                        alt="PDF" 
+                                                    <Image
+                                                        src="/pdf-icon.png"
+                                                        alt="PDF"
+                                                        width={48}
+                                                        height={48}
                                                         style={{ width: 48, height: 48 }}
                                                         onError={(e) => {
                                                             // Fallback si l'image ne charge pas
-                                                            e.currentTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"><path fill="red" d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"/></svg>'
+                                                            (e.target as HTMLImageElement).src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"><path fill="red" d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"/></svg>';
                                                         }}
                                                     />
                                                 </Box>
@@ -257,16 +260,19 @@ export default function ProductDetails({ id }: { id: string }) {
                                                 </Box>
                                             </CardContent>
                                         </Card>
-                                        
+
                                         <Card variant="outlined">
                                             <CardContent sx={{ p: 2 }}>
                                                 <Box sx={{ mb: 1, display: 'flex', justifyContent: 'center' }}>
-                                                    <img 
-                                                        src="/pdf-icon.png" 
-                                                        alt="PDF" 
+                                                    <Image
+                                                        src="/pdf-icon.png"
+                                                        alt="PDF"
+                                                        width={48}
+                                                        height={48}
                                                         style={{ width: 48, height: 48 }}
                                                         onError={(e) => {
-                                                            e.currentTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"><path fill="red" d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"/></svg>'
+                                                            // Fallback si l'image ne charge pas
+                                                            (e.target as HTMLImageElement).src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"><path fill="red" d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"/></svg>';
                                                         }}
                                                     />
                                                 </Box>
@@ -283,12 +289,15 @@ export default function ProductDetails({ id }: { id: string }) {
                                         <Card variant="outlined">
                                             <CardContent sx={{ p: 2 }}>
                                                 <Box sx={{ mb: 1, display: 'flex', justifyContent: 'center' }}>
-                                                    <img 
-                                                        src="/dwg-icon.png" 
-                                                        alt="DWG" 
+                                                    <Image
+                                                        src="/pdf-icon.png"
+                                                        alt="PDF"
+                                                        width={48}
+                                                        height={48}
                                                         style={{ width: 48, height: 48 }}
                                                         onError={(e) => {
-                                                            e.currentTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"><path fill="blue" d="M21 5c-1.11-.35-2.33-.5-3.5-.5c-1.95 0-4.05.4-5.5 1.5c-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5c.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5c1.35-.85 3.8-1.5 5.5-1.5c1.65 0 3.35.3 4.75 1.05c.1.05.15.05.25.05c.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1zm0 13.5c-1.1-.35-2.3-.5-3.5-.5c-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5c1.2 0 2.4.15 3.5.5v11.5z"/></svg>'
+                                                            // Fallback si l'image ne charge pas
+                                                            (e.target as HTMLImageElement).src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"><path fill="red" d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"/></svg>';
                                                         }}
                                                     />
                                                 </Box>
@@ -329,7 +338,7 @@ export default function ProductDetails({ id }: { id: string }) {
                             <Card variant="soft" sx={{ width: '100%', height: '100%' }}>
                                 <CardContent>
                                     <Typography level="h4" component='h1' sx={{ mb: 2 }}>Détails d&apos;inventaire</Typography>
-                                    
+
                                     {/* Informations de stock */}
                                     <Box sx={{ mb: 4 }}>
                                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -398,7 +407,7 @@ export default function ProductDetails({ id }: { id: string }) {
                                             </Grid>
                                         </Grid>
                                     </Box>
-                                    
+
                                     {/* Historique des mouvements */}
                                     <Box sx={{ mb: 4 }}>
                                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
@@ -499,7 +508,7 @@ export default function ProductDetails({ id }: { id: string }) {
                             <Card variant="soft" sx={{ width: '100%', height: '100%' }}>
                                 <CardContent>
                                     <Typography level="h4" component='h1' sx={{ mb: 2 }}>Compatibilités</Typography>
-                                    
+
                                     {/* Produits compatibles */}
                                     <Box sx={{ mb: 4 }}>
                                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
@@ -511,7 +520,13 @@ export default function ProductDetails({ id }: { id: string }) {
                                                 <CardContent sx={{ p: 2 }}>
                                                     <Box sx={{ display: 'flex', gap: 2 }}>
                                                         <Box sx={{ width: 70, height: 70, bgcolor: 'neutral.100', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 'sm', overflow: 'hidden', flexShrink: 0 }}>
-                                                            <img src="/images/base-technique/cables.png" alt="Produit" style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain' }} />
+                                                            <Image
+                                                                src="/images/base-technique/cables.png"
+                                                                alt="Produit"
+                                                                width={63}
+                                                                height={63}
+                                                                style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain' }}
+                                                            />
                                                         </Box>
                                                         <Box sx={{ flexGrow: 1 }}>
                                                             <Typography level="body-sm" fontWeight="bold">Clé de réarmement DMI</Typography>
@@ -521,12 +536,18 @@ export default function ProductDetails({ id }: { id: string }) {
                                                     </Box>
                                                 </CardContent>
                                             </Card>
-                                            
+
                                             <Card variant="outlined">
                                                 <CardContent sx={{ p: 2 }}>
                                                     <Box sx={{ display: 'flex', gap: 2 }}>
                                                         <Box sx={{ width: 70, height: 70, bgcolor: 'neutral.100', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 'sm', overflow: 'hidden', flexShrink: 0 }}>
-                                                            <img src="/images/base-technique/cables.png" alt="Produit" style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain' }} />
+                                                            <Image
+                                                                src="/images/base-technique/cables.png"
+                                                                alt="Produit"
+                                                                width={63}
+                                                                height={63}
+                                                                style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain' }}
+                                                            />
                                                         </Box>
                                                         <Box sx={{ flexGrow: 1 }}>
                                                             <Typography level="body-sm" fontWeight="bold">Volet de protection</Typography>
@@ -536,12 +557,18 @@ export default function ProductDetails({ id }: { id: string }) {
                                                     </Box>
                                                 </CardContent>
                                             </Card>
-                                            
+
                                             <Card variant="outlined">
                                                 <CardContent sx={{ p: 2 }}>
                                                     <Box sx={{ display: 'flex', gap: 2 }}>
                                                         <Box sx={{ width: 70, height: 70, bgcolor: 'neutral.100', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 'sm', overflow: 'hidden', flexShrink: 0 }}>
-                                                            <img src="/images/base-technique/cables.png" alt="Produit" style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain' }} />
+                                                            <Image
+                                                                src="/images/base-technique/cables.png"
+                                                                alt="Produit"
+                                                                width={63}
+                                                                height={63}
+                                                                style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain' }}
+                                                            />
                                                         </Box>
                                                         <Box sx={{ flexGrow: 1 }}>
                                                             <Typography level="body-sm" fontWeight="bold">Centrale incendie 4 zones</Typography>
@@ -551,12 +578,18 @@ export default function ProductDetails({ id }: { id: string }) {
                                                     </Box>
                                                 </CardContent>
                                             </Card>
-                                            
+
                                             <Card variant="outlined">
                                                 <CardContent sx={{ p: 2 }}>
                                                     <Box sx={{ display: 'flex', gap: 2 }}>
                                                         <Box sx={{ width: 70, height: 70, bgcolor: 'neutral.100', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 'sm', overflow: 'hidden', flexShrink: 0 }}>
-                                                            <img src="/images/base-technique/cables.png" alt="Produit" style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain' }} />
+                                                            <Image
+                                                                src="/images/base-technique/cables.png"
+                                                                alt="Produit"
+                                                                width={63}
+                                                                height={63}
+                                                                style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain' }}
+                                                            />
                                                         </Box>
                                                         <Box sx={{ flexGrow: 1 }}>
                                                             <Typography level="body-sm" fontWeight="bold">Câble résistant au feu</Typography>
@@ -574,7 +607,7 @@ export default function ProductDetails({ id }: { id: string }) {
                                             </Button>
                                         </Box>
                                     </Box>
-                                    
+
                                     {/* Normes et standards */}
                                     <Box sx={{ mb: 4 }}>
                                         <Typography level="title-md" sx={{ mb: 2 }}>Normes et standards</Typography>
@@ -583,11 +616,11 @@ export default function ProductDetails({ id }: { id: string }) {
                                                 <Card variant="outlined">
                                                     <CardContent>
                                                         <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                                                            <Box 
-                                                                sx={{ 
-                                                                    width: 40, 
-                                                                    height: 40, 
-                                                                    bgcolor: 'primary.100', 
+                                                            <Box
+                                                                sx={{
+                                                                    width: 40,
+                                                                    height: 40,
+                                                                    bgcolor: 'primary.100',
                                                                     color: 'primary.600',
                                                                     display: 'flex',
                                                                     alignItems: 'center',
@@ -612,11 +645,11 @@ export default function ProductDetails({ id }: { id: string }) {
                                                 <Card variant="outlined">
                                                     <CardContent>
                                                         <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                                                            <Box 
-                                                                sx={{ 
-                                                                    width: 40, 
-                                                                    height: 40, 
-                                                                    bgcolor: 'primary.100', 
+                                                            <Box
+                                                                sx={{
+                                                                    width: 40,
+                                                                    height: 40,
+                                                                    bgcolor: 'primary.100',
                                                                     color: 'primary.600',
                                                                     display: 'flex',
                                                                     alignItems: 'center',
@@ -639,7 +672,7 @@ export default function ProductDetails({ id }: { id: string }) {
                                             </Grid>
                                         </Grid>
                                     </Box>
-                                    
+
                                     {/* Systèmes compatibles */}
                                     <Box>
                                         <Typography level="title-md" sx={{ mb: 2 }}>Systèmes compatibles</Typography>
