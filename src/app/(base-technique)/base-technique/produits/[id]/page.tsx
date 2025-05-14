@@ -13,7 +13,6 @@ export async function generateStaticParams() {
 export default async function TechnicalBaseDetail({ params }: { params: Promise<{ id: string }> }) {
   // Await the params promise to get the actual id value
   // This is necessary because params is a Promise in this context
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
 
   const { id } = await params;
 
