@@ -81,8 +81,8 @@ export default function RegisterForm({ initialPlan }: RegisterFormProps) {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const parametreP = searchParams.get('p');
-    if (parametreP) {
+    const sParam = searchParams.get('p');
+    if (sParam) {
       // Nettoyage de l'URL en retirant les paramètres
       router.replace(pathname, { scroll: false });
     }
@@ -219,13 +219,13 @@ export default function RegisterForm({ initialPlan }: RegisterFormProps) {
                   {
                     firstName: values.firstName,
                     lastName: values.lastName,
-                    company: values.company,
+                    companyName: values.company,
                     email: values.email,
-                    phone: values.phone,
+                    phoneNumber: values.phone,
                     password: values.password,
                     confirmPassword: values.confirmPassword,
                     siretNumber: values.siretNumber,
-                    plan: plan,
+                    planType: plan,
                     comment: values.comment
                   }
                 );

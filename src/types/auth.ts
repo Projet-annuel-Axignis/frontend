@@ -66,10 +66,10 @@ export interface RegisterCredentials extends LoginCredentials {
   confirmPassword: string;
   role?: string;
   siretNumber: string;
-  plan: Plans;
+  planType: Plans;
   comment?: string;
-  company: string;
-  phone: string;
+  companyName: string;
+  phoneNumber: string;
 }
 
 /**
