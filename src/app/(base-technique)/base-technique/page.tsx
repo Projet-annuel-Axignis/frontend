@@ -1,18 +1,17 @@
 'use client';
 
-import * as React from 'react';
 import Box from '@mui/joy/Box';
-import Button from '@mui/joy/Button';
 import Breadcrumbs from '@mui/joy/Breadcrumbs';
+import Button from '@mui/joy/Button';
 import Link from '@mui/joy/Link';
 import Typography from '@mui/joy/Typography';
 
-import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
+import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 
-import OrderTable from '@/components/OrderTable';
-import OrderList from '@/components/OrderList';
+import OrderList from '@/components/base-technique/OrderList';
+import OrderTable from '@/components/base-technique/OrderTable';
 
 export default function JoyOrderDashboardTemplate() {
   return (
@@ -23,13 +22,13 @@ export default function JoyOrderDashboardTemplate() {
           aria-label="breadcrumbs"
           separator={<ChevronRightRoundedIcon />}
           sx={{ pl: 0 }}
-          >
+        >
           <Link
             underline="none"
             color="neutral"
             href="/"
             aria-label="Home"
-            >
+          >
             <HomeRoundedIcon />
           </Link>
           <Typography color="primary" sx={{ fontWeight: 500, fontSize: 12 }}>
@@ -47,7 +46,7 @@ export default function JoyOrderDashboardTemplate() {
           flexWrap: 'wrap',
           justifyContent: 'space-between',
         }}
-        >
+      >
         <Typography level="h2" component="h1">
           Produits
         </Typography>
@@ -55,7 +54,7 @@ export default function JoyOrderDashboardTemplate() {
           color="primary"
           startDecorator={<DownloadRoundedIcon />}
           size="sm"
-          >
+        >
           Télécharger en PDF
         </Button>
       </Box>
