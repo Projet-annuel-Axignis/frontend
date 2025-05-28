@@ -114,12 +114,12 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
    * @param credentials - Les informations d'inscription de l'utilisateur
    * @param credentials.firstName - Le prénom de l'utilisateur
    * @param credentials.lastName - Le nom de famille de l'utilisateur
-   * @param credentials.company - L'entreprise de l'utilisateur
+   * @param credentials.companyName - Le nom de l'entreprise de l'utilisateur
    * @param credentials.email - L'adresse email de l'utilisateur
    * @param credentials.phone - Le numéro de téléphone de l'utilisateur
    * @param credentials.password - Le mot de passe de l'utilisateur
    * @param credentials.siretNumber - Le numéro SIRET de l'utilisateur
-   * @param credentials.plan - Le plan de l'utilisateur (Plans.SELF_MANAGED ou Plans.ADMIN_MANAGED)
+   * @param credentials.planType - Le type de plan de l'utilisateur (Plans.SELF_MANAGED ou Plans.ADMIN_MANAGED)
    * @param credentials.comment - Le commentaire de l'utilisateur
    */
   const register = async (credentials: RegisterCredentials) => {
@@ -129,14 +129,13 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       const response = await authService.register({
         firstName: credentials.firstName,
         lastName: credentials.lastName,
-        company: credentials.company,
+        companyName: credentials.companyName,
         email: credentials.email,
-        phone: credentials.phone,
+        phoneNumber: credentials.phoneNumber,
         password: credentials.password,
         confirmPassword: credentials.password, // Ceci n'est probablement pas correct pour un cas réel
-        role: 'VISITOR', // Rôle par défaut
         siretNumber: credentials.siretNumber,
-        plan: credentials.plan,
+        planType: credentials.planType,
         comment: credentials.comment
       });
       setUser(response.user);
