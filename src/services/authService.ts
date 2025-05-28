@@ -50,7 +50,7 @@ const authService = {
   register: async (credentials: RegisterCredentials): Promise<AuthResponse> => {
     console.log('credentials', credentials);
     try {
-      const response = await api.post<AuthResponse>('/auth/request-register', credentials);
+      const response = await api.post<AuthResponse>('/auth/register', credentials);
 
       return response.data;
     } catch (error) {
