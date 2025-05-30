@@ -50,13 +50,7 @@ const authService = {
   register: async (credentials: RegisterCredentials): Promise<AuthResponse> => {
     console.log('credentials', credentials);
     try {
-      const response = await api.post<AuthResponse>('/users', credentials);
-
-      // Sauvegarder les tokens si fournis
-      if (response.data.accessToken) {
-        localStorage.setItem('accessToken', response.data.accessToken);
-        //localStorage.setItem('refreshToken', response.data.refreshToken || response.data.accessToken);
-      }
+      const response = await api.post<AuthResponse>('/auth/register', credentials);
 
       return response.data;
     } catch (error) {

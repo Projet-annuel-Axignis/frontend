@@ -41,6 +41,7 @@ const RegisterSchema = Yup.object().shape({
   company: Yup.string()
     .required('Entreprise requise'),
   siretNumber: Yup.string()
+    .length(14, 'Le numéro de SIRET doit contenir 14 chiffres')
     .required('Siret requis'),
   plan: Yup.string()
     .required('Plan requis'),
@@ -53,6 +54,9 @@ const RegisterSchema = Yup.object().shape({
     .required('Numéro de téléphone requis'),
   password: Yup.string()
     .min(8, 'Le mot de passe doit contenir au moins 8 caractères')
+    .matches(/[A-Z]/, 'Le mot de passe doit contenir au moins une lettre majuscule')
+    .matches(/[a-z]/, 'Le mot de passe doit contenir au moins une lettre minuscule')
+    .matches(/[0-9!@#$%^&*(),.?":{}|<>]/, 'Le mot de passe doit contenir au moins un chiffre ou un caractère spécial')
     .required('Mot de passe requis'),
   confirmPassword: Yup.string()
     .oneOf([Yup.ref('password')], 'Les mots de passe doivent correspondre')
@@ -81,8 +85,8 @@ export default function RegisterForm({ initialPlan }: RegisterFormProps) {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const parametreP = searchParams.get('p');
-    if (parametreP) {
+    const sParam = searchParams.get('p');
+    if (sParam) {
       // Nettoyage de l'URL en retirant les paramètres
       router.replace(pathname, { scroll: false });
     }
@@ -219,13 +223,13 @@ export default function RegisterForm({ initialPlan }: RegisterFormProps) {
                   {
                     firstName: values.firstName,
                     lastName: values.lastName,
-                    company: values.company,
+                    companyName: values.company,
                     email: values.email,
-                    phone: values.phone,
+                    phoneNumber: values.phone,
                     password: values.password,
                     confirmPassword: values.confirmPassword,
                     siretNumber: values.siretNumber,
-                    plan: plan,
+                    planType: plan,
                     comment: values.comment
                   }
                 );

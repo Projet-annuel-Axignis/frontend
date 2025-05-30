@@ -1,5 +1,6 @@
 'use client';
 
+import { useToast } from '@/app/_providers';
 import { getErrorMessage } from '@/lib/utils';
 import authService from '@/services/authService';
 import { RegisterCredentials, User } from '@/types/auth';
@@ -47,6 +48,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { showToast } = useToast();
   const router = useRouter();
   const t = useTranslations();
 
@@ -95,11 +97,13 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     try {
       const response = await authService.login({ email, password });
       setUser(response.user);
+      showToast('Vous êtes connecté', 'success');
       router.push('/'); // Rediriger vers le tableau de bord après connexion
     } catch (err: unknown) {
       // Utiliser notre fonction utilitaire pour obtenir le message d'erreur traduit
       setError(getErrorMessage(err, t));
       console.error('Login error:', err);
+      showToast('Une erreur est survenue lors de la connexion', 'danger');
     } finally {
       setIsLoading(false);
     }
@@ -114,12 +118,12 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
    * @param credentials - Les informations d'inscription de l'utilisateur
    * @param credentials.firstName - Le prénom de l'utilisateur
    * @param credentials.lastName - Le nom de famille de l'utilisateur
-   * @param credentials.company - L'entreprise de l'utilisateur
+   * @param credentials.companyName - Le nom de l'entreprise de l'utilisateur
    * @param credentials.email - L'adresse email de l'utilisateur
    * @param credentials.phone - Le numéro de téléphone de l'utilisateur
    * @param credentials.password - Le mot de passe de l'utilisateur
    * @param credentials.siretNumber - Le numéro SIRET de l'utilisateur
-   * @param credentials.plan - Le plan de l'utilisateur (Plans.SELF_MANAGED ou Plans.ADMIN_MANAGED)
+   * @param credentials.planType - Le type de plan de l'utilisateur (Plans.SELF_MANAGED ou Plans.ADMIN_MANAGED)
    * @param credentials.comment - Le commentaire de l'utilisateur
    */
   const register = async (credentials: RegisterCredentials) => {
@@ -129,22 +133,23 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       const response = await authService.register({
         firstName: credentials.firstName,
         lastName: credentials.lastName,
-        company: credentials.company,
+        companyName: credentials.companyName,
         email: credentials.email,
-        phone: credentials.phone,
+        phoneNumber: credentials.phoneNumber,
         password: credentials.password,
         confirmPassword: credentials.password, // Ceci n'est probablement pas correct pour un cas réel
-        role: 'VISITOR', // Rôle par défaut
         siretNumber: credentials.siretNumber,
-        plan: credentials.plan,
+        planType: credentials.planType,
         comment: credentials.comment
       });
       setUser(response.user);
-      //router.push('/'); // Rediriger vers le tableau de bord après inscription
+      showToast('Votre demande a bien été prise en compte. Vous serez contacté dans les plus brefs délais.', 'success');
+      router.push('/auth/connexion'); // Rediriger vers le tableau de bord après inscription
     } catch (err) {
       // Utiliser notre fonction utilitaire pour obtenir le message d'erreur traduit
       setError(getErrorMessage(err, t));
       console.error('Register error:', err);
+      showToast('Une erreur est survenue lors de l\'inscription', 'danger');
     } finally {
       setIsLoading(false);
     }
@@ -162,8 +167,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       await authService.logout();
       setUser(null);
       router.push('/connexion'); // Rediriger vers la page de connexion
+      showToast('Vous êtes déconnecté', 'success');
     } catch (err) {
       console.error('Logout error:', err);
+      showToast('Une erreur est survenue lors de la déconnexion', 'danger');
     } finally {
       setIsLoading(false);
     }
