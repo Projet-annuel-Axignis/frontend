@@ -1,6 +1,7 @@
 'use client';
 
 import { useUser } from '@/app/_providers';
+import theme from '@/theme/theme';
 import { Plans } from '@/types/plans';
 import { Email, Info as InfoIcon, Lock, Person, Visibility, VisibilityOff } from '@mui/icons-material';
 import {
@@ -10,7 +11,6 @@ import {
   Chip,
   CircularProgress,
   Container,
-  createTheme,
   CssBaseline,
   IconButton,
   InputAdornment,
@@ -95,31 +95,6 @@ export default function RegisterForm({ initialPlan }: RegisterFormProps) {
   // Détection du mode sombre du système
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
 
-  // Création d'un thème qui respecte la préférence du système
-  const theme = createTheme({
-    palette: {
-      mode: prefersDarkMode ? 'dark' : 'light',
-      primary: {
-        main: '#F59E0B', // amber-500
-      },
-      secondary: {
-        main: '#D97706', // amber-600
-      },
-      warning: {
-        main: '#F59E0B', // amber-500
-        dark: '#D97706', // amber-600
-      },
-      background: {
-        default: prefersDarkMode ? '#1F2937' : '#F9FAFB',
-        paper: prefersDarkMode ? '#111827' : '#FFFFFF',
-      },
-      text: {
-        primary: prefersDarkMode ? '#F9FAFB' : '#111827',
-        secondary: prefersDarkMode ? '#D1D5DB' : '#6B7280',
-      },
-    },
-  });
-
   const handleTogglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -157,7 +132,6 @@ export default function RegisterForm({ initialPlan }: RegisterFormProps) {
             }}
           />
         </Box>
-
         {/* Contenu du formulaire */}
         <Container maxWidth="md" sx={{
           py: 8,
@@ -173,7 +147,6 @@ export default function RegisterForm({ initialPlan }: RegisterFormProps) {
             sx={{
               p: 4,
               borderRadius: 2,
-              background: theme.palette.background.paper,
               boxShadow: prefersDarkMode
                 ? '0 4px 20px rgba(0,0,0,0.5)'
                 : '0 4px 20px rgba(0,0,0,0.1)'
@@ -384,10 +357,10 @@ export default function RegisterForm({ initialPlan }: RegisterFormProps) {
                           py: 1.5,
                           position: 'relative',
                           '&.Mui-selected': {
-                            backgroundColor: theme.palette.primary.main,
-                            color: theme.palette.primary.contrastText,
+                            backgroundColor: prefersDarkMode ? 'primary.main' : 'primary.light',
+                            color: prefersDarkMode ? 'primary.contrastText' : 'primary.dark',
                             '&:hover': {
-                              backgroundColor: theme.palette.primary.dark,
+                              backgroundColor: prefersDarkMode ? 'primary.dark' : 'primary.light',
                             },
                           },
                         },

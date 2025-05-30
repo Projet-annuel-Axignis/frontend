@@ -1,10 +1,11 @@
 'use client';
 
+import theme from '@/theme/theme';
+import { CssBaseline, ThemeProvider } from '@mui/material';
+import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import { ReactNode } from 'react';
-import ThemeRegistry from './ThemeRegistry';
 import { ToastProvider } from './ToastProvider';
 import { UserProvider } from './UserProvider';
-
 
 interface ProvidersProps {
   children: ReactNode;
@@ -21,19 +22,20 @@ interface ProvidersProps {
  */
 export function Providers({ children }: ProvidersProps) {
   return (
-    <ThemeRegistry options={{ key: 'joy' }}>
-      <ToastProvider>
-        <UserProvider>
-          {children}
-        </UserProvider>
-      </ToastProvider>
-    </ThemeRegistry>
+    <AppRouterCacheProvider>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <ToastProvider>
+          <UserProvider>
+            {children}
+          </UserProvider>
+        </ToastProvider>
+      </ThemeProvider>
+    </AppRouterCacheProvider>
   );
 }
 
 // Exporter aussi les providers individuellement pour usage spécifique
 export { useToast } from '@/app/_providers/ToastProvider';
-export { CssBaseline } from '@mui/joy';
-export { ThemeProvider, useColorScheme } from '@mui/joy/styles';
 export { UserProvider, useUser } from './UserProvider';
 
