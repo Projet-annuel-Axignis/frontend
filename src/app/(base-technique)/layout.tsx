@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { CssVarsProvider, CssBaseline, Box } from '@mui/joy';
-import Sidebar from '@/components/Sidebar';
+import Sidebar from '@/components/base-technique/Sidebar';
 
 export default function RootLayout({
   children,
