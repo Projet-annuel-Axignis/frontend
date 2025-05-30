@@ -69,7 +69,6 @@ export default function LoginForm() {
       }}>
         <Card
           variant="outlined"
-          className=""
           sx={{
             width: '100%'
           }}
