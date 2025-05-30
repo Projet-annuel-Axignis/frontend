@@ -1,5 +1,6 @@
 'use client';
 
+import { ToastProvider } from '@/contexts/ToastContext';
 import { ReactNode } from 'react';
 import { UserProvider } from './UserProvider';
 
@@ -18,11 +19,15 @@ interface ProvidersProps {
  */
 export function Providers({ children }: ProvidersProps) {
   return (
-    <UserProvider>
-      {children}
-    </UserProvider>
+    <ToastProvider>
+      <UserProvider>
+        {children}
+      </UserProvider>
+    </ToastProvider>
   );
 }
 
 // Exporter aussi les providers individuellement pour usage spécifique
+export { useToast } from '@/contexts/ToastContext';
 export { UserProvider, useUser } from './UserProvider';
+
