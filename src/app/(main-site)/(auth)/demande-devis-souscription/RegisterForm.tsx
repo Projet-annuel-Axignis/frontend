@@ -2,23 +2,29 @@
 
 import { useUser } from '@/app/_providers';
 import { Plans } from '@/types/plans';
-import { Email, Info as InfoIcon, Lock, Person, Phone, Visibility, VisibilityOff } from '@mui/icons-material';
+import { Email, Info as InfoIcon, Lock, Person, Visibility, VisibilityOff } from '@mui/icons-material';
 import {
   Alert,
   Box,
   Button,
-  Card,
-  CardContent,
   Chip,
   CircularProgress,
   Container,
-  FormControl,
-  FormLabel,
+  createTheme,
+  CssBaseline,
   IconButton,
-  Input,
-  Typography
-} from '@mui/joy';
+  InputAdornment,
+  Paper,
+  TextField,
+  ThemeProvider,
+  ToggleButton,
+  ToggleButtonGroup,
+  Tooltip,
+  Typography,
+  useMediaQuery
+} from '@mui/material';
 import { Form, Formik } from 'formik';
+import { MuiTelInput } from 'mui-tel-input';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -44,7 +50,7 @@ const RegisterSchema = Yup.object().shape({
     .required('Email requis'),
   comment: Yup.string(),
   phone: Yup.string()
-    .matches(/^(\+33|0)[1-9](\d{2}){4}$/, 'Numéro de téléphone invalide')
+    .matches(/^\+?[\d\s]{10,20}$/, 'Numéro de téléphone invalide')
     .required('Numéro de téléphone requis'),
   password: Yup.string()
     .min(8, 'Le mot de passe doit contenir au moins 8 caractères')
@@ -86,6 +92,34 @@ export default function RegisterForm({ initialPlan }: RegisterFormProps) {
     }
   }, [searchParams, router, pathname]);
 
+  // Détection du mode sombre du système
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+
+  // Création d'un thème qui respecte la préférence du système
+  const theme = createTheme({
+    palette: {
+      mode: prefersDarkMode ? 'dark' : 'light',
+      primary: {
+        main: '#F59E0B', // amber-500
+      },
+      secondary: {
+        main: '#D97706', // amber-600
+      },
+      warning: {
+        main: '#F59E0B', // amber-500
+        dark: '#D97706', // amber-600
+      },
+      background: {
+        default: prefersDarkMode ? '#1F2937' : '#F9FAFB',
+        paper: prefersDarkMode ? '#111827' : '#FFFFFF',
+      },
+      text: {
+        primary: prefersDarkMode ? '#F9FAFB' : '#111827',
+        secondary: prefersDarkMode ? '#D1D5DB' : '#6B7280',
+      },
+    },
+  });
+
   const handleTogglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -95,55 +129,61 @@ export default function RegisterForm({ initialPlan }: RegisterFormProps) {
   };
 
   return (
-    <Box sx={{
-      position: 'relative',
-      minHeight: '100vh',
-      width: '100%',
-      overflow: 'hidden',
-      paddingTop: '40px'
-    }}>
-      {/* Image de fond */}
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
       <Box sx={{
-        position: 'absolute',
-        inset: 0,
-        bgcolor: 'neutral.600',
-        zIndex: 0
-      }}>
-        <Image
-          src="/images/backgrounds/building-facade.jpg"
-          alt="Façade de bâtiment moderne"
-          fill
-          priority
-          style={{
-            objectFit: 'cover',
-            opacity: 0.5,
-            mixBlendMode: 'overlay'
-          }}
-        />
-      </Box>
-
-      {/* Contenu du formulaire */}
-      <Container maxWidth="md" sx={{
-        py: 8,
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
         position: 'relative',
-        zIndex: 1
+        minHeight: '100vh',
+        width: '100%',
+        overflow: 'hidden',
+        paddingTop: '40px'
       }}>
-        <Card
-          variant="outlined"
-          sx={{
-            width: '100%'
-          }}
-        >
-          <CardContent>
+        {/* Image de fond */}
+        <Box sx={{
+          position: 'absolute',
+          inset: 0,
+          bgcolor: 'grey.600',
+          zIndex: 0
+        }}>
+          <Image
+            src="/images/backgrounds/building-facade.jpg"
+            alt="Façade de bâtiment moderne"
+            fill
+            priority
+            style={{
+              objectFit: 'cover',
+              opacity: 0.5,
+              mixBlendMode: 'overlay'
+            }}
+          />
+        </Box>
+
+        {/* Contenu du formulaire */}
+        <Container maxWidth="md" sx={{
+          py: 8,
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          position: 'relative',
+          zIndex: 1
+        }}>
+          <Paper
+            elevation={3}
+            sx={{
+              p: 4,
+              borderRadius: 2,
+              background: theme.palette.background.paper,
+              boxShadow: prefersDarkMode
+                ? '0 4px 20px rgba(0,0,0,0.5)'
+                : '0 4px 20px rgba(0,0,0,0.1)'
+            }}
+          >
             <Box sx={{ textAlign: 'center', mb: 4 }}>
-              <Typography level="h2" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
+              <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
                 {t('auth.register')}
               </Typography>
-              <Typography level="body-md" color="neutral">
+              <Typography variant="body1" color="textSecondary">
                 {t('auth.register_instructions', {
                   plan: plan === Plans.SELF_MANAGED ? t('plans.self_managed') : t('plans.admin_managed')
                 })}
@@ -152,8 +192,7 @@ export default function RegisterForm({ initialPlan }: RegisterFormProps) {
 
             {error && (
               <Alert
-                color="danger"
-                variant="soft"
+                severity="error"
                 sx={{
                   mb: 3,
                   '& .MuiAlert-message': {
@@ -208,138 +247,113 @@ export default function RegisterForm({ initialPlan }: RegisterFormProps) {
                   >
                     {/* Prénom */}
                     <Box sx={{ flex: 1 }}>
-                      <FormControl>
-                        <FormLabel>{requiredLabel(t('auth.first_name'))}</FormLabel>
-                        <Input
-                          size="lg"
-                          fullWidth
-                          id="firstName"
-                          name="firstName"
-                          type="text"
-                          value={values.firstName}
-                          onChange={handleChange}
-                          onBlur={handleBlur}
-                          error={Boolean(errors.firstName && touched.firstName)}
-                          startDecorator={<Person />}
-                          sx={{
-                            '&:hover': {
-                              borderColor: 'primary.400'
-                            }
-                          }}
-                        />
-                        {errors.firstName && touched.firstName && (
-                          <Typography level="body-sm" color="danger">
-                            {errors.firstName}
-                          </Typography>
-                        )}
-                      </FormControl>
+                      <TextField
+                        fullWidth
+                        id="firstName"
+                        name="firstName"
+                        type="text"
+                        label={requiredLabel(t('auth.first_name'))}
+                        variant="outlined"
+                        value={values.firstName}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        error={Boolean(errors.firstName && touched.firstName)}
+                        helperText={(errors.firstName && touched.firstName) ? errors.firstName : ''}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <Person color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
                     </Box>
 
                     {/* Nom */}
                     <Box sx={{ flex: 1 }}>
-                      <FormControl>
-                        <FormLabel>{requiredLabel(t('auth.last_name'))}</FormLabel>
-                        <Input
-                          size="lg"
-                          fullWidth
-                          id="lastName"
-                          name="lastName"
-                          type="text"
-                          value={values.lastName}
-                          onChange={handleChange}
-                          onBlur={handleBlur}
-                          error={Boolean(errors.lastName && touched.lastName)}
-                          startDecorator={<Person />}
-                          sx={{
-                            '&:hover': {
-                              borderColor: 'primary.400'
-                            }
-                          }}
-                        />
-                        {errors.lastName && touched.lastName && (
-                          <Typography level="body-sm" color="danger">
-                            {errors.lastName}
-                          </Typography>
-                        )}
-                      </FormControl>
+                      <TextField
+                        fullWidth
+                        id="lastName"
+                        name="lastName"
+                        type="text"
+                        label={requiredLabel(t('auth.last_name'))}
+                        variant="outlined"
+                        value={values.lastName}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        error={Boolean(errors.lastName && touched.lastName)}
+                        helperText={(errors.lastName && touched.lastName) ? errors.lastName : ''}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <Person color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
                     </Box>
                   </Box>
 
                   {/* Entreprise */}
                   <Box mb={3}>
-                    <FormControl>
-                      <FormLabel>{requiredLabel(t('auth.company_name'))}</FormLabel>
-                      <Input
-                        size="lg"
-                        fullWidth
-                        id="company"
-                        name="company"
-                        type="text"
-                        value={values.company}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={Boolean(errors.company && touched.company)}
-                        startDecorator={<Person />}
-                        sx={{
-                          '&:hover': {
-                            borderColor: 'primary.400'
-                          }
-                        }}
-                      />
-                      {errors.company && touched.company && (
-                        <Typography level="body-sm" color="danger">
-                          {errors.company}
-                        </Typography>
-                      )}
-                    </FormControl>
+                    <TextField
+                      fullWidth
+                      id="company"
+                      name="company"
+                      type="text"
+                      label={requiredLabel(t('auth.company_name'))}
+                      variant="outlined"
+                      value={values.company}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(errors.company && touched.company)}
+                      helperText={(errors.company && touched.company) ? errors.company : ''}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Person color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
                   </Box>
 
                   {/* Siret */}
                   <Box mb={3}>
-                    <FormControl>
-                      <FormLabel>{requiredLabel(t('auth.siret_number'))}</FormLabel>
-                      <Input
-                        size="lg"
-                        fullWidth
-                        id="siretNumber"
-                        name="siretNumber"
-                        type="text"
-                        value={values.siretNumber}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={Boolean(errors.siretNumber && touched.siretNumber)}
-                        startDecorator={<Person />}
-                        sx={{
-                          '&:hover': {
-                            borderColor: 'primary.400'
-                          }
-                        }}
-                      />
-                      {errors.siretNumber && touched.siretNumber && (
-                        <Typography level="body-sm" color="danger">
-                          {errors.siretNumber}
-                        </Typography>
-                      )}
-                    </FormControl>
+                    <TextField
+                      fullWidth
+                      id="siretNumber"
+                      name="siretNumber"
+                      type="text"
+                      label={requiredLabel(t('auth.siret_number'))}
+                      variant="outlined"
+                      value={values.siretNumber}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(errors.siretNumber && touched.siretNumber)}
+                      helperText={(errors.siretNumber && touched.siretNumber) ? errors.siretNumber : ''}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Person color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
                   </Box>
 
                   {/* Plan */}
                   <Box mb={3}>
                     <Box display="flex" alignItems="center" gap={1} mb={1}>
-                      <Typography level="title-md">
+                      <Typography variant="subtitle1">
                         {requiredLabel(t('auth.plan'))}
                       </Typography>
-                      <IconButton
-                        variant="plain"
-                        color="neutral"
-                        size="sm"
-                        title={t('auth.plan_tooltip')}
-                      >
-                        <InfoIcon />
-                      </IconButton>
+                      <Tooltip title={t('auth.plan_tooltip')} arrow placement="top">
+                        <InfoIcon color="action" fontSize="small" />
+                      </Tooltip>
                       <Link href="/plans" target="_blank" passHref>
                         <Typography
-                          level="body-sm"
+                          variant="body2"
                           component="span"
                           color="primary"
                           sx={{
@@ -354,54 +368,57 @@ export default function RegisterForm({ initialPlan }: RegisterFormProps) {
                         </Typography>
                       </Link>
                     </Box>
-                    <Box
+                    <ToggleButtonGroup
+                      value={values.plan}
+                      exclusive
+                      onChange={(_, newValue) => {
+                        if (newValue !== null) {
+                          setFieldValue('plan', newValue);
+                          setPlan(newValue);
+                        }
+                      }}
+                      fullWidth
                       sx={{
-                        display: 'flex',
-                        gap: 2,
-                        position: 'relative'
+                        '& .MuiToggleButton-root': {
+                          flex: 1,
+                          py: 1.5,
+                          position: 'relative',
+                          '&.Mui-selected': {
+                            backgroundColor: theme.palette.primary.main,
+                            color: theme.palette.primary.contrastText,
+                            '&:hover': {
+                              backgroundColor: theme.palette.primary.dark,
+                            },
+                          },
+                        },
                       }}
                     >
-                      <Button
-                        variant={values.plan === Plans.SELF_MANAGED ? 'solid' : 'outlined'}
-                        color="primary"
-                        onClick={() => {
-                          setFieldValue('plan', Plans.SELF_MANAGED);
-                          setPlan(Plans.SELF_MANAGED);
-                        }}
-                        sx={{ flex: 1 }}
-                      >
+                      <ToggleButton value={Plans.SELF_MANAGED}>
                         <Box>
-                          <Typography level="title-md" sx={{ textAlign: 'center', mb: 1 }}>
+                          <Typography variant="subtitle1" gutterBottom align="center">
                             {t('plans.self_managed')}
                           </Typography>
-                          <Typography level="body-sm" color="neutral" sx={{ textAlign: 'center' }}>
+                          <Typography variant="body2" color="textSecondary" align="center">
                             {t('plans.self_managed_description')}
                           </Typography>
                         </Box>
-                      </Button>
+                      </ToggleButton>
                       <Box sx={{ position: 'relative', flex: 1 }}>
-                        <Button
-                          variant={values.plan === Plans.ADMIN_MANAGED ? 'solid' : 'outlined'}
-                          color="primary"
-                          onClick={() => {
-                            setFieldValue('plan', Plans.ADMIN_MANAGED);
-                            setPlan(Plans.ADMIN_MANAGED);
-                          }}
-                          sx={{ width: '100%' }}
-                        >
+                        <ToggleButton value={Plans.ADMIN_MANAGED} sx={{ width: '100%' }}>
                           <Box sx={{ width: '100%' }}>
                             <Box display="flex" alignItems="center" justifyContent="center" gap={1} mb={1}>
-                              <Typography level="title-md" sx={{ textAlign: 'center', mb: 1 }}>
+                              <Typography variant="subtitle1" align="center">
                                 {t('plans.admin_managed')}
                               </Typography>
                             </Box>
-                            <Typography level="body-sm" color="neutral" sx={{ textAlign: 'center' }}>
+                            <Typography variant="body2" color="textSecondary" align="center">
                               {t('plans.admin_managed_description')}
                             </Typography>
                           </Box>
-                        </Button>
+                        </ToggleButton>
                         <Chip
-                          size="sm"
+                          label={t('plans.recommended')}
+                          size="small"
                           color="primary"
                           sx={{
                             position: 'absolute',
@@ -416,13 +433,11 @@ export default function RegisterForm({ initialPlan }: RegisterFormProps) {
                               fontWeight: 'bold',
                             },
                           }}
-                        >
-                          {t('plans.recommended')}
-                        </Chip>
+                        />
                       </Box>
-                    </Box>
+                    </ToggleButtonGroup>
                     {errors.plan && touched.plan && (
-                      <Typography level="body-sm" color="danger">
+                      <Typography color="error" variant="caption">
                         {errors.plan}
                       </Typography>
                     )}
@@ -430,195 +445,145 @@ export default function RegisterForm({ initialPlan }: RegisterFormProps) {
 
                   {/* Commentaire */}
                   <Box mb={3}>
-                    <FormControl>
-                      <FormLabel>{t('auth.comment')}</FormLabel>
-                      <Input
-                        size="lg"
-                        fullWidth
-                        id="comment"
-                        name="comment"
-                        type="text"
-                        value={values.comment}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={Boolean(errors.comment && touched.comment)}
-                        sx={{
-                          '&:hover': {
-                            borderColor: 'primary.400'
-                          }
-                        }}
-                      />
-                      {errors.comment && touched.comment && (
-                        <Typography level="body-sm" color="danger">
-                          {errors.comment}
-                        </Typography>
-                      )}
-                    </FormControl>
+                    <TextField
+                      fullWidth
+                      id="comment"
+                      name="comment"
+                      type="text"
+                      label={t('auth.comment')}
+                      variant="outlined"
+                      value={values.comment}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(errors.comment && touched.comment)}
+                      helperText={(errors.comment && touched.comment) ? errors.comment : ''}
+                      multiline
+                      rows={4}
+                    />
                   </Box>
 
-                  {/* Email */}
                   <Box mb={3}>
-                    <FormControl>
-                      <FormLabel>{requiredLabel(t('auth.email'))}</FormLabel>
-                      <Input
-                        size="lg"
-                        fullWidth
-                        id="email"
-                        name="email"
-                        type="email"
-                        value={values.email}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={Boolean(errors.email && touched.email)}
-                        startDecorator={<Email />}
-                        sx={{
-                          '&:hover': {
-                            borderColor: 'primary.400'
-                          }
-                        }}
-                      />
-                      {errors.email && touched.email && (
-                        <Typography level="body-sm" color="danger">
-                          {errors.email}
-                        </Typography>
-                      )}
-                    </FormControl>
+                    <TextField
+                      fullWidth
+                      id="email"
+                      name="email"
+                      type="email"
+                      label={requiredLabel(t('auth.email'))}
+                      variant="outlined"
+                      value={values.email}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(errors.email && touched.email)}
+                      helperText={(errors.email && touched.email) ? errors.email : ''}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Email color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
                   </Box>
 
                   {/* Numéro de téléphone */}
                   <Box mb={3}>
-                    <FormControl>
-                      <FormLabel>{requiredLabel(t('auth.phone'))}</FormLabel>
-                      <Input
-                        size="lg"
-                        fullWidth
-                        id="phone"
-                        name="phone"
-                        type="tel"
-                        placeholder="+33 6 12 34 56 78"
-                        value={values.phone}
-                        onChange={(e) => {
-                          // Formatage du numéro de téléphone
-                          let value = e.target.value.replace(/\D/g, '');
-                          if (value.startsWith('0')) {
-                            value = '+33' + value.substring(1);
-                          } else if (!value.startsWith('+')) {
-                            value = '+' + value;
-                          }
-                          handleChange({ target: { name: 'phone', value } });
-                        }}
-                        onBlur={handleBlur}
-                        error={Boolean(errors.phone && touched.phone)}
-                        startDecorator={<Phone />}
-                        sx={{
-                          '&:hover': {
-                            borderColor: 'primary.400'
-                          }
-                        }}
-                      />
-                      {errors.phone && touched.phone && (
-                        <Typography level="body-sm" color="danger">
-                          {errors.phone}
-                        </Typography>
-                      )}
-                    </FormControl>
+                    <MuiTelInput
+                      fullWidth
+                      id="phone"
+                      name="phone"
+                      defaultCountry="FR"
+                      label={requiredLabel(t('auth.phone'))}
+                      value={values.phone}
+                      variant="outlined"
+                      onChange={(value) => handleChange({ target: { name: 'phone', value } })}
+                      onBlur={handleBlur}
+                      error={Boolean(errors.phone && touched.phone)}
+                      helperText={(errors.phone && touched.phone) ? errors.phone : ''}
+                    />
                   </Box>
 
-                  {/* Mot de passe */}
                   <Box mb={3}>
-                    <FormControl>
-                      <FormLabel>{requiredLabel(t('auth.password'))}</FormLabel>
-                      <Input
-                        size="lg"
-                        fullWidth
-                        id="password"
-                        name="password"
-                        type={showPassword ? "text" : "password"}
-                        value={values.password}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={Boolean(errors.password && touched.password)}
-                        startDecorator={<Lock />}
-                        endDecorator={
-                          <IconButton
-                            onClick={handleTogglePasswordVisibility}
-                            variant="plain"
-                            color="neutral"
-                          >
-                            {showPassword ? <VisibilityOff /> : <Visibility />}
-                          </IconButton>
-                        }
-                        sx={{
-                          '&:hover': {
-                            borderColor: 'primary.400'
-                          }
-                        }}
-                      />
-                      {errors.password && touched.password && (
-                        <Typography level="body-sm" color="danger">
-                          {errors.password}
-                        </Typography>
-                      )}
-                    </FormControl>
+                    <TextField
+                      fullWidth
+                      id="password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      label={requiredLabel(t('auth.password'))}
+                      variant="outlined"
+                      value={values.password}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(errors.password && touched.password)}
+                      helperText={(errors.password && touched.password) ? errors.password : ''}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Lock color="action" />
+                          </InputAdornment>
+                        ),
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={handleTogglePasswordVisibility}
+                              edge="end"
+                              aria-label="toggle password visibility"
+                            >
+                              {showPassword ? <VisibilityOff /> : <Visibility />}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
                   </Box>
 
-                  {/* Confirmation du mot de passe */}
                   <Box mb={4}>
-                    <FormControl>
-                      <FormLabel>{requiredLabel(t('auth.confirm_password'))}</FormLabel>
-                      <Input
-                        size="lg"
-                        fullWidth
-                        id="confirmPassword"
-                        name="confirmPassword"
-                        type={showConfirmPassword ? "text" : "password"}
-                        value={values.confirmPassword}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={Boolean(errors.confirmPassword && touched.confirmPassword)}
-                        startDecorator={<Lock />}
-                        endDecorator={
-                          <IconButton
-                            onClick={handleToggleConfirmPasswordVisibility}
-                            variant="plain"
-                            color="neutral"
-                          >
-                            {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                          </IconButton>
-                        }
-                        sx={{
-                          '&:hover': {
-                            borderColor: 'primary.400'
-                          }
-                        }}
-                      />
-                      {errors.confirmPassword && touched.confirmPassword && (
-                        <Typography level="body-sm" color="danger">
-                          {errors.confirmPassword}
-                        </Typography>
-                      )}
-                    </FormControl>
+                    <TextField
+                      fullWidth
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      label={requiredLabel(t('auth.confirm_password'))}
+                      variant="outlined"
+                      value={values.confirmPassword}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(errors.confirmPassword && touched.confirmPassword)}
+                      helperText={(errors.confirmPassword && touched.confirmPassword) ? errors.confirmPassword : ''}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Lock color="action" />
+                          </InputAdornment>
+                        ),
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={handleToggleConfirmPasswordVisibility}
+                              edge="end"
+                              aria-label="toggle password visibility"
+                            >
+                              {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
                   </Box>
 
                   <Button
                     type="submit"
                     fullWidth
-                    variant="solid"
+                    variant="contained"
                     color="primary"
                     disabled={isLoading}
                     sx={{
                       py: 1.5,
                       fontWeight: 'medium',
-                      fontSize: '1rem',
-                      transition: 'all 0.2s ease-in-out',
-                      '&:hover': {
-                        transform: 'translateY(-1px)',
-                        boxShadow: '0 4px 12px rgba(55, 127, 189, 0.2)'
-                      }
+                      fontSize: '1rem'
                     }}
                   >
                     {isLoading ? (
-                      <CircularProgress size="sm" color="neutral" />
+                      <CircularProgress size={24} color="inherit" />
                     ) : (
                       t('auth.register_button')
                     )}
@@ -628,11 +593,11 @@ export default function RegisterForm({ initialPlan }: RegisterFormProps) {
             </Formik>
 
             <Box mt={4} textAlign="center">
-              <Typography level="body-sm" color="neutral">
+              <Typography variant="body2" color="textSecondary">
                 {t('auth.already_have_account')}{' '}
                 <Link href="/connexion" passHref>
                   <Typography
-                    level="body-sm"
+                    variant="body2"
                     component="span"
                     color="primary"
                     sx={{
@@ -648,9 +613,9 @@ export default function RegisterForm({ initialPlan }: RegisterFormProps) {
                 </Link>
               </Typography>
             </Box>
-          </CardContent>
-        </Card>
-      </Container>
-    </Box>
+          </Paper>
+        </Container>
+      </Box>
+    </ThemeProvider>
   );
 } 
