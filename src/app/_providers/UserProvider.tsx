@@ -139,7 +139,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         comment: credentials.comment
       });
       setUser(response.user);
-      //router.push('/'); // Rediriger vers le tableau de bord après inscription
+      router.push('/auth/connexion'); // Rediriger vers le tableau de bord après inscription
     } catch (err) {
       // Utiliser notre fonction utilitaire pour obtenir le message d'erreur traduit
       setError(getErrorMessage(err, t));
