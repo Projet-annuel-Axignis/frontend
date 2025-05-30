@@ -2,8 +2,22 @@
 
 import { useUser } from '@/app/_providers';
 import { Email, Key, Visibility, VisibilityOff } from '@mui/icons-material';
-import { Alert, Box, Button, Card, CardContent, CircularProgress, Container, FormControl, FormLabel, IconButton, Input, Typography } from '@mui/joy';
-
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  Container,
+  createTheme,
+  CssBaseline,
+  IconButton,
+  InputAdornment,
+  Paper,
+  TextField,
+  ThemeProvider,
+  Typography,
+  useMediaQuery
+} from '@mui/material';
 import { Field, Form, Formik } from 'formik';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
@@ -26,70 +40,102 @@ export default function LoginForm() {
   const t = useTranslations();
   const [showPassword, setShowPassword] = useState(false);
 
+  // Détection du mode sombre du système
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+
+  // Création d'un thème qui respecte la préférence du système
+  const theme = createTheme({
+    palette: {
+      mode: prefersDarkMode ? 'dark' : 'light',
+      primary: {
+        main: '#F59E0B', // amber-500
+      },
+      secondary: {
+        main: '#D97706', // amber-600
+      },
+      warning: {
+        main: '#F59E0B', // amber-500
+        dark: '#D97706', // amber-600
+      },
+      background: {
+        default: prefersDarkMode ? '#1F2937' : '#F9FAFB',
+        paper: prefersDarkMode ? '#111827' : '#FFFFFF',
+      },
+      text: {
+        primary: prefersDarkMode ? '#F9FAFB' : '#111827',
+        secondary: prefersDarkMode ? '#D1D5DB' : '#6B7280',
+      },
+    },
+  });
+
   const handleTogglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
   return (
-    <Box sx={{
-      position: 'relative',
-      minHeight: '100vh',
-      width: '100%',
-      overflow: 'hidden',
-      paddingTop: '40px'
-    }}>
-      {/* Image de fond */}
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
       <Box sx={{
-        position: 'absolute',
-        inset: 0,
-        bgcolor: 'grey.600',
-        zIndex: 0
-      }}>
-        <Image
-          src="/images/backgrounds/building-facade.jpg"
-          alt="Façade de bâtiment moderne"
-          fill
-          priority
-          style={{
-            objectFit: 'cover',
-            opacity: 0.5,
-            mixBlendMode: 'overlay'
-          }}
-        />
-      </Box>
-      {/* Contenu du formulaire */}
-      <Container maxWidth="sm" sx={{
-        py: 8,
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
         position: 'relative',
-        zIndex: 1
+        minHeight: '100vh',
+        width: '100%',
+        overflow: 'hidden',
+        paddingTop: '40px'
       }}>
-        <Card
-          variant="outlined"
-          sx={{
-            width: '100%'
-          }}
-        >
-          <CardContent>
+        {/* Image de fond */}
+        <Box sx={{
+          position: 'absolute',
+          inset: 0,
+          bgcolor: 'grey.600',
+          zIndex: 0
+        }}>
+          <Image
+            src="/images/backgrounds/building-facade.jpg"
+            alt="Façade de bâtiment moderne"
+            fill
+            priority
+            style={{
+              objectFit: 'cover',
+              opacity: 0.5,
+              mixBlendMode: 'overlay'
+            }}
+          />
+        </Box>
+        {/* Contenu du formulaire */}
+        <Container maxWidth="sm" sx={{
+          py: 8,
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          position: 'relative',
+          zIndex: 1
+        }}>
+          <Paper
+            elevation={3}
+            sx={{
+              p: 4,
+              borderRadius: 2,
+              background: theme.palette.background.paper,
+              boxShadow: prefersDarkMode
+                ? '0 4px 20px rgba(0,0,0,0.5)'
+                : '0 4px 20px rgba(0,0,0,0.1)'
+            }}
+          >
             <Box sx={{ textAlign: 'center', mb: 4 }}>
-              <Typography level="h2" component="h1" gutterBottom sx={{
+              <Typography variant="h4" component="h1" gutterBottom sx={{
                 fontWeight: 'bold',
-
               }}>
                 {t('common.login')}
               </Typography>
-              <Typography level="body-md" sx={{ color: 'neutral.500' }}>
+              <Typography variant="body1" color="textSecondary">
                 {t('auth.login_instructions')}
               </Typography>
             </Box>
 
             {error && (
               <Alert
-                color='danger'
-                variant="soft"
+                severity="error"
                 sx={{
                   mb: 3,
                   '& .MuiAlert-message': {
@@ -111,59 +157,60 @@ export default function LoginForm() {
               {({ errors, touched, handleChange, handleBlur, values }) => (
                 <Form>
                   <Box mb={3}>
-                    <FormControl>
-                      <FormLabel>Email</FormLabel>
-                      <Input
-                        size="lg"
-                        fullWidth
-                        name="email"
-                        type="email"
-                        variant="outlined"
-                        value={values.email}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={Boolean(errors.email && touched.email)}
-                        startDecorator={<Email />}
-                        sx={{
-                          '&:hover': {
-                            borderColor: 'primary.400'
-                          }
-                        }}
-                      />
-                    </FormControl>
+                    <TextField
+                      fullWidth
+                      id="email"
+                      name="email"
+                      type="email"
+                      label="Email"
+                      variant="outlined"
+                      value={values.email}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(errors.email && touched.email)}
+                      helperText={(errors.email && touched.email) ? errors.email : ''}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Email color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
                   </Box>
 
                   <Box mb={3}>
-                    <FormControl>
-                      <FormLabel>Mot de passe</FormLabel>
-                      <Input
-                        size="lg"
-                        fullWidth
-                        name="password"
-                        type={showPassword ? "text" : "password"}
-                        variant="outlined"
-                        value={values.password}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={Boolean(errors.password && touched.password)}
-                        startDecorator={<Key />}
-                        endDecorator={
-                          <IconButton
-                            onClick={handleTogglePasswordVisibility}
-                            aria-label="toggle password visibility"
-                            variant="plain"
-                            color="neutral"
-                          >
-                            {showPassword ? <VisibilityOff /> : <Visibility />}
-                          </IconButton>
-                        }
-                        sx={{
-                          '&:hover': {
-                            borderColor: 'primary.400'
-                          }
-                        }}
-                      />
-                    </FormControl>
+                    <TextField
+                      fullWidth
+                      id="password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      label="Mot de passe"
+                      variant="outlined"
+                      value={values.password}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(errors.password && touched.password)}
+                      helperText={(errors.password && touched.password) ? errors.password : ''}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Key color="action" />
+                          </InputAdornment>
+                        ),
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={handleTogglePasswordVisibility}
+                              edge="end"
+                              aria-label="toggle password visibility"
+                            >
+                              {showPassword ? <VisibilityOff /> : <Visibility />}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
                   </Box>
 
                   <Box mb={3} display="flex" flexDirection={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} gap={2}>
@@ -174,13 +221,13 @@ export default function LoginForm() {
                         id="remember"
                         className="h-4 w-4 mr-2"
                       />
-                      <Typography level="body-sm" component="label" htmlFor="remember">
+                      <Typography variant="body2" component="label" htmlFor="remember">
                         {t('auth.remember_me')}
                       </Typography>
                     </Box>
                     <Link href="/forgot-password" passHref>
                       <Typography
-                        level="body-sm"
+                        variant="body2"
                         component="span"
                         color="primary"
                         sx={{
@@ -198,22 +245,17 @@ export default function LoginForm() {
                   <Button
                     type="submit"
                     fullWidth
-                    variant="solid"
+                    variant="contained"
                     color="primary"
                     disabled={isLoading}
                     sx={{
                       py: 1.5,
                       fontWeight: 'medium',
-                      fontSize: '1rem',
-                      transition: 'all 0.2s ease-in-out',
-                      '&:hover': {
-                        transform: 'translateY(-1px)',
-                        boxShadow: '0 4px 12px rgba(55, 127, 189, 0.2)'
-                      }
+                      fontSize: '1rem'
                     }}
                   >
                     {isLoading ? (
-                      <CircularProgress size="sm" color="neutral" />
+                      <CircularProgress size={24} color="inherit" />
                     ) : (
                       t('auth.login_button')
                     )}
@@ -223,11 +265,11 @@ export default function LoginForm() {
             </Formik>
 
             <Box mt={4} textAlign="center">
-              <Typography level="body-sm" color="neutral">
+              <Typography variant="body2" color="textSecondary">
                 {t('auth.no_account')}{' '}
                 <Link href="/demande-devis-souscription" passHref>
                   <Typography
-                    level="body-sm"
+                    variant="body2"
                     component="span"
                     color="primary"
                     sx={{
@@ -243,9 +285,9 @@ export default function LoginForm() {
                 </Link>
               </Typography>
             </Box>
-          </CardContent>
-        </Card>
-      </Container>
-    </Box>
+          </Paper>
+        </Container>
+      </Box>
+    </ThemeProvider>
   );
 } 
