@@ -2,7 +2,7 @@
 @plugin "daisyui";
 
 /* Couleurs du thème Axignis comme variables CSS optionnelles */
-/* :root {
+:root {
   --background: #ffffff;
   --foreground: #171717;
   --axignis-primary: #0082ca;
@@ -11,7 +11,7 @@
   --axignis-black: #000000;
   --axignis-gray-dark: #363636;
   --axignis-gray-medium: #6b6b6b;
-} */
+}
 
 @theme inline {
   /* Variables principales */
