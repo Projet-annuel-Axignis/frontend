@@ -1,33 +1,33 @@
 'use client';
 
-import * as React from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import GlobalStyles from '@mui/joy/GlobalStyles';
+import AssignmentRoundedIcon from '@mui/icons-material/AssignmentRounded';
+import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
+import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
+import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
+import QuestionAnswerRoundedIcon from '@mui/icons-material/QuestionAnswerRounded';
+import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
+import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
+import SupportRoundedIcon from '@mui/icons-material/SupportRounded';
 import Avatar from '@mui/joy/Avatar';
 import Box from '@mui/joy/Box';
 import Chip from '@mui/joy/Chip';
 import Divider from '@mui/joy/Divider';
+import GlobalStyles from '@mui/joy/GlobalStyles';
 import IconButton from '@mui/joy/IconButton';
 import List from '@mui/joy/List';
 import ListItem from '@mui/joy/ListItem';
 import ListItemButton, { listItemButtonClasses } from '@mui/joy/ListItemButton';
 import ListItemContent from '@mui/joy/ListItemContent';
-import Typography from '@mui/joy/Typography';
 import Sheet from '@mui/joy/Sheet';
-import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import AppsIcon from '@mui/icons-material/Apps';
 import CableIcon from '@mui/icons-material/Cable';
 import FolderIcon from '@mui/icons-material/Folder';
-import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
-import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
-import AssignmentRoundedIcon from '@mui/icons-material/AssignmentRounded';
-import QuestionAnswerRoundedIcon from '@mui/icons-material/QuestionAnswerRounded';
-import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
-import SupportRoundedIcon from '@mui/icons-material/SupportRounded';
-import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
-import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import Typography from '@mui/joy/Typography';
+import Image from 'next/image';
+import Link from 'next/link';
+import * as React from 'react';
 
 import { closeSidebar } from './utils';
 
@@ -204,11 +204,11 @@ export default function Sidebar() {
                     sx={[
                       open
                         ? {
-                            transform: 'rotate(180deg)',
-                          }
+                          transform: 'rotate(180deg)',
+                        }
                         : {
-                            transform: 'none',
-                          },
+                          transform: 'none',
+                        },
                     ]}
                   />
                 </ListItemButton>
@@ -227,6 +227,72 @@ export default function Sidebar() {
               </List>
             </Toggler>
           </ListItem>
+          <ListItem>
+            <ListItemButton
+              role="menuitem"
+              component="a"
+              href="/joy-ui/getting-started/templates/messages/"
+            >
+              <QuestionAnswerRoundedIcon />
+              <ListItemContent>
+                <Typography level="title-sm">Messages</Typography>
+              </ListItemContent>
+              <Chip size="sm" color="primary" variant="solid">
+                4
+              </Chip>
+            </ListItemButton>
+          </ListItem>
+          <ListItem nested>
+            <Toggler
+              renderToggle={({ open, setOpen }) => (
+                <ListItemButton onClick={() => setOpen(!open)}>
+                  <GroupRoundedIcon />
+                  <ListItemContent>
+                    <Typography level="title-sm">Users</Typography>
+                  </ListItemContent>
+                  <KeyboardArrowDownIcon
+                    sx={[
+                      open
+                        ? {
+                          transform: 'rotate(180deg)',
+                        }
+                        : {
+                          transform: 'none',
+                        },
+                    ]}
+                  />
+                </ListItemButton>
+              )}
+            >
+              <List sx={{ gap: 0.5 }}>
+                <ListItem sx={{ mt: 0.5 }}>
+                  <ListItemButton
+                    role="menuitem"
+                    component="a"
+                    href="/joy-ui/getting-started/templates/profile-dashboard/"
+                  >
+                    My profile
+                  </ListItemButton>
+                </ListItem>
+                <ListItem>
+                  <ListItemButton>Create a new user</ListItemButton>
+                </ListItem>
+                <ListItem>
+                  <ListItemButton>Roles & permission</ListItemButton>
+                </ListItem>
+              </List>
+            </Toggler>
+          </ListItem>
+
+          <ListItem>
+            <ListItemButton selected>
+              <ShoppingCartRoundedIcon />
+              <ListItemContent>
+                <Typography level="title-sm">Produits</Typography>
+              </ListItemContent>
+            </ListItemButton>
+          </ListItem>
+
         </List>
         <List
           size="sm"
