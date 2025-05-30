@@ -1,7 +1,7 @@
 'use client';
 
-import ThemeProvider from '@/components/ui/JoyThemeProvider';
 import { ReactNode } from 'react';
+import ThemeRegistry from './ThemeRegistry';
 import { ToastProvider } from './ToastProvider';
 import { UserProvider } from './UserProvider';
 
@@ -21,13 +21,13 @@ interface ProvidersProps {
  */
 export function Providers({ children }: ProvidersProps) {
   return (
-    <ThemeProvider>
+    <ThemeRegistry options={{ key: 'joy' }}>
       <ToastProvider>
         <UserProvider>
           {children}
         </UserProvider>
       </ToastProvider>
-    </ThemeProvider>
+    </ThemeRegistry>
   );
 }
 
