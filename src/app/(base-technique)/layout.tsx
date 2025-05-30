@@ -13,7 +13,7 @@ export default function RootLayout({
 }>) {
   return (
     <>
-    <CssVarsProvider disableTransitionOnChange>
+    <CssVarsProvider defaultMode='system' disableTransitionOnChange>
       <CssBaseline />
       <Box sx={{ display: 'flex', minHeight: '100dvh'}}>
       <Sidebar />
