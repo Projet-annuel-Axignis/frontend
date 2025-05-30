@@ -223,6 +223,50 @@ export default function Sidebar() {
               </List>
             </Toggler>
           </ListItem>
+          <ListItem>
+            <ListItemButton>
+              <AppsIcon />
+              <ListItemContent>
+                <Typography level="title-sm">Marques</Typography>
+              </ListItemContent>
+            </ListItemButton>
+          </ListItem>
+
+          <ListItem nested>
+            <Toggler
+              renderToggle={({ open, setOpen }) => (
+                <ListItemButton onClick={() => setOpen(!open)}>
+                  <ShoppingCartRoundedIcon />
+                  <ListItemContent>
+                    <Typography level="title-sm">Produits</Typography>
+                  </ListItemContent>
+                  <KeyboardArrowDownIcon
+                    sx={[
+                      open
+                        ? {
+                          transform: 'rotate(180deg)',
+                        }
+                        : {
+                          transform: 'none',
+                        },
+                    ]}
+                  />
+                </ListItemButton>
+              )}
+            >
+              <List sx={{ gap: 0.5 }}>
+                <ListItem sx={{ mt: 0.5 }}>
+                  <ListItemButton>Produits</ListItemButton>
+                </ListItem>
+                <ListItem>
+                  <ListItemButton>Types de documents de produits</ListItemButton>
+                </ListItem>
+                <ListItem>
+                  <ListItemButton>Documents de produits</ListItemButton>
+                </ListItem>
+              </List>
+            </Toggler>
+          </ListItem>
         </List>
         <List
           size="sm"
