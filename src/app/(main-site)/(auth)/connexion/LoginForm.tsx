@@ -1,6 +1,7 @@
 'use client';
 
 import { useUser } from '@/app/_providers';
+import theme from '@/theme/theme';
 import { Email, Key, Visibility, VisibilityOff } from '@mui/icons-material';
 import {
   Alert,
@@ -8,7 +9,6 @@ import {
   Button,
   CircularProgress,
   Container,
-  createTheme,
   CssBaseline,
   IconButton,
   InputAdornment,
@@ -42,31 +42,6 @@ export default function LoginForm() {
 
   // Détection du mode sombre du système
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-
-  // Création d'un thème qui respecte la préférence du système
-  const theme = createTheme({
-    palette: {
-      mode: prefersDarkMode ? 'dark' : 'light',
-      primary: {
-        main: '#F59E0B', // amber-500
-      },
-      secondary: {
-        main: '#D97706', // amber-600
-      },
-      warning: {
-        main: '#F59E0B', // amber-500
-        dark: '#D97706', // amber-600
-      },
-      background: {
-        default: prefersDarkMode ? '#1F2937' : '#F9FAFB',
-        paper: prefersDarkMode ? '#111827' : '#FFFFFF',
-      },
-      text: {
-        primary: prefersDarkMode ? '#F9FAFB' : '#111827',
-        secondary: prefersDarkMode ? '#D1D5DB' : '#6B7280',
-      },
-    },
-  });
 
   const handleTogglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -116,7 +91,6 @@ export default function LoginForm() {
             sx={{
               p: 4,
               borderRadius: 2,
-              background: theme.palette.background.paper,
               boxShadow: prefersDarkMode
                 ? '0 4px 20px rgba(0,0,0,0.5)'
                 : '0 4px 20px rgba(0,0,0,0.1)'
