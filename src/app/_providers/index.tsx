@@ -1,8 +1,10 @@
 'use client';
 
+import ThemeProvider from '@/components/ui/JoyThemeProvider';
 import { ReactNode } from 'react';
 import { ToastProvider } from './ToastProvider';
 import { UserProvider } from './UserProvider';
+
 
 interface ProvidersProps {
   children: ReactNode;
@@ -19,15 +21,19 @@ interface ProvidersProps {
  */
 export function Providers({ children }: ProvidersProps) {
   return (
-    <ToastProvider>
-      <UserProvider>
-        {children}
-      </UserProvider>
-    </ToastProvider>
+    <ThemeProvider>
+      <ToastProvider>
+        <UserProvider>
+          {children}
+        </UserProvider>
+      </ToastProvider>
+    </ThemeProvider>
   );
 }
 
 // Exporter aussi les providers individuellement pour usage spécifique
 export { useToast } from '@/app/_providers/ToastProvider';
+export { CssBaseline } from '@mui/joy';
+export { ThemeProvider, useColorScheme } from '@mui/joy/styles';
 export { UserProvider, useUser } from './UserProvider';
 

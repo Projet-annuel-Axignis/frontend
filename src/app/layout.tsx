@@ -1,12 +1,12 @@
 import { Providers } from '@/app/_providers';
-import ThemeProvider from '@/components/ui/JoyThemeProvider';
+import { NextIntlClientProvider } from 'next-intl';
+
 import '@fontsource/inter';
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import type { Metadata } from "next";
-import { NextIntlClientProvider } from 'next-intl';
 import { Montserrat } from "next/font/google";
 import { centuryGothic } from './fonts';
 import "./globals.css";
@@ -40,13 +40,11 @@ export default function RootLayout({
       } as React.CSSProperties}
     >
       <body className="font-sans antialiased">
-        <ThemeProvider>
-          <NextIntlClientProvider>
-            <Providers>
-              {children}
-            </Providers>
-          </NextIntlClientProvider>
-        </ThemeProvider>
+        <NextIntlClientProvider>
+          <Providers>
+            {children}
+          </Providers>
+        </NextIntlClientProvider>
       </body>
     </html>
   );
