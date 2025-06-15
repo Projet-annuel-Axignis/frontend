@@ -33,6 +33,7 @@ export default function RootLayout({
     <html
       lang="fr"
       className={`${montserrat.variable} ${centuryGothic.variable}`}
+      suppressHydrationWarning
       style={{
         scrollBehavior: 'smooth',
         colorScheme: 'light dark',
