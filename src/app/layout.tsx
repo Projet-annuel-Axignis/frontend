@@ -1,5 +1,4 @@
-import { Providers } from '@/app/_providers';
-import { NextIntlClientProvider } from 'next-intl';
+import { Providers } from '@/app/_providers/Providers';
 
 import '@fontsource/inter';
 import '@fontsource/roboto/300.css';
@@ -41,11 +40,9 @@ export default function RootLayout({
       } as React.CSSProperties}
     >
       <body className="font-sans antialiased">
-        <NextIntlClientProvider>
-          <Providers>
-            {children}
-          </Providers>
-        </NextIntlClientProvider>
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

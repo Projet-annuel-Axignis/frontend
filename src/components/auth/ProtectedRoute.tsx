@@ -1,6 +1,6 @@
 'use client';
 
-import { useUser } from '@/app/_providers';
+import { useUser } from '@/app/_providers/Providers';
 import { Box, CircularProgress } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { ReactNode, useEffect } from 'react';
