@@ -31,7 +31,12 @@ export default function JoyOrderDashboardTemplate() {
           >
             <HomeRoundedIcon />
           </Link>
-          <Typography color="primary" sx={{ fontWeight: 500, fontSize: 12 }}>
+          <Typography
+            color="primary"
+            sx={{
+              fontWeight: 500,
+              fontSize: 12
+            }}>
             Produits
           </Typography>
         </Breadcrumbs>
@@ -47,7 +52,7 @@ export default function JoyOrderDashboardTemplate() {
           justifyContent: 'space-between',
         }}
       >
-        <Typography variant="h2" component="h1">
+        <Typography variant="h3" component="h1">
           Produits
         </Typography>
         <Button
