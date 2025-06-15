@@ -1,4 +1,5 @@
 'use client';
+import BreadCrumb from '@/components/dashboard/BreadCrumb';
 import Sidebar from '@/components/dashboard/Sidebar';
 import { Box } from '@mui/material';
 
@@ -25,7 +26,10 @@ export default function RootLayout({
             gap: 1,
           }}
         >
-          {children}
+          <Box sx={{ p: 3 }}>
+            <BreadCrumb />
+            {children}
+          </Box>
         </Box>
       </Box>
     </>
