@@ -1,13 +1,12 @@
 'use client';
 
-import theme from '@/theme/theme';
 import CancelIcon from '@mui/icons-material/Cancel';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import InfoIcon from '@mui/icons-material/Info';
 import VerifiedIcon from '@mui/icons-material/Verified';
-import { Box, Breadcrumbs, Button, Card, CardContent, CssBaseline, Grid, Link, Paper, Tab, Tabs, ThemeProvider, Typography } from '@mui/material';
+import { Box, Breadcrumbs, Button, Card, CardContent, Grid, Link, Paper, Tab, Tabs, Typography } from '@mui/material';
 import Image from 'next/image';
 import React from 'react';
 
@@ -48,8 +47,7 @@ export default function ProductDetails({ id }: { id: string }) {
   };
 
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
+    <>
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <Breadcrumbs
           aria-label="breadcrumbs"
@@ -743,6 +741,6 @@ export default function ProductDetails({ id }: { id: string }) {
           </CustomTabPanel>
         </Paper>
       </Box>
-    </ThemeProvider>
+    </>
   );
 }
