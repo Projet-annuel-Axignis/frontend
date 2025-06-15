@@ -1,11 +1,27 @@
 'use client';
 
+import {
+  Alert,
+  Box,
+  Button,
+  Container,
+  Paper,
+  TextField,
+  Typography,
+  useMediaQuery
+} from '@mui/material';
 import { useFormik } from 'formik';
 import { useTranslations } from 'next-intl';
+import { useState } from 'react';
 import * as Yup from 'yup';
 
 const ContactForm = () => {
   const t = useTranslations();
+  const [submitStatus, setSubmitStatus] = useState<'success' | 'error' | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Détection du mode sombre du système
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
 
   const validationSchema = Yup.object({
     firstName: Yup.string().required(t('contact.form.firstName.required')),
@@ -28,106 +44,213 @@ const ContactForm = () => {
       message: '',
     },
     validationSchema,
-    onSubmit: (values) => {
-      console.log(values);
+    onSubmit: async (values, { resetForm }) => {
+      setIsSubmitting(true);
+      setSubmitStatus(null);
+
+      try {
+        // Simulation d'envoi - remplacer par votre logique d'envoi
+        console.log(values);
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulation délai
+
+        setSubmitStatus('success');
+        resetForm();
+      } catch (error) {
+        console.error('Erreur lors de l\'envoi:', error);
+        setSubmitStatus('error');
+      } finally {
+        setIsSubmitting(false);
+      }
     },
   });
 
+  // Fonction utilitaire pour ajouter un astérisque aux labels des champs obligatoires
+  const requiredLabel = (label: string) => (
+    <span>
+      {label} <span style={{ color: '#f44336' }}>*</span>
+    </span>
+  );
+
   return (
-    <form
-      onSubmit={formik.handleSubmit}
-      className="bg-gray-100 dark:bg-gray-800 shadow-xl rounded-xl p-8 space-y-6"
-    >
-      {/* Ligne pour Prénom et Nom */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <fieldset className="fieldset">
-          <legend className="fieldset-legend">{t('contact.form.firstName.placeholder')}</legend>
-          <input
-            id="firstName"
-            name="firstName"
-            type="text"
-            value={formik.values.firstName}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            className={`input w-full ${formik.touched.firstName && formik.errors.firstName
-              ? 'border-red-500'
-              : 'border-gray-300'
-              }`}
-          />
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      <Paper
+        elevation={3}
+        sx={{
+          p: 4,
+          borderRadius: 2,
+          boxShadow: prefersDarkMode
+            ? '0 4px 20px rgba(0,0,0,0.5)'
+            : '0 4px 20px rgba(0,0,0,0.1)'
+        }}
+      >
+        <Box sx={{ textAlign: 'center', mb: 4 }}>
+          <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
+            {t('contact.title')}
+          </Typography>
+          <Typography variant="body1" color="textSecondary">
+            {t('contact.subtitle')}
+          </Typography>
+        </Box>
 
-          {formik.touched.firstName && formik.errors.firstName && (
-            <p className="label text-red-500">{formik.errors.firstName}</p>
-          )}
-        </fieldset>
+        {submitStatus === 'success' && (
+          <Alert
+            severity="success"
+            sx={{
+              mb: 3,
+              '& .MuiAlert-message': {
+                fontWeight: 'medium'
+              }
+            }}
+          >
+            {t('contact.form.success')}
+          </Alert>
+        )}
 
-        <fieldset className="fieldset">
-          <legend className="fieldset-legend">{t('contact.form.lastName.placeholder')}</legend>
-          <input
-            id="lastName"
-            name="lastName"
-            type="text"
-            value={formik.values.lastName}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            className={`input w-full ${formik.touched.lastName && formik.errors.lastName
-              ? 'border-red-500'
-              : 'border-gray-300'
-              }`}
-          />
+        {submitStatus === 'error' && (
+          <Alert
+            severity="error"
+            sx={{
+              mb: 3,
+              '& .MuiAlert-message': {
+                fontWeight: 'medium'
+              }
+            }}
+          >
+            {t('contact.form.error')}
+          </Alert>
+        )}
 
-          {formik.touched.lastName && formik.errors.lastName && (
-            <p className="label text-red-500">{formik.errors.lastName}</p>
-          )}
-        </fieldset>
-      </div>
+        <Box component="form" onSubmit={formik.handleSubmit}>
+          {/* Ligne pour Prénom et Nom */}
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: { xs: 'column', sm: 'row' },
+              gap: 2,
+              mb: 3
+            }}
+          >
+            {/* Prénom */}
+            <Box sx={{ flex: 1 }}>
+              <TextField
+                fullWidth
+                id="firstName"
+                name="firstName"
+                type="text"
+                label={requiredLabel(t('contact.form.firstName.placeholder'))}
+                variant="outlined"
+                value={formik.values.firstName}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={Boolean(formik.errors.firstName && formik.touched.firstName)}
+                helperText={(formik.errors.firstName && formik.touched.firstName) ? formik.errors.firstName : ''}
+              />
+            </Box>
 
-      {/* Autres champs */}
-      {(['email', 'phone', 'company', 'message'] as Array<keyof typeof formik.values>).map((field) => (
-        <fieldset key={field} className="fieldset">
-          <legend className="fieldset-legend">{t(`contact.form.${field}.placeholder`)}</legend>
-          {field !== 'message' ? (
-            <input
-              id={field}
-              name={field}
-              type={field === 'email' ? 'email' : 'text'}
-              value={formik.values[field]}
+            {/* Nom */}
+            <Box sx={{ flex: 1 }}>
+              <TextField
+                fullWidth
+                id="lastName"
+                name="lastName"
+                type="text"
+                label={requiredLabel(t('contact.form.lastName.placeholder'))}
+                variant="outlined"
+                value={formik.values.lastName}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={Boolean(formik.errors.lastName && formik.touched.lastName)}
+                helperText={(formik.errors.lastName && formik.touched.lastName) ? formik.errors.lastName : ''}
+              />
+            </Box>
+          </Box>
+
+          {/* Email */}
+          <Box sx={{ mb: 3 }}>
+            <TextField
+              fullWidth
+              id="email"
+              name="email"
+              type="email"
+              label={requiredLabel(t('contact.form.email.placeholder'))}
+              variant="outlined"
+              value={formik.values.email}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
-              className={`input w-full ${formik.touched[field] && formik.errors[field]
-                ? 'border-red-500'
-                : 'border-gray-300'
-                }`}
+              error={Boolean(formik.errors.email && formik.touched.email)}
+              helperText={(formik.errors.email && formik.touched.email) ? formik.errors.email : ''}
             />
-          ) : (
-            <textarea
-              id={field}
-              name={field}
+          </Box>
+
+          {/* Téléphone */}
+          <Box sx={{ mb: 3 }}>
+            <TextField
+              fullWidth
+              id="phone"
+              name="phone"
+              type="tel"
+              label={t('contact.form.phone.placeholder')}
+              variant="outlined"
+              value={formik.values.phone}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={Boolean(formik.errors.phone && formik.touched.phone)}
+              helperText={(formik.errors.phone && formik.touched.phone) ? formik.errors.phone : ''}
+            />
+          </Box>
+
+          {/* Entreprise */}
+          <Box sx={{ mb: 3 }}>
+            <TextField
+              fullWidth
+              id="company"
+              name="company"
+              type="text"
+              label={requiredLabel(t('contact.form.company.placeholder'))}
+              variant="outlined"
+              value={formik.values.company}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={Boolean(formik.errors.company && formik.touched.company)}
+              helperText={(formik.errors.company && formik.touched.company) ? formik.errors.company : ''}
+            />
+          </Box>
+
+          {/* Message */}
+          <Box sx={{ mb: 4 }}>
+            <TextField
+              fullWidth
+              id="message"
+              name="message"
+              label={requiredLabel(t('contact.form.message.placeholder'))}
+              variant="outlined"
+              multiline
               rows={5}
               value={formik.values.message}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
-              className={`textarea w-full px-3 py-2 ${formik.touched.message && formik.errors.message
-                ? 'border-red-500'
-                : 'border-gray-300'
-                }`}
+              error={Boolean(formik.errors.message && formik.touched.message)}
+              helperText={(formik.errors.message && formik.touched.message) ? formik.errors.message : ''}
             />
-          )}
-          {formik.touched[field] && formik.errors[field] && (
-            <p className="label text-red-500">{formik.errors[field]}</p>
-          )}
+          </Box>
 
-        </fieldset>
-      ))}
-
-      <button
-        type="submit"
-        disabled={formik.isSubmitting}
-        className="w-full bg-axignis-primary hover:bg-axignis-secondary text-white py-2 px-4 rounded-lg shadow-md transition-all"
-      >
-        {t('contact.form.submit')}
-      </button>
-    </form>
-
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            color="primary"
+            disabled={isSubmitting}
+            sx={{
+              py: 1.5,
+              fontWeight: 'medium',
+              fontSize: '1rem'
+            }}
+          >
+            {isSubmitting ? t('contact.form.submitting') : t('contact.form.submit')}
+          </Button>
+        </Box>
+      </Paper>
+    </Container>
   );
 };
 
