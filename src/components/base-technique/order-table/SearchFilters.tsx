@@ -248,7 +248,12 @@ export default function SearchFilters({ filters, onFiltersChange }: SearchFilter
             minWidth: 300,
             '& .MuiOutlinedInput-root': {
               borderRadius: 2,
-              backgroundColor: 'white',
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'var(--color-axignis-primary)',
+              },
+              '&:hover .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'var(--color-axignis-secondary)',
+              },
             },
             '& .MuiInputLabel-root': {
               fontWeight: 500,
