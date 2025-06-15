@@ -1,5 +1,4 @@
-import ProductsDetails from '@/components/base-technique/ProductDetails';
-import React from 'react';
+import ProductsDetails from '@/components/dashboard/ProductDetails';
 
 export async function generateStaticParams() {
   return [

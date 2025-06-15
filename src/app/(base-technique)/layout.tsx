@@ -1,5 +1,5 @@
 'use client';
-import Sidebar from '@/components/base-technique/Sidebar';
+import Sidebar from '@/components/dashboard/Sidebar';
 import { Box } from '@mui/material';
 
 export default function RootLayout({
