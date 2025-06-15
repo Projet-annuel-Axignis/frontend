@@ -1,5 +1,5 @@
-import DownloadButton from '@/components/base-technique/DownloadButton';
-import OrderTable from '@/components/base-technique/OrderTable';
+import DownloadButton from '@/components/dashboard/DownloadButton';
+import OrderTable from '@/components/dashboard/OrderTable';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import InventoryIcon from '@mui/icons-material/Inventory';
