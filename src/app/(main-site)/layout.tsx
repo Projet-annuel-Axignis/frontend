@@ -1,6 +1,6 @@
-import Footer from '@/components/Footer';
-import FooterIndicator from '@/components/FooterIndicator';
-import Header from '@/components/Header';
+import Footer from '@/components/commons/Footer';
+import FooterIndicator from '@/components/commons/FooterIndicator';
+import Header from '@/components/commons/Header';
 
 export default function RootLayout({
   children,
