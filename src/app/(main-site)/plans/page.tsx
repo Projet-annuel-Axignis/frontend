@@ -1,5 +1,5 @@
 import HeroHeader from '@/components/commons/HeroHeader';
-import CtaDevis from '@/components/CtaDevis';
+import CtaDevis from '@/components/main-site/CtaDevis';
 import { Plans } from '@/types/plans';
 import { CheckCircle } from '@mui/icons-material';
 import { Metadata } from 'next';

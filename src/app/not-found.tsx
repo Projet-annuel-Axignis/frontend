@@ -1,6 +1,6 @@
 "use client"
-import Footer from '@/components/Footer';
-import Header from '@/components/Header';
+import Footer from '@/components/commons/Footer';
+import Header from '@/components/commons/Header';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
