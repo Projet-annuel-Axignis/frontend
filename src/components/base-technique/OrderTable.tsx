@@ -30,6 +30,7 @@ import AutorenewRoundedIcon from '@mui/icons-material/AutorenewRounded';
 import BlockIcon from '@mui/icons-material/Block';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import CloseIcon from '@mui/icons-material/Close';
+import DownloadIcon from '@mui/icons-material/Download';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
@@ -39,11 +40,12 @@ import SearchIcon from '@mui/icons-material/Search';
 const StyledTableContainer = styled(Paper)(({ theme }) => ({
   display: 'none',
   width: '100%',
-  borderRadius: theme.shape.borderRadius,
+  borderRadius: theme.shape.borderRadius * 2,
   flexShrink: 1,
-  overflow: 'auto',
+  overflow: 'hidden',
   minHeight: 0,
   border: `1px solid ${theme.palette.divider}`,
+  boxShadow: theme.shadows[3],
   [theme.breakpoints.up('sm')]: {
     display: 'block',
   },
@@ -51,148 +53,112 @@ const StyledTableContainer = styled(Paper)(({ theme }) => ({
 
 const StyledTable = styled(Table)(({ theme }) => ({
   '& .MuiTableHead-root': {
-    backgroundColor: theme.palette.grey[50],
+    background: `linear-gradient(135deg, var(--color-axignis-primary)10, var(--color-axignis-secondary)10)`,
+    '& .MuiTableCell-root': {
+      fontWeight: 600,
+      color: 'var(--color-axignis-dark)',
+      borderBottom: `2px solid var(--color-axignis-primary)`,
+    },
   },
   '& .MuiTableRow-root': {
+    transition: 'var(--transition-normal)',
     '&:hover': {
-      backgroundColor: theme.palette.grey[50],
+      backgroundColor: theme.palette.action.hover,
       cursor: 'pointer',
+      transform: 'translateX(4px)',
+    },
+    '&:nth-of-type(even)': {
+      backgroundColor: theme.palette.action.hover,
     },
   },
   '& .MuiTableCell-root': {
-    paddingTop: theme.spacing(0.5),
-    paddingBottom: theme.spacing(0.5),
-    paddingLeft: theme.spacing(1),
-    paddingRight: theme.spacing(1),
+    paddingTop: theme.spacing(1.5),
+    paddingBottom: theme.spacing(1.5),
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2),
+    borderBottom: `1px solid ${theme.palette.divider}`,
   },
+}));
+
+const StyledSearchFilters = styled(Box)(({ theme }) => ({
+  background: `linear-gradient(135deg, var(--color-axignis-primary)05, var(--color-axignis-secondary)05)`,
+  borderRadius: theme.shape.borderRadius * 2,
+  padding: theme.spacing(3),
+  border: `1px solid ${theme.palette.divider}`,
+  boxShadow: theme.shadows[1],
+  marginBottom: theme.spacing(2),
 }));
 
 const rows = [
   {
-    id: 'INV-1234',
-    marque: 'Marque',
-    status: 'Remboursé',
-    type: 'Type',
-    associativity: 'Projets'
+    id: 'JOD-1234',
+    marque: 'Legrand',
+    status: 'En stock',
+    type: 'Déclencheur',
+    associativity: 'Sécurité incendie'
   },
   {
-    id: 'INV-1233',
-    marque: 'Marque',
-    status: 'Payé',
-    type: 'Type',
-    associativity: 'Projets'
+    id: 'CAB-1233',
+    marque: 'Schneider',
+    status: 'En stock',
+    type: 'Câble',
+    associativity: 'Électricité'
   },
   {
-    id: 'INV-1232',
-    marque: 'Marque',
-    status: 'Remboursé',
-    type: 'Type',
-    associativity: 'Projets'
+    id: 'DET-1232',
+    marque: 'Siemens',
+    status: 'Stock faible',
+    type: 'Détecteur',
+    associativity: 'Sécurité incendie'
   },
   {
-    id: 'INV-1231',
-    marque: 'Marque',
-    status: 'Remboursé',
-    type: 'Type',
-    associativity: 'Projets'
+    id: 'CEN-1231',
+    marque: 'Honeywell',
+    status: 'En stock',
+    type: 'Centrale',
+    associativity: 'Sécurité incendie'
   },
   {
-    id: 'INV-1230',
-    marque: 'Marque',
-    status: 'Annulé',
-    type: 'Type',
-    associativity: 'Projets'
+    id: 'VOL-1230',
+    marque: 'Legrand',
+    status: 'Rupture',
+    type: 'Volet',
+    associativity: 'Protection'
   },
   {
-    id: 'INV-1229',
-    marque: 'Marque',
-    status: 'Annulé',
-    type: 'Type',
-    associativity: 'Projets'
+    id: 'SIR-1229',
+    marque: 'Bosch',
+    status: 'Rupture',
+    type: 'Sirène',
+    associativity: 'Alarme'
   },
   {
-    id: 'INV-1228',
-    marque: 'Marque',
-    status: 'Remboursé',
-    type: 'Type',
-    associativity: 'Projets'
+    id: 'BAL-1228',
+    marque: 'Philips',
+    status: 'En stock',
+    type: 'Balise',
+    associativity: 'Éclairage'
   },
   {
-    id: 'INV-1227',
-    marque: 'Marque',
-    status: 'Payé',
-    type: 'Type',
-    associativity: 'Projets'
+    id: 'MOD-1227',
+    marque: 'ABB',
+    status: 'En stock',
+    type: 'Module',
+    associativity: 'Interface'
   },
   {
-    id: 'INV-1226',
-    marque: 'Marque',
-    status: 'Annulé',
-    type: 'Type',
-    associativity: 'Projets'
+    id: 'CAP-1226',
+    marque: 'Schneider',
+    status: 'Rupture',
+    type: 'Capteur',
+    associativity: 'Détection'
   },
   {
-    id: 'INV-1225',
-    marque: 'Marque',
-    status: 'Payé',
-    type: 'Type',
-    associativity: 'Projets'
-  },
-  {
-    id: 'INV-1224',
-    marque: 'Marque',
-    status: 'Annulé',
-    type: 'Type',
-    associativity: 'Projets'
-  },
-  {
-    id: 'INV-1223',
-    marque: 'Marque',
-    status: 'Payé',
-    type: 'Type',
-    associativity: 'Projets'
-  },
-  {
-    id: 'INV-1221',
-    marque: 'Marque',
-    status: 'Remboursé',
-    type: 'Type',
-    associativity: 'Projets'
-  },
-  {
-    id: 'INV-1220',
-    marque: 'Marque',
-    status: 'Payé',
-    type: 'Type',
-    associativity: 'Projets'
-  },
-  {
-    id: 'INV-1219',
-    marque: 'Marque',
-    status: 'Annulé',
-    type: 'Type',
-    associativity: 'Projets'
-  },
-  {
-    id: 'INV-1218',
-    marque: 'Marque',
-    status: 'Annulé',
-    type: 'Type',
-    associativity: 'Projets'
-  },
-  {
-    id: 'INV-1217',
-    marque: 'Marque',
-    status: 'Payé',
-    type: 'Type',
-    associativity: 'Projets'
-  },
-  {
-    id: 'INV-1216',
-    marque: 'Marque',
-    status: 'Annulé',
-    type: 'Type',
-    associativity: 'Projets'
+    id: 'REL-1225',
+    marque: 'Omron',
+    status: 'En stock',
+    type: 'Relais',
+    associativity: 'Commande'
   },
 ];
 
@@ -245,6 +211,13 @@ function RowMenu() {
         aria-controls={open ? 'row-menu' : undefined}
         aria-haspopup="true"
         aria-expanded={open ? 'true' : undefined}
+        sx={{
+          transition: 'var(--transition-normal)',
+          '&:hover': {
+            backgroundColor: 'var(--color-axignis-primary)',
+            color: 'white',
+          },
+        }}
       >
         <MoreHorizRoundedIcon />
       </IconButton>
@@ -256,12 +229,18 @@ function RowMenu() {
         MenuListProps={{
           'aria-labelledby': 'basic-button',
         }}
+        PaperProps={{
+          sx: {
+            borderRadius: 2,
+            boxShadow: 3,
+          },
+        }}
       >
-        <MenuItem onClick={handleClose}>Éditer</MenuItem>
-        <MenuItem onClick={handleClose}>Renommer</MenuItem>
-        <MenuItem onClick={handleClose}>Déplacer</MenuItem>
+        <MenuItem onClick={handleClose} sx={{ fontWeight: 500 }}>Éditer</MenuItem>
+        <MenuItem onClick={handleClose} sx={{ fontWeight: 500 }}>Renommer</MenuItem>
+        <MenuItem onClick={handleClose} sx={{ fontWeight: 500 }}>Déplacer</MenuItem>
         <Divider />
-        <MenuItem onClick={handleClose} sx={{ color: 'error.main' }}>
+        <MenuItem onClick={handleClose} sx={{ color: 'error.main', fontWeight: 500 }}>
           Supprimer
         </MenuItem>
       </Menu>
@@ -276,45 +255,107 @@ export default function OrderTable() {
 
   const renderFilters = () => (
     <React.Fragment>
-      <FormControl size="small" sx={{ minWidth: 120 }}>
-        <InputLabel>Statut</InputLabel>
+      <FormControl size="small" sx={{ minWidth: 140 }}>
+        <InputLabel sx={{ fontWeight: 500 }}>Statut</InputLabel>
         <Select
           size="small"
           label="Statut"
           defaultValue=""
+          sx={{
+            borderRadius: 2,
+            '& .MuiOutlinedInput-notchedOutline': {
+              borderColor: 'var(--color-axignis-primary)',
+            },
+            '&:hover .MuiOutlinedInput-notchedOutline': {
+              borderColor: 'var(--color-axignis-secondary)',
+            },
+          }}
         >
-          <MenuItem value="paid">Payé</MenuItem>
-          <MenuItem value="pending">En attente</MenuItem>
-          <MenuItem value="refunded">Remboursé</MenuItem>
-          <MenuItem value="cancelled">Annulé</MenuItem>
+          <MenuItem value="en-stock">En stock</MenuItem>
+          <MenuItem value="stock-faible">Stock faible</MenuItem>
+          <MenuItem value="rupture">Rupture</MenuItem>
         </Select>
       </FormControl>
-      <FormControl size="small" sx={{ minWidth: 120 }}>
-        <InputLabel>Marque</InputLabel>
-        <Select size="small" label="Marque" defaultValue="">
-          <MenuItem value="tout">Tout</MenuItem>
-          <MenuItem value="marque1">Marque 1</MenuItem>
-          <MenuItem value="marque2">Marque 2</MenuItem>
-          <MenuItem value="marque3">Marque 3</MenuItem>
+      <FormControl size="small" sx={{ minWidth: 140 }}>
+        <InputLabel sx={{ fontWeight: 500 }}>Marque</InputLabel>
+        <Select
+          size="small"
+          label="Marque"
+          defaultValue=""
+          sx={{
+            borderRadius: 2,
+            '& .MuiOutlinedInput-notchedOutline': {
+              borderColor: 'var(--color-axignis-primary)',
+            },
+            '&:hover .MuiOutlinedInput-notchedOutline': {
+              borderColor: 'var(--color-axignis-secondary)',
+            },
+          }}
+        >
+          <MenuItem value="tout">Toutes</MenuItem>
+          <MenuItem value="legrand">Legrand</MenuItem>
+          <MenuItem value="schneider">Schneider</MenuItem>
+          <MenuItem value="siemens">Siemens</MenuItem>
+          <MenuItem value="honeywell">Honeywell</MenuItem>
+          <MenuItem value="bosch">Bosch</MenuItem>
         </Select>
       </FormControl>
-      <FormControl size="small" sx={{ minWidth: 120 }}>
-        <InputLabel>Type</InputLabel>
-        <Select size="small" label="Type" defaultValue="">
-          <MenuItem value="tout">Tout</MenuItem>
-          <MenuItem value="type1">Type 1</MenuItem>
-          <MenuItem value="type2">Type 2</MenuItem>
-          <MenuItem value="type3">Type 3</MenuItem>
-          <MenuItem value="type4">Type 4</MenuItem>
-          <MenuItem value="type5">Type 5</MenuItem>
-          <MenuItem value="type6">Type 6</MenuItem>
+      <FormControl size="small" sx={{ minWidth: 140 }}>
+        <InputLabel sx={{ fontWeight: 500 }}>Type</InputLabel>
+        <Select
+          size="small"
+          label="Type"
+          defaultValue=""
+          sx={{
+            borderRadius: 2,
+            '& .MuiOutlinedInput-notchedOutline': {
+              borderColor: 'var(--color-axignis-primary)',
+            },
+            '&:hover .MuiOutlinedInput-notchedOutline': {
+              borderColor: 'var(--color-axignis-secondary)',
+            },
+          }}
+        >
+          <MenuItem value="tout">Tous</MenuItem>
+          <MenuItem value="declencheur">Déclencheur</MenuItem>
+          <MenuItem value="detecteur">Détecteur</MenuItem>
+          <MenuItem value="centrale">Centrale</MenuItem>
+          <MenuItem value="cable">Câble</MenuItem>
+          <MenuItem value="sirene">Sirène</MenuItem>
         </Select>
       </FormControl>
     </React.Fragment>
   );
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'En stock':
+        return 'success';
+      case 'Stock faible':
+        return 'warning';
+      case 'Rupture':
+        return 'error';
+      default:
+        return 'default';
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'En stock':
+        return <CheckRoundedIcon />;
+      case 'Stock faible':
+        return <AutorenewRoundedIcon />;
+      case 'Rupture':
+        return <BlockIcon />;
+      default:
+        return undefined;
+    }
+  };
+
   return (
     <React.Fragment>
+      {/* Mobile Search and Filters */}
       <Paper
         className="SearchAndFilters-mobile"
         sx={{
@@ -324,25 +365,40 @@ export default function OrderTable() {
           p: 2,
           elevation: 0,
           border: '1px solid',
-          borderColor: 'divider'
+          borderColor: 'var(--color-axignis-primary)',
+          borderRadius: 2,
+          background: `linear-gradient(135deg, var(--color-axignis-primary)05, var(--color-axignis-secondary)05)`,
         }}
       >
         <TextField
           size="small"
-          placeholder="Recherche"
+          placeholder="Rechercher un produit..."
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon />
+                <SearchIcon sx={{ color: 'var(--color-axignis-primary)' }} />
               </InputAdornment>
             ),
           }}
-          sx={{ flexGrow: 1 }}
+          sx={{
+            flexGrow: 1,
+            '& .MuiOutlinedInput-root': {
+              borderRadius: 2,
+            },
+          }}
         />
         <IconButton
           size="small"
           onClick={() => setOpen(true)}
-          sx={{ border: '1px solid', borderColor: 'divider' }}
+          sx={{
+            border: '1px solid',
+            borderColor: 'var(--color-axignis-primary)',
+            borderRadius: 2,
+            '&:hover': {
+              backgroundColor: 'var(--color-axignis-primary)',
+              color: 'white',
+            },
+          }}
         >
           <FilterAltIcon />
         </IconButton>
@@ -351,8 +407,8 @@ export default function OrderTable() {
           onClose={() => setOpen(false)}
           fullScreen
         >
-          <DialogTitle>
-            Filters
+          <DialogTitle sx={{ fontWeight: 600, color: 'var(--color-axignis-dark)' }}>
+            Filtres
             <IconButton
               aria-label="close"
               onClick={() => setOpen(false)}
@@ -373,41 +429,57 @@ export default function OrderTable() {
                 variant="contained"
                 color="primary"
                 onClick={() => setOpen(false)}
+                sx={{
+                  background: `linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))`,
+                  fontWeight: 600,
+                  borderRadius: 2,
+                  textTransform: 'none',
+                }}
               >
-                Submit
+                Appliquer les filtres
               </Button>
             </Box>
           </DialogContent>
         </Dialog>
       </Paper>
-      <Box
+
+      {/* Desktop Search and Filters */}
+      <StyledSearchFilters
         className="SearchAndFilters-tabletUp"
         sx={{
-          borderRadius: 1,
-          py: 2,
           display: { xs: 'none', sm: 'flex' },
           flexWrap: 'wrap',
-          gap: 1.5,
-          '& > *': {
-            minWidth: { xs: '120px', md: '160px' },
-          },
+          gap: 2,
+          alignItems: 'center',
         }}
       >
         <TextField
           label="Rechercher un produit"
           size="small"
-          placeholder="Recherche"
+          placeholder="Nom, référence, marque..."
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon />
+                <SearchIcon sx={{ color: 'var(--color-axignis-primary)' }} />
               </InputAdornment>
             ),
           }}
-          sx={{ flex: 1 }}
+          sx={{
+            flex: 1,
+            minWidth: 300,
+            '& .MuiOutlinedInput-root': {
+              borderRadius: 2,
+              backgroundColor: 'white',
+            },
+            '& .MuiInputLabel-root': {
+              fontWeight: 500,
+            },
+          }}
         />
         {renderFilters()}
-      </Box>
+      </StyledSearchFilters>
+
+      {/* Table */}
       <StyledTableContainer>
         <StyledTable aria-labelledby="tableTitle" stickyHeader>
           <TableHead>
@@ -424,38 +496,44 @@ export default function OrderTable() {
                       event.target.checked ? rows.map((row) => row.id) : [],
                     );
                   }}
-                  color={
-                    selected.length > 0 || selected.length === rows.length
-                      ? 'primary'
-                      : 'default'
-                  }
+                  sx={{
+                    color: 'var(--color-axignis-primary)',
+                    '&.Mui-checked': {
+                      color: 'var(--color-axignis-primary)',
+                    },
+                  }}
                 />
               </TableCell>
-              <TableCell sx={{ width: 120 }}>
+              <TableCell sx={{ width: 140 }}>
                 <Link
                   underline="none"
-                  color="primary"
+                  color="inherit"
                   component="button"
                   onClick={() => setOrder(order === 'asc' ? 'desc' : 'asc')}
                   sx={{
-                    fontWeight: 'bold',
+                    fontWeight: 600,
                     display: 'flex',
                     alignItems: 'center',
+                    color: 'var(--color-axignis-dark)',
+                    transition: 'var(--transition-normal)',
+                    '&:hover': {
+                      color: 'var(--color-axignis-primary)',
+                    },
                     '& svg': {
-                      transition: '0.2s',
+                      transition: 'var(--transition-normal)',
                       transform: order === 'desc' ? 'rotate(0deg)' : 'rotate(180deg)',
                     },
                   }}
                 >
-                  ID
+                  Référence
                   <ArrowDropDownIcon />
                 </Link>
               </TableCell>
               <TableCell sx={{ width: 140 }}>Marque</TableCell>
-              <TableCell sx={{ width: 140 }}>Status</TableCell>
-              <TableCell sx={{ width: 240 }}>Type</TableCell>
-              <TableCell sx={{ width: 240 }}>Associativité</TableCell>
-              <TableCell sx={{ width: 140 }}> </TableCell>
+              <TableCell sx={{ width: 140 }}>Statut</TableCell>
+              <TableCell sx={{ width: 160 }}>Type</TableCell>
+              <TableCell sx={{ width: 200 }}>Catégorie</TableCell>
+              <TableCell sx={{ width: 140 }}>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -470,7 +548,6 @@ export default function OrderTable() {
                   <Checkbox
                     size="small"
                     checked={selected.includes(row.id)}
-                    color={selected.includes(row.id) ? 'primary' : 'default'}
                     onChange={(event) => {
                       event.stopPropagation();
                       setSelected((ids) =>
@@ -479,65 +556,68 @@ export default function OrderTable() {
                           : ids.filter((itemId) => itemId !== row.id),
                       );
                     }}
+                    sx={{
+                      color: 'var(--color-axignis-primary)',
+                      '&.Mui-checked': {
+                        color: 'var(--color-axignis-primary)',
+                      },
+                    }}
                   />
                 </TableCell>
                 <TableCell>
-                  <Typography variant="body2">{row.id}</Typography>
+                  <Typography variant="body2" fontWeight="600" color="var(--color-axignis-primary)">
+                    {row.id}
+                  </Typography>
                 </TableCell>
                 <TableCell>
-                  <Typography variant="body2">{row.marque}</Typography>
+                  <Typography variant="body2" fontWeight="500">
+                    {row.marque}
+                  </Typography>
                 </TableCell>
                 <TableCell>
                   <Chip
                     variant="filled"
                     size="small"
-                    icon={
-                      {
-                        Payé: <CheckRoundedIcon />,
-                        Remboursé: <AutorenewRoundedIcon />,
-                        Annulé: <BlockIcon />,
-                      }[row.status]
-                    }
-                    color={
-                      {
-                        Payé: 'success',
-                        Remboursé: 'default',
-                        Annulé: 'error',
-                      }[row.status] as 'success' | 'default' | 'error'
-                    }
+                    icon={getStatusIcon(row.status)}
+                    color={getStatusColor(row.status) as any}
                     label={row.status}
+                    sx={{ fontWeight: 500 }}
                   />
                 </TableCell>
                 <TableCell>
                   <Chip
-                    variant="filled"
+                    variant="outlined"
                     size="small"
-                    color="default"
+                    color="primary"
                     label={row.type}
+                    sx={{
+                      fontWeight: 500,
+                      borderColor: 'var(--color-axignis-primary)',
+                      color: 'var(--color-axignis-primary)',
+                    }}
                   />
                 </TableCell>
                 <TableCell>
-                  <Chip
-                    variant="filled"
-                    size="small"
-                    icon={
-                      {
-                        Projets: <CheckRoundedIcon />,
-                      }[row.associativity]
-                    }
-                    color="default"
-                    label={row.associativity}
-                  />
+                  <Typography variant="body2" color="textSecondary">
+                    {row.associativity}
+                  </Typography>
                 </TableCell>
                 <TableCell>
-                  <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                    <Link
-                      variant="body2"
-                      component="button"
+                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                    <IconButton
+                      size="small"
                       onClick={(e) => e.stopPropagation()}
+                      sx={{
+                        color: 'var(--color-axignis-primary)',
+                        transition: 'var(--transition-normal)',
+                        '&:hover': {
+                          backgroundColor: 'var(--color-axignis-primary)',
+                          color: 'white',
+                        },
+                      }}
                     >
-                      Télécharger
-                    </Link>
+                      <DownloadIcon fontSize="small" />
+                    </IconButton>
                     <RowMenu />
                   </Box>
                 </TableCell>
@@ -546,21 +626,35 @@ export default function OrderTable() {
           </TableBody>
         </StyledTable>
       </StyledTableContainer>
+
+      {/* Pagination */}
       <Box
         className="Pagination-laptopUp"
         sx={{
-          pt: 2,
+          pt: 3,
           gap: 1,
           display: {
             xs: 'none',
             md: 'flex',
           },
+          alignItems: 'center',
         }}
       >
         <Button
           size="small"
           variant="outlined"
           startIcon={<KeyboardArrowLeftIcon />}
+          sx={{
+            borderColor: 'var(--color-axignis-primary)',
+            color: 'var(--color-axignis-primary)',
+            fontWeight: 500,
+            borderRadius: 2,
+            '&:hover': {
+              borderColor: 'var(--color-axignis-secondary)',
+              backgroundColor: 'var(--color-axignis-primary)',
+              color: 'white',
+            },
+          }}
         >
           Précédent
         </Button>
@@ -572,8 +666,14 @@ export default function OrderTable() {
             size="small"
             sx={{
               border: Number(page) ? '1px solid' : 'none',
-              borderColor: 'divider',
-              borderRadius: '50%'
+              borderColor: 'var(--color-axignis-primary)',
+              borderRadius: 2,
+              color: 'var(--color-axignis-primary)',
+              fontWeight: 500,
+              '&:hover': {
+                backgroundColor: 'var(--color-axignis-primary)',
+                color: 'white',
+              },
             }}
           >
             {page}
@@ -584,6 +684,17 @@ export default function OrderTable() {
           size="small"
           variant="outlined"
           endIcon={<KeyboardArrowRightIcon />}
+          sx={{
+            borderColor: 'var(--color-axignis-primary)',
+            color: 'var(--color-axignis-primary)',
+            fontWeight: 500,
+            borderRadius: 2,
+            '&:hover': {
+              borderColor: 'var(--color-axignis-secondary)',
+              backgroundColor: 'var(--color-axignis-primary)',
+              color: 'white',
+            },
+          }}
         >
           Suivant
         </Button>
