@@ -1,5 +1,3 @@
-'use client';
-
 import AppsIcon from '@mui/icons-material/Apps';
 import CableIcon from '@mui/icons-material/Cable';
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
@@ -259,7 +257,7 @@ export default function Sidebar() {
           </ListItem>
 
           {/* Menu Produits avec sous-menu */}
-          <ListItem disablePadding sx={{ width: '100%', flexDirection: 'column', alignItems: 'stretch' }}>
+          <ListItem disablePadding sx={{ width: '100%' }}>
             <StyledListItemButton onClick={handleProductsClick}>
               <ShoppingCartRoundedIcon sx={{ mr: 1.5, color: 'var(--color-axignis-primary)' }} />
               <ListItemText
@@ -277,47 +275,30 @@ export default function Sidebar() {
                 }}
               />
             </StyledListItemButton>
-
-            <Collapse in={openProducts} timeout="auto" unmountOnExit>
-              <List component="div" disablePadding sx={{ pl: 4 }}>
-                <ListItem disablePadding>
-                  <StyledListItemButton sx={{ py: 0.5, mb: 0.25 }}>
-                    <ListItemText
-                      primary={
-                        <Link href="/dashboard/produits">
-                          <Typography variant="body2" color="textSecondary">
-                            Produits
-                          </Typography>
-                        </Link>
-                      }
-                    />
-                  </StyledListItemButton>
-                </ListItem>
-                <ListItem disablePadding>
-                  <StyledListItemButton sx={{ py: 0.5, mb: 0.25 }}>
-                    <ListItemText
-                      primary={
-                        <Typography variant="body2" color="textSecondary">
-                          Types de documents
-                        </Typography>
-                      }
-                    />
-                  </StyledListItemButton>
-                </ListItem>
-                <ListItem disablePadding>
-                  <StyledListItemButton sx={{ py: 0.5, mb: 0.25 }}>
-                    <ListItemText
-                      primary={
-                        <Typography variant="body2" color="textSecondary">
-                          Documents
-                        </Typography>
-                      }
-                    />
-                  </StyledListItemButton>
-                </ListItem>
-              </List>
-            </Collapse>
           </ListItem>
+
+          {/* Sous-menu Produits */}
+          <Collapse in={openProducts} timeout="auto" unmountOnExit>
+            <Box sx={{ pl: 4 }}>
+              <Link href="/dashboard/produits" style={{ textDecoration: 'none', color: 'inherit' }}>
+                <StyledListItemButton sx={{ py: 0.5, mb: 0.25, width: '100%' }}>
+                  <Typography variant="body2" color="textSecondary">
+                    Produits
+                  </Typography>
+                </StyledListItemButton>
+              </Link>
+              <StyledListItemButton sx={{ py: 0.5, mb: 0.25, width: '100%' }}>
+                <Typography variant="body2" color="textSecondary">
+                  Types de documents
+                </Typography>
+              </StyledListItemButton>
+              <StyledListItemButton sx={{ py: 0.5, mb: 0.25, width: '100%' }}>
+                <Typography variant="body2" color="textSecondary">
+                  Documents
+                </Typography>
+              </StyledListItemButton>
+            </Box>
+          </Collapse>
         </List>
 
         {/* Bottom Menu */}
