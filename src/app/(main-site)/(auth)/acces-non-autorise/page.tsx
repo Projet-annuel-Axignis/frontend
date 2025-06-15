@@ -1,6 +1,6 @@
 import ButtonBack from '@/components/commons/ButtonBack';
 import { Lock } from '@mui/icons-material';
-import { Box, Button, Typography } from '@mui/joy';
+import { Box, Button, Typography } from '@mui/material';
 import { Metadata } from 'next';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
@@ -61,11 +61,11 @@ export default function UnauthorisedPage() {
           />
         </Box>
 
-        <Typography level="h1" className="text-4xl font-bold mb-4 text-gray-900 dark:text-white">
+        <Typography variant="h1" className="text-4xl font-bold mb-4 text-gray-900 dark:text-white">
           401
         </Typography>
 
-        <Typography level="h3" className="text-xl mb-2 text-gray-900 dark:text-white">
+        <Typography variant="h3" className="text-xl mb-2 text-gray-900 dark:text-white">
           {t('error_pages.error_unauthorised.unauthorised_title')}
         </Typography>
 
@@ -81,7 +81,7 @@ export default function UnauthorisedPage() {
           <Link href="/" passHref>
             <Button
               variant="outlined"
-              color="neutral"
+              color="inherit"
             >
               {t('common.home')}
             </Button>
