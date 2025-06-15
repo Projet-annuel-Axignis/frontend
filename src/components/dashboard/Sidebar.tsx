@@ -1,4 +1,6 @@
+import { AdminPanelSettings } from '@mui/icons-material';
 import AppsIcon from '@mui/icons-material/Apps';
+import BusinessIcon from '@mui/icons-material/Business';
 import CableIcon from '@mui/icons-material/Cable';
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import FolderIcon from '@mui/icons-material/Folder';
@@ -184,7 +186,7 @@ export default function Sidebar() {
         </Link>
       </StyledLogoContainer>
 
-      {/* Chip Section */}
+      {/* Base technique */}
       <Box sx={{ display: 'flex', justifyContent: 'center' }}>
         <StyledChip
           label="Base technique"
@@ -300,42 +302,93 @@ export default function Sidebar() {
             </Box>
           </Collapse>
         </List>
+      </Box>
 
-        {/* Bottom Menu */}
-        <List
-          dense
-          sx={{
-            mt: 'auto',
-            flexGrow: 0,
-            mb: 1,
-          }}
-        >
-          <ListItem disablePadding>
-            <StyledListItemButton>
-              <SupportRoundedIcon sx={{ mr: 1.5, color: 'var(--color-axignis-secondary)' }} />
-              <ListItemText
-                primary={
-                  <Typography variant="body2" fontWeight="medium">
-                    Support
-                  </Typography>
-                }
-              />
-            </StyledListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <StyledListItemButton>
-              <SettingsRoundedIcon sx={{ mr: 1.5, color: 'var(--color-axignis-secondary)' }} />
-              <ListItemText
-                primary={
-                  <Typography variant="body2" fontWeight="medium">
-                    Paramètres
-                  </Typography>
-                }
-              />
-            </StyledListItemButton>
+      {/* Registre de sécurité */}
+      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+        <StyledChip
+          label="Registre de sécurité"
+          size="medium"
+          variant="filled"
+        />
+      </Box>
+      {/* Navigation Menu Registre de sécurité */}
+      <Box
+        sx={{
+          minHeight: 0,
+          overflow: 'hidden auto',
+          flexGrow: 1,
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        <List dense sx={{ gap: 0.5, width: '100%' }}>
+          <ListItem disablePadding sx={{ width: '100%' }}>
+            <Link href="/dashboard/sites" style={{ textDecoration: 'none', color: 'inherit' }}>
+              <StyledListItemButton>
+                <BusinessIcon sx={{ mr: 1.5, color: 'var(--color-axignis-primary)' }} />
+                <ListItemText
+                  primary={
+                    <Typography variant="body2" fontWeight="medium">
+                      Sites
+                    </Typography>
+                  }
+                />
+              </StyledListItemButton>
+            </Link>
           </ListItem>
         </List>
       </Box>
+
+
+      {/* Bottom Menu */}
+      <List
+        dense
+        sx={{
+          mt: 'auto',
+          flexGrow: 0,
+          mb: 1,
+        }}
+      >
+        <ListItem disablePadding>
+          <StyledListItemButton>
+            <SupportRoundedIcon sx={{ mr: 1.5, color: 'var(--color-axignis-secondary)' }} />
+            <ListItemText
+              primary={
+                <Typography variant="body2" fontWeight="medium">
+                  Support
+                </Typography>
+              }
+            />
+          </StyledListItemButton>
+        </ListItem>
+        <ListItem disablePadding>
+          <StyledListItemButton>
+            <SettingsRoundedIcon sx={{ mr: 1.5, color: 'var(--color-axignis-secondary)' }} />
+            <ListItemText
+              primary={
+                <Typography variant="body2" fontWeight="medium">
+                  Paramètres
+                </Typography>
+              }
+            />
+          </StyledListItemButton>
+        </ListItem>
+        <ListItem disablePadding>
+          <Link href="/dashboard/administration" style={{ textDecoration: 'none', color: 'inherit' }}>
+            <StyledListItemButton>
+              <AdminPanelSettings sx={{ mr: 1.5, color: 'var(--color-axignis-secondary)' }} />
+              <ListItemText
+                primary={
+                  <Typography variant="body2" fontWeight="medium">
+                    Administration
+                  </Typography>
+                }
+              />
+            </StyledListItemButton>
+          </Link>
+        </ListItem>
+      </List>
 
       <Divider sx={{ my: 1 }} />
 
