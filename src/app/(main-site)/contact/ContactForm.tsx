@@ -87,9 +87,6 @@ const ContactForm = () => {
           <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
             {t('contact.title')}
           </Typography>
-          <Typography variant="body1" color="textSecondary">
-            {t('contact.subtitle')}
-          </Typography>
         </Box>
 
         {submitStatus === 'success' && (
