@@ -43,10 +43,12 @@ jest.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
-// Mock pour Material-UI Portal
-jest.mock('@mui/base', () => ({
-  Portal: ({ children }: { children: React.ReactNode }) => React.createElement('div', null, children),
-}));
+// Mock pour Material-UI Portal (utilise maintenant @mui/material)
+jest.mock('@mui/material/Portal', () => {
+  return function MockPortal({ children }: { children: React.ReactNode }) {
+    return React.createElement('div', { 'data-testid': 'mock-portal' }, children);
+  };
+});
 
 // Configuration pour les tests Material-UI
 const mockIntersectionObserver = jest.fn();
@@ -71,3 +73,10 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: jest.fn(),
   })),
 });
+
+// Mock pour ResizeObserver
+global.ResizeObserver = jest.fn().mockImplementation(() => ({
+  observe: jest.fn(),
+  unobserve: jest.fn(),
+  disconnect: jest.fn(),
+}));
