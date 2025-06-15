@@ -12,12 +12,14 @@ import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import * as React from 'react';
 
+import theme from '@/theme/theme';
 import AutorenewRoundedIcon from '@mui/icons-material/AutorenewRounded';
 import BlockIcon from '@mui/icons-material/Block';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
+import { CssBaseline, ThemeProvider } from '@mui/material';
 
 const listItems = [
   {
@@ -96,32 +98,35 @@ function RowMenu() {
 
   return (
     <>
-      <IconButton
-        size="small"
-        onClick={handleClick}
-        aria-controls={open ? 'row-menu' : undefined}
-        aria-haspopup="true"
-        aria-expanded={open ? 'true' : undefined}
-      >
-        <MoreHorizRoundedIcon />
-      </IconButton>
-      <Menu
-        id="row-menu"
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleClose}
-        MenuListProps={{
-          'aria-labelledby': 'basic-button',
-        }}
-      >
-        <MenuItem onClick={handleClose}>Edit</MenuItem>
-        <MenuItem onClick={handleClose}>Rename</MenuItem>
-        <MenuItem onClick={handleClose}>Move</MenuItem>
-        <Divider />
-        <MenuItem onClick={handleClose} sx={{ color: 'error.main' }}>
-          Delete
-        </MenuItem>
-      </Menu>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <IconButton
+          size="small"
+          onClick={handleClick}
+          aria-controls={open ? 'row-menu' : undefined}
+          aria-haspopup="true"
+          aria-expanded={open ? 'true' : undefined}
+        >
+          <MoreHorizRoundedIcon />
+        </IconButton>
+        <Menu
+          id="row-menu"
+          anchorEl={anchorEl}
+          open={open}
+          onClose={handleClose}
+          MenuListProps={{
+            'aria-labelledby': 'basic-button',
+          }}
+        >
+          <MenuItem onClick={handleClose}>Edit</MenuItem>
+          <MenuItem onClick={handleClose}>Rename</MenuItem>
+          <MenuItem onClick={handleClose}>Move</MenuItem>
+          <Divider />
+          <MenuItem onClick={handleClose} sx={{ color: 'error.main' }}>
+            Delete
+          </MenuItem>
+        </Menu>
+      </ThemeProvider>
     </>
   );
 }
