@@ -1,17 +1,174 @@
 'use client';
 
 import { useUser } from '@/app/_providers/Providers';
+import CloseIcon from '@mui/icons-material/Close';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import MenuIcon from '@mui/icons-material/Menu';
+import {
+  AppBar,
+  Avatar,
+  Box,
+  Button,
+  Collapse,
+  Container,
+  IconButton,
+  Menu,
+  MenuItem,
+  styled,
+  Toolbar,
+  Typography,
+  useTheme
+} from '@mui/material';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+const StyledAppBar = styled(AppBar, {
+  shouldForwardProp: (prop) => prop !== 'shouldBeTransparent' && prop !== 'isScrolled',
+})<{ shouldBeTransparent: boolean; isScrolled: boolean }>(({ theme, shouldBeTransparent, isScrolled }) => ({
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  right: 0,
+  zIndex: theme.zIndex.appBar,
+  transition: 'all 0.3s ease',
+  paddingTop: isScrolled ? theme.spacing(1) : theme.spacing(2),
+  paddingBottom: isScrolled ? theme.spacing(1) : theme.spacing(2),
+  backgroundColor: shouldBeTransparent
+    ? 'transparent'
+    : theme.palette.mode === 'dark'
+      ? 'rgba(18, 18, 18, 0.9)'
+      : 'rgba(255, 255, 255, 0.9)',
+  backdropFilter: shouldBeTransparent ? 'none' : 'blur(12px)',
+  boxShadow: shouldBeTransparent ? 'none' : theme.shadows[4],
+}));
+
+const StyledLogoContainer = styled(Box)(() => ({
+  position: 'relative',
+  height: '48px',
+  width: '128px',
+  transition: 'opacity 0.3s ease',
+  '&:hover': {
+    opacity: 0.8,
+  },
+}));
+
+const StyledNavLink = styled(Button, {
+  shouldForwardProp: (prop) => prop !== 'shouldBeTransparent' && prop !== 'isActive',
+})<{ shouldBeTransparent: boolean; isActive: boolean }>(({ theme, shouldBeTransparent, isActive }) => ({
+  fontWeight: 500,
+  textTransform: 'none',
+  color: shouldBeTransparent
+    ? theme.palette.common.white
+    : theme.palette.text.primary,
+  transition: 'color 0.3s ease',
+  position: 'relative',
+  '&:hover': {
+    color: 'var(--color-axignis-primary)',
+    backgroundColor: 'transparent',
+  },
+  ...(isActive && {
+    color: 'var(--color-axignis-primary)',
+    '&::after': {
+      content: '""',
+      position: 'absolute',
+      bottom: 0,
+      left: '50%',
+      transform: 'translateX(-50%)',
+      width: '80%',
+      height: '2px',
+      backgroundColor: 'var(--color-axignis-primary)',
+    },
+  }),
+}));
+
+const StyledLoginButton = styled(Button)(({ theme }) => ({
+  background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+  color: theme.palette.common.white,
+  fontWeight: 600,
+  textTransform: 'none',
+  borderRadius: theme.spacing(1),
+  padding: theme.spacing(1, 2),
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+    transform: 'translateY(-1px)',
+  },
+}));
+
+const StyledDashboardButton = styled(Button)(({ theme }) => ({
+  background: 'linear-gradient(135deg, #1976d2, #42a5f5)',
+  color: theme.palette.common.white,
+  fontWeight: 600,
+  textTransform: 'none',
+  borderRadius: theme.spacing(1),
+  padding: theme.spacing(1, 2),
+  marginRight: theme.spacing(1),
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    background: 'linear-gradient(135deg, #1565c0, #1976d2)',
+    transform: 'translateY(-1px)',
+  },
+}));
+
+const StyledLogoutButton = styled(Button)(({ theme }) => ({
+  background: 'linear-gradient(135deg, #f57c00, #ff9800)',
+  color: theme.palette.common.white,
+  fontWeight: 600,
+  textTransform: 'none',
+  borderRadius: theme.spacing(1),
+  padding: theme.spacing(1, 2),
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    background: 'linear-gradient(135deg, #ef6c00, #f57c00)',
+    transform: 'translateY(-1px)',
+  },
+}));
+
+const StyledMobileMenu = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  top: '100%',
+  left: 0,
+  right: 0,
+  backgroundColor: theme.palette.background.paper,
+  boxShadow: theme.shadows[8],
+  padding: theme.spacing(2),
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(1),
+  [theme.breakpoints.up('md')]: {
+    display: 'none',
+  },
+}));
+
+const StyledMobileMenuItem = styled(Button, {
+  shouldForwardProp: (prop) => prop !== 'isActive',
+})<{ isActive: boolean }>(({ theme, isActive }) => ({
+  justifyContent: 'flex-start',
+  textTransform: 'none',
+  fontWeight: 500,
+  padding: theme.spacing(1.5, 2),
+  borderRadius: theme.spacing(1),
+  color: theme.palette.text.primary,
+  backgroundColor: isActive ? theme.palette.action.selected : 'transparent',
+  '&:hover': {
+    backgroundColor: theme.palette.action.hover,
+  },
+  ...(isActive && {
+    color: 'var(--color-axignis-primary)',
+    fontWeight: 600,
+  }),
+}));
+
 export default function Header() {
   const t = useTranslations();
+  const theme = useTheme();
   const { user, isAuthenticated, logout } = useUser();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -24,340 +181,218 @@ export default function Header() {
       setIsScrolled(window.scrollY > 20);
     };
 
-    // N'ajouter l'écouteur d'événement que sur la page d'accueil
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [isHomePage]);
+  }, []);
 
   const isActive = (path: string) => pathname === path;
 
   const handleLogout = async () => {
     await logout();
+    setUserMenuAnchor(null);
     router.push('/');
+  };
+
+  const handleUserMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setUserMenuAnchor(event.currentTarget);
+  };
+
+  const handleUserMenuClose = () => {
+    setUserMenuAnchor(null);
   };
 
   // Déterminer le style du header en fonction de la page et du défilement
   const shouldBeTransparent = isHomePage && !isScrolled;
 
   return (
-    <header
-      className={`
-        fixed 
-        top-0 
-        left-0 
-        right-0 
-        z-50
-        transition-all
-        duration-300
-        ${isScrolled ? 'py-2' : 'py-4'}
-        ${shouldBeTransparent
-          ? 'bg-transparent'
-          : 'bg-white/90 dark:bg-gray-900/90 shadow-md backdrop-blur-md'
-        }
-      `}
+    <StyledAppBar
+      elevation={0}
+      shouldBeTransparent={shouldBeTransparent}
+      isScrolled={isScrolled}
     >
-      <div className="container mx-auto px-4 flex items-center justify-between">
-        {/* Logo */}
-        <Link href="/" className="relative h-12 w-32">
-          <Image
-            src={shouldBeTransparent ? "/images/logo/logo-axignis-nb.png" : "/images/logo/logo-axignis.png"}
-            alt="Axignis Logo"
-            fill
-            sizes="100%"
-            className={`
-              object-contain
-              transition-opacity
-              ${shouldBeTransparent ? 'brightness-0 invert' : ''}
-            `}
-          />
-        </Link>
-
-        {/* Navigation - Desktop */}
-        <nav className="hidden md:flex items-center gap-6">
-          {/* <Link
-            href="/mission"
-            className={`
-              font-medium 
-              hover:text-[var(--color-axignis-primary)] 
-              transition-colors
-              ${shouldBeTransparent ? 'text-white' : 'text-gray-800 dark:text-white'}
-              ${isActive('/mission') ? 'active' : ''}
-            `}
-          >
-            {t('common.mission')}
-          </Link>
-          <Link
-            href="/services"
-            className={`
-              font-medium 
-              hover:text-[var(--color-axignis-primary)] 
-              transition-colors
-              ${shouldBeTransparent ? 'text-white' : 'text-gray-800 dark:text-white'}
-              ${isActive('/services') ? 'active' : ''}
-            `}
-          >
-            {t('common.services')}
-          </Link> */}
-          <Link
-            href="/plans"
-            className={`
-              font-medium 
-              hover:text-[var(--color-axignis-primary)] 
-              transition-colors
-              ${shouldBeTransparent ? 'text-white' : 'text-gray-800 dark:text-white'}
-              ${isActive('/plans/') ? 'active' : ''}
-            `}
-          >
-            {t('common.plans')}
-          </Link>
-          <Link
-            href="/contact"
-            className={`
-              font-medium 
-              hover:text-[var(--color-axignis-primary)] 
-              transition-colors
-              ${shouldBeTransparent ? 'text-white' : 'text-gray-800 dark:text-white'}
-              ${isActive('/contact/') ? 'active' : ''}
-            `}
-          >
-            {t('common.contact')}
+      <Container maxWidth="xl">
+        <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 0, sm: 2 } }}>
+          {/* Logo */}
+          <Link href="/" style={{ textDecoration: 'none' }}>
+            <StyledLogoContainer>
+              <Image
+                src={shouldBeTransparent ? "/images/logo/logo-axignis-nb.png" : "/images/logo/logo-axignis.png"}
+                alt="Axignis Logo"
+                fill
+                sizes="128px"
+                style={{
+                  objectFit: 'contain',
+                  filter: shouldBeTransparent ? 'brightness(0) invert(1)' : 'none',
+                }}
+                priority
+              />
+            </StyledLogoContainer>
           </Link>
 
-          {/* Bouton Login/Logout */}
-          {isAuthenticated ? (
-            <div className="flex items-center gap-2">
-              <Link
-                href="/dashboard"
-                className={`
-                  font-medium 
-                  hover:text-[var(--color-axignis-primary)] 
-                  transition-colors
-                  ${shouldBeTransparent ? 'text-white' : 'text-gray-800 dark:text-white'}
-                  ${isActive('/dashboard') ? 'active' : ''}
-                `}
+          {/* Navigation - Desktop */}
+          <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 2 }}>
+            <Link href="/plans" style={{ textDecoration: 'none' }}>
+              <StyledNavLink
+                shouldBeTransparent={shouldBeTransparent}
+                isActive={isActive('/plans')}
               >
-                {user?.firstName || t('common.profile')}
-              </Link>
-              <button
-                onClick={handleLogout}
-                className={`
-                  ml-3
-                  px-4
-                  py-2
-                  rounded-md
-                  bg-amber-500
-                  hover:bg-amber-400
-                  text-gray-900
-                  font-medium
-                  transition-colors
-                  text-sm
-                `}
-              >
-                {t('common.logout')}
-              </button>
-            </div>
-          ) : (
-            <Link
-              href="/connexion"
-              className={`
-                px-4
-                py-2
-                rounded-md
-                bg-amber-500
-                hover:bg-amber-400
-                text-gray-900
-                font-medium
-                transition-colors
-                text-sm
-              `}
-            >
-              {t('common.login')}
+                {t('common.plans')}
+              </StyledNavLink>
             </Link>
-          )}
 
-          {/* Sélecteur de langue */}
-          {/* <div className={shouldBeTransparent ? 'text-white' : 'text-gray-800 dark:text-white'}>
-            <LanguageSelector />
-          </div> */}
-        </nav>
+            <Link href="/contact" style={{ textDecoration: 'none' }}>
+              <StyledNavLink
+                shouldBeTransparent={shouldBeTransparent}
+                isActive={isActive('/contact')}
+              >
+                {t('common.contact')}
+              </StyledNavLink>
+            </Link>
 
-        {/* Menu burger et langue - Mobile */}
-        <div className="flex items-center gap-2 md:hidden">
-          {/* <div className={shouldBeTransparent ? 'text-white' : 'text-gray-800 dark:text-white'}>
-            <LanguageSelector />
-          </div> */}
+            {/* Boutons pour utilisateurs connectés */}
+            {isAuthenticated ? (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                {/* Bouton Tableau de bord */}
+                <Link href="/dashboard" style={{ textDecoration: 'none' }}>
+                  <StyledDashboardButton
+                    startIcon={<DashboardIcon />}
+                    size="small"
+                  >
+                    {t('common.dashboard')}
+                  </StyledDashboardButton>
+                </Link>
 
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className={`
-              p-2
-              ${shouldBeTransparent ? 'text-white' : 'text-gray-800 dark:text-white'}
-            `}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              className="w-6 h-6"
+                {/* Menu utilisateur */}
+                <IconButton
+                  onClick={handleUserMenuOpen}
+                  sx={{
+                    p: 0,
+                    ml: 1,
+                    border: '2px solid var(--color-axignis-primary)',
+                  }}
+                >
+                  <Avatar
+                    sx={{
+                      width: 36,
+                      height: 36,
+                      bgcolor: 'var(--color-axignis-primary)',
+                      fontSize: '0.875rem',
+                      fontWeight: 600,
+                    }}
+                  >
+                    {user?.firstName?.charAt(0) || user?.email?.charAt(0) || 'U'}
+                  </Avatar>
+                </IconButton>
+
+                <Menu
+                  anchorEl={userMenuAnchor}
+                  open={Boolean(userMenuAnchor)}
+                  onClose={handleUserMenuClose}
+                  transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                  anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                >
+                  <MenuItem onClick={handleUserMenuClose}>
+                    <Typography variant="body2" fontWeight="600">
+                      {user?.firstName || t('common.profile')}
+                    </Typography>
+                  </MenuItem>
+                  <MenuItem onClick={handleLogout}>
+                    <Typography variant="body2" color="error">
+                      {t('common.logout')}
+                    </Typography>
+                  </MenuItem>
+                </Menu>
+              </Box>
+            ) : (
+              <Link href="/connexion" style={{ textDecoration: 'none' }}>
+                <StyledLoginButton size="small">
+                  {t('common.login')}
+                </StyledLoginButton>
+              </Link>
+            )}
+          </Box>
+
+          {/* Menu burger - Mobile */}
+          <Box sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center' }}>
+            <IconButton
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              sx={{
+                color: shouldBeTransparent
+                  ? theme.palette.common.white
+                  : theme.palette.text.primary,
+              }}
             >
-              {isMobileMenuOpen ? (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              ) : (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              )}
-            </svg>
-          </button>
-        </div>
+              {isMobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
+            </IconButton>
+          </Box>
+        </Toolbar>
 
         {/* Menu mobile */}
-        {isMobileMenuOpen && (
-          <div className="
-            absolute 
-            top-full 
-            left-0 
-            right-0 
-            bg-white 
-            dark:bg-gray-900 
-            shadow-lg 
-            p-4 
-            md:hidden
-            flex
-            flex-col
-            gap-4
-          ">
-            {/* <Link
-              href="/mission"
-              className={`
-                text-gray-800 
-                dark:text-white 
-                font-medium 
-                p-2 
-                hover:bg-gray-100 
-                dark:hover:bg-gray-800 
-                rounded
-                ${isActive('/mission') ? 'text-[var(--color-axignis-primary)] font-semibold bg-gray-100 dark:bg-gray-800' : ''}
-              `}
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              {t('common.mission')}
-            </Link>
-            <Link
-              href="/services"
-              className={`
-                text-gray-800 
-                dark:text-white 
-                font-medium 
-                p-2 
-                hover:bg-gray-100 
-                dark:hover:bg-gray-800 
-                rounded
-                ${isActive('/services') ? 'text-[var(--color-axignis-primary)] font-semibold bg-gray-100 dark:bg-gray-800' : ''}
-              `}
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              {t('common.services')}
-            </Link> */}
-            <Link
-              href="/plans"
-              className={`
-                text-gray-800 
-                dark:text-white 
-                font-medium 
-                p-2 
-                hover:bg-gray-100 
-                dark:hover:bg-gray-800 
-                rounded
-                ${isActive('/plans') ? 'text-[var(--color-axignis-primary)] font-semibold bg-gray-100 dark:bg-gray-800' : ''}
-              `}
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              {t('common.plans')}
-            </Link>
-            <Link
-              href="/contact"
-              className={`
-                text-gray-800 
-                dark:text-white 
-                font-medium 
-                p-2 
-                hover:bg-gray-100 
-                dark:hover:bg-gray-800 
-                rounded
-                ${isActive('/contact') ? 'text-[var(--color-axignis-primary)] font-semibold bg-gray-100 dark:bg-gray-800' : ''}
-              `}
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              {t('common.contact')}
+        <Collapse in={isMobileMenuOpen}>
+          <StyledMobileMenu>
+            <Link href="/plans" style={{ textDecoration: 'none' }}>
+              <StyledMobileMenuItem
+                isActive={isActive('/plans')}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {t('common.plans')}
+              </StyledMobileMenuItem>
             </Link>
 
-            {/* Bouton Login/Logout Mobile */}
+            <Link href="/contact" style={{ textDecoration: 'none' }}>
+              <StyledMobileMenuItem
+                isActive={isActive('/contact')}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {t('common.contact')}
+              </StyledMobileMenuItem>
+            </Link>
+
+            {/* Menu mobile pour utilisateurs connectés */}
             {isAuthenticated ? (
               <>
-                <Link
-                  href="/dashboard"
-                  className={`
-                    text-gray-800 
-                    dark:text-white 
-                    font-medium 
-                    p-2 
-                    hover:bg-gray-100 
-                    dark:hover:bg-gray-800 
-                    rounded
-                    ${isActive('/dashboard') ? 'text-[var(--color-axignis-primary)] font-semibold bg-gray-100 dark:bg-gray-800' : ''}
-                  `}
+                <Link href="/dashboard" style={{ textDecoration: 'none' }}>
+                  <StyledMobileMenuItem
+                    isActive={isActive('/dashboard')}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    startIcon={<DashboardIcon />}
+                  >
+                    {t('common.dashboard')}
+                  </StyledMobileMenuItem>
+                </Link>
+
+                <StyledMobileMenuItem
+                  isActive={false}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {user?.firstName || t('common.profile')}
-                </Link>
-                <button
+                </StyledMobileMenuItem>
+
+                <StyledLogoutButton
                   onClick={() => {
                     handleLogout();
                     setIsMobileMenuOpen(false);
                   }}
-                  className=" 
-                    dark:text-white 
-                    font-medium 
-                    p-2 
-                    bg-amber-500
-                    hover:bg-amber-400
-                    text-gray-900
-                    rounded
-                  "
+                  size="small"
+                  fullWidth
                 >
                   {t('common.logout')}
-                </button>
+                </StyledLogoutButton>
               </>
             ) : (
-              <Link
-                href="/connexion"
-                className="
-                  font-medium 
-                  p-2 
-                  bg-amber-500
-                  hover:bg-amber-400
-                  text-gray-900
-                  rounded
-                  text-center
-                "
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {t('common.login')}
+              <Link href="/connexion" style={{ textDecoration: 'none' }}>
+                <StyledLoginButton
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  size="small"
+                  fullWidth
+                >
+                  {t('common.login')}
+                </StyledLoginButton>
               </Link>
             )}
-          </div>
-        )}
-      </div>
-    </header>
+          </StyledMobileMenu>
+        </Collapse>
+      </Container>
+    </StyledAppBar>
   );
 } 

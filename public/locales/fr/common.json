@@ -20,7 +20,9 @@
     "profile": "Profil",
     "mission": "Notre Mission",
     "services": "Services",
-    "plans": "Plans"
+    "plans": "Plans",
+    "administration": "Administration",
+    "dashboard": "Tableau de bord"
   },
   "error_pages": {
     "error404": {
