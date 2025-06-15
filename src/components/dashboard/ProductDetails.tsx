@@ -2,21 +2,17 @@
 
 import CancelIcon from '@mui/icons-material/Cancel';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import DownloadIcon from '@mui/icons-material/Download';
-import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import InfoIcon from '@mui/icons-material/Info';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import {
   Box,
-  Breadcrumbs,
   Button,
   Card,
   CardContent,
   Chip,
   Grid,
-  Link,
   Paper,
   Tab,
   Tabs,
@@ -64,77 +60,7 @@ export default function ProductDetails({ id }: { id: string }) {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
-      {/* Breadcrumbs */}
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-        <Breadcrumbs
-          aria-label="breadcrumbs"
-          separator={<ChevronRightRoundedIcon fontSize="small" />}
-          sx={{
-            pl: 0,
-            '& .MuiBreadcrumbs-separator': {
-              color: 'var(--color-axignis-primary)',
-            }
-          }}
-        >
-          <Link
-            underline="none"
-            color="inherit"
-            href="/"
-            aria-label="Home"
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              transition: 'var(--transition-normal)',
-              '&:hover': {
-                color: 'var(--color-axignis-primary)',
-              }
-            }}
-          >
-            <HomeRoundedIcon />
-          </Link>
-          <Link
-            underline="none"
-            color="inherit"
-            href="/dashboard"
-            sx={{
-              transition: 'var(--transition-normal)',
-              '&:hover': {
-                color: 'var(--color-axignis-primary)',
-              }
-            }}
-          >
-            <Typography sx={{ fontWeight: 500, fontSize: 14 }}>
-              Dashboard
-            </Typography>
-          </Link>
-          <Link
-            underline="none"
-            color="inherit"
-            href="/dashboard/produits"
-            sx={{
-              transition: 'var(--transition-normal)',
-              '&:hover': {
-                color: 'var(--color-axignis-primary)',
-              }
-            }}
-          >
-            <Typography sx={{ fontWeight: 500, fontSize: 14 }}>
-              Produits
-            </Typography>
-          </Link>
-          <Typography
-            sx={{
-              fontWeight: 600,
-              fontSize: 14,
-              color: 'var(--color-axignis-primary)'
-            }}
-          >
-            {id}
-          </Typography>
-        </Breadcrumbs>
-      </Box>
-
+    <>
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
@@ -758,6 +684,6 @@ export default function ProductDetails({ id }: { id: string }) {
           </Card>
         </CustomTabPanel>
       </Paper>
-    </Box>
+    </>
   );
 }
