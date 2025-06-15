@@ -284,9 +284,11 @@ export default function Sidebar() {
                   <StyledListItemButton sx={{ py: 0.5, mb: 0.25 }}>
                     <ListItemText
                       primary={
-                        <Typography variant="body2" color="textSecondary">
-                          Produits
-                        </Typography>
+                        <Link href="/dashboard/produits">
+                          <Typography variant="body2" color="textSecondary">
+                            Produits
+                          </Typography>
+                        </Link>
                       }
                     />
                   </StyledListItemButton>

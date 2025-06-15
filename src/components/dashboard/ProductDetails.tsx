@@ -105,6 +105,21 @@ export default function ProductDetails({ id }: { id: string }) {
             }}
           >
             <Typography sx={{ fontWeight: 500, fontSize: 14 }}>
+              Dashboard
+            </Typography>
+          </Link>
+          <Link
+            underline="none"
+            color="inherit"
+            href="/dashboard/produits"
+            sx={{
+              transition: 'var(--transition-normal)',
+              '&:hover': {
+                color: 'var(--color-axignis-primary)',
+              }
+            }}
+          >
+            <Typography sx={{ fontWeight: 500, fontSize: 14 }}>
               Produits
             </Typography>
           </Link>
