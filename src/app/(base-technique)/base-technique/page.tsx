@@ -1,33 +1,33 @@
 'use client';
 
-import Box from '@mui/joy/Box';
-import Breadcrumbs from '@mui/joy/Breadcrumbs';
-import Button from '@mui/joy/Button';
-import Link from '@mui/joy/Link';
-import Typography from '@mui/joy/Typography';
+import Box from '@mui/material/Box';
+import Breadcrumbs from '@mui/material/Breadcrumbs';
+import Button from '@mui/material/Button';
+import Link from '@mui/material/Link';
+import Typography from '@mui/material/Typography';
 
+import OrderList from '@/components/base-technique/OrderList';
+import OrderTable from '@/components/base-technique/OrderTable';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 
-import OrderList from '@/components/base-technique/OrderList';
-import OrderTable from '@/components/base-technique/OrderTable';
 
 export default function JoyOrderDashboardTemplate() {
   return (
     <>
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <Breadcrumbs
-          size="sm"
           aria-label="breadcrumbs"
-          separator={<ChevronRightRoundedIcon />}
+          separator={<ChevronRightRoundedIcon fontSize="small" />}
           sx={{ pl: 0 }}
         >
           <Link
             underline="none"
-            color="neutral"
+            color="inherit"
             href="/"
             aria-label="Home"
+            sx={{ display: 'flex', alignItems: 'center' }}
           >
             <HomeRoundedIcon />
           </Link>
@@ -47,13 +47,14 @@ export default function JoyOrderDashboardTemplate() {
           justifyContent: 'space-between',
         }}
       >
-        <Typography level="h2" component="h1">
+        <Typography variant="h2" component="h1">
           Produits
         </Typography>
         <Button
           color="primary"
-          startDecorator={<DownloadRoundedIcon />}
-          size="sm"
+          startIcon={<DownloadRoundedIcon />}
+          size="small"
+          variant="contained"
         >
           Télécharger en PDF
         </Button>

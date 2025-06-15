@@ -1,28 +1,23 @@
+import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
+import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
+import Link from '@mui/material/Link';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import Typography from '@mui/material/Typography';
 import * as React from 'react';
-import { ColorPaletteProp } from '@mui/joy/styles';
-import Box from '@mui/joy/Box';
-import Avatar from '@mui/joy/Avatar';
-import Chip from '@mui/joy/Chip';
-import Link from '@mui/joy/Link';
-import Divider from '@mui/joy/Divider';
-import IconButton from '@mui/joy/IconButton';
-import Typography from '@mui/joy/Typography';
-import List from '@mui/joy/List';
-import ListItem from '@mui/joy/ListItem';
-import ListItemContent from '@mui/joy/ListItemContent';
-import ListItemDecorator from '@mui/joy/ListItemDecorator';
-import ListDivider from '@mui/joy/ListDivider';
-import Menu from '@mui/joy/Menu';
-import MenuButton from '@mui/joy/MenuButton';
-import MenuItem from '@mui/joy/MenuItem';
-import Dropdown from '@mui/joy/Dropdown';
 
-import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
-import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
-import BlockIcon from '@mui/icons-material/Block';
 import AutorenewRoundedIcon from '@mui/icons-material/AutorenewRounded';
-import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import BlockIcon from '@mui/icons-material/Block';
+import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
 
 const listItems = [
   {
@@ -88,22 +83,46 @@ const listItems = [
 ];
 
 function RowMenu() {
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
   return (
-    <Dropdown>
-      <MenuButton
-        slots={{ root: IconButton }}
-        slotProps={{ root: { variant: 'plain', color: 'neutral', size: 'sm' } }}
+    <>
+      <IconButton
+        size="small"
+        onClick={handleClick}
+        aria-controls={open ? 'row-menu' : undefined}
+        aria-haspopup="true"
+        aria-expanded={open ? 'true' : undefined}
       >
         <MoreHorizRoundedIcon />
-      </MenuButton>
-      <Menu size="sm" sx={{ minWidth: 140 }}>
-        <MenuItem>Edit</MenuItem>
-        <MenuItem>Rename</MenuItem>
-        <MenuItem>Move</MenuItem>
+      </IconButton>
+      <Menu
+        id="row-menu"
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        MenuListProps={{
+          'aria-labelledby': 'basic-button',
+        }}
+      >
+        <MenuItem onClick={handleClose}>Edit</MenuItem>
+        <MenuItem onClick={handleClose}>Rename</MenuItem>
+        <MenuItem onClick={handleClose}>Move</MenuItem>
         <Divider />
-        <MenuItem color="danger">Delete</MenuItem>
+        <MenuItem onClick={handleClose} sx={{ color: 'error.main' }}>
+          Delete
+        </MenuItem>
       </Menu>
-    </Dropdown>
+    </>
   );
 }
 
@@ -111,50 +130,58 @@ export default function OrderList() {
   return (
     <Box sx={{ display: { xs: 'block', sm: 'none' } }}>
       {listItems.map((listItem) => (
-        <List key={listItem.id} size="sm" sx={{ '--ListItem-paddingX': 0 }}>
+        <List key={listItem.id} dense sx={{ px: 0 }}>
           <ListItem
             sx={{
               display: 'flex',
               justifyContent: 'space-between',
-              alignItems: 'start',
+              alignItems: 'flex-start',
             }}
           >
-            <ListItemContent sx={{ display: 'flex', gap: 2, alignItems: 'start' }}>
-              <ListItemDecorator>
-                <Avatar size="sm">{listItem.customer.initial}</Avatar>
-              </ListItemDecorator>
-              <div>
-                <Typography gutterBottom sx={{ fontWeight: 600 }}>
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start', flex: 1 }}>
+              <ListItemAvatar>
+                <Avatar sx={{ width: 32, height: 32 }}>
+                  {listItem.customer.initial}
+                </Avatar>
+              </ListItemAvatar>
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="body1" sx={{ fontWeight: 600, mb: 0.5 }}>
                   {listItem.customer.name}
                 </Typography>
-                <Typography level="body-xs" gutterBottom>
+                <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1 }}>
                   {listItem.customer.email}
                 </Typography>
                 <Box
                   sx={{
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'space-between',
+                    justifyContent: 'flex-start',
                     gap: 0.5,
                     mb: 1,
                   }}
                 >
-                  <Typography level="body-xs">{listItem.marque}</Typography>
-                  <Typography level="body-xs">&bull;</Typography>
-                  <Typography level="body-xs">{listItem.id}</Typography>
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    {listItem.marque}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    &bull;
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    {listItem.id}
+                  </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                  <Link level="body-sm" component="button">
+                  <Link variant="body2" component="button">
                     Download
                   </Link>
                   <RowMenu />
                 </Box>
-              </div>
-            </ListItemContent>
+              </Box>
+            </Box>
             <Chip
-              variant="soft"
-              size="sm"
-              startDecorator={
+              variant="filled"
+              size="small"
+              icon={
                 {
                   Paid: <CheckRoundedIcon />,
                   Refunded: <AutorenewRoundedIcon />,
@@ -164,15 +191,14 @@ export default function OrderList() {
               color={
                 {
                   Paid: 'success',
-                  Refunded: 'neutral',
-                  Cancelled: 'danger',
-                }[listItem.status] as ColorPaletteProp
+                  Refunded: 'default',
+                  Cancelled: 'error',
+                }[listItem.status] as 'success' | 'default' | 'error'
               }
-            >
-              {listItem.status}
-            </Chip>
+              label={listItem.status}
+            />
           </ListItem>
-          <ListDivider />
+          <Divider />
         </List>
       ))}
       <Box
@@ -181,20 +207,18 @@ export default function OrderList() {
       >
         <IconButton
           aria-label="previous page"
-          variant="outlined"
-          color="neutral"
-          size="sm"
+          size="small"
+          sx={{ border: '1px solid', borderColor: 'divider' }}
         >
           <KeyboardArrowLeftIcon />
         </IconButton>
-        <Typography level="body-sm" sx={{ mx: 'auto' }}>
+        <Typography variant="body2" sx={{ mx: 'auto' }}>
           Page 1 of 10
         </Typography>
         <IconButton
           aria-label="next page"
-          variant="outlined"
-          color="neutral"
-          size="sm"
+          size="small"
+          sx={{ border: '1px solid', borderColor: 'divider' }}
         >
           <KeyboardArrowRightIcon />
         </IconButton>
