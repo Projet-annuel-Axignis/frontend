@@ -5,6 +5,7 @@ import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
+import InitColorSchemeScript from '@mui/material/InitColorSchemeScript';
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import { centuryGothic } from './fonts';
@@ -40,6 +41,7 @@ export default function RootLayout({
       } as React.CSSProperties}
     >
       <body className="font-sans antialiased">
+        <InitColorSchemeScript attribute="class" />
         <Providers>
           {children}
         </Providers>
