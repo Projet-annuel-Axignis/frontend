@@ -1,6 +1,9 @@
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import FormControl from '@mui/material/FormControl';
 import IconButton from '@mui/material/IconButton';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 import * as React from 'react';
@@ -67,12 +70,31 @@ const StyledIconButton = styled(IconButton)(({ theme }) => ({
   },
 }));
 
+const StyledSelect = styled(Select)(({ theme }) => ({
+  minWidth: 80,
+  height: 36,
+  '& .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'var(--color-axignis-primary)',
+  },
+  '&:hover .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'var(--color-axignis-secondary)',
+  },
+  '& .MuiSelect-select': {
+    padding: theme.spacing(1, 1.5),
+    fontWeight: 500,
+    color: 'var(--color-axignis-primary)',
+  },
+}));
+
+const itemsPerPageOptions = [5, 10, 20, 50, 100];
+
 interface PaginationProps {
   currentPage: number;
   totalPages: number;
   totalItems: number;
   itemsPerPage: number;
   onPageChange: (page: number) => void;
+  onItemsPerPageChange: (itemsPerPage: number) => void;
 }
 
 export default function Pagination({
@@ -80,7 +102,8 @@ export default function Pagination({
   totalPages,
   totalItems,
   itemsPerPage,
-  onPageChange
+  onPageChange,
+  onItemsPerPageChange
 }: PaginationProps) {
   const startItem = (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
@@ -115,10 +138,30 @@ export default function Pagination({
 
   return (
     <StyledPaginationContainer>
-      {/* Info sur les éléments */}
-      <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
-        Affichage de {startItem} à {endItem} sur {totalItems} éléments
-      </Typography>
+      {/* Info sur les éléments et sélecteur */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+        <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+          Affichage de {startItem} à {endItem} sur {totalItems} éléments
+        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+            Éléments par page :
+          </Typography>
+          <FormControl size="small">
+            <StyledSelect
+              value={itemsPerPage}
+              onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
+              size="small"
+            >
+              {itemsPerPageOptions.map((option) => (
+                <MenuItem key={option} value={option}>
+                  {option}
+                </MenuItem>
+              ))}
+            </StyledSelect>
+          </FormControl>
+        </Box>
+      </Box>
 
       {/* Contrôles de pagination */}
       {totalPages > 1 && (
