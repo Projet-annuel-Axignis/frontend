@@ -1,6 +1,5 @@
 'use client';
 
-import theme from '@/theme/theme';
 import AppsIcon from '@mui/icons-material/Apps';
 import CableIcon from '@mui/icons-material/Cable';
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
@@ -14,6 +13,7 @@ import {
   Avatar,
   Box,
   Chip,
+  Collapse,
   Divider,
   GlobalStyles,
   IconButton,
@@ -23,9 +23,9 @@ import {
   ListItemText,
   Paper,
   styled,
-  Typography
+  Typography,
+  useTheme
 } from '@mui/material';
-
 import Image from 'next/image';
 import Link from 'next/link';
 import * as React from 'react';
@@ -37,7 +37,7 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
     position: 'fixed',
     transform: 'translateX(calc(100% * (var(--SideNavigation-slideIn, 0) - 1)))',
   },
-  transition: 'transform 0.4s, width 0.4s',
+  transition: 'var(--transition-normal)',
   zIndex: 10000,
   height: '100dvh',
   width: 'var(--Sidebar-width)',
@@ -48,58 +48,96 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   flexDirection: 'column',
   gap: theme.spacing(2),
   borderRight: `1px solid ${theme.palette.divider}`,
+  backgroundColor: theme.palette.background.paper,
+  boxShadow: theme.shadows[2],
 }));
 
-function Toggler({
-  defaultExpanded = false,
-  renderToggle,
-  children,
-}: {
-  defaultExpanded?: boolean;
-  children: React.ReactNode;
-  renderToggle: (params: {
-    open: boolean;
-    setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  }) => React.ReactNode;
-}) {
-  const [open, setOpen] = React.useState(defaultExpanded);
-  return (
-    <React.Fragment>
-      {renderToggle({ open, setOpen })}
-      <Box
-        sx={{
-          display: 'grid',
-          transition: '0.2s ease',
-          '& > *': {
-            overflow: 'hidden',
-          },
-          ...(open ? { gridTemplateRows: '1fr' } : { gridTemplateRows: '0fr' }),
-        }}
-      >
-        {children}
-      </Box>
-    </React.Fragment>
-  );
-}
+const StyledLogoContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: theme.spacing(1, 2),
+  marginBottom: theme.spacing(1),
+  '& .logo-link': {
+    position: 'relative',
+    height: '48px',
+    width: '128px',
+    display: 'block',
+    transition: 'var(--transition-normal)',
+    '&:hover': {
+      transform: 'scale(1.05)',
+    },
+  },
+}));
+
+const StyledChip = styled(Chip)(({ theme }) => ({
+  background: `linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))`,
+  color: theme.palette.common.white,
+  fontWeight: 600,
+  fontSize: '0.875rem',
+  marginBottom: theme.spacing(2),
+  '&:hover': {
+    background: `linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))`,
+  },
+}));
+
+const StyledListItemButton = styled(ListItemButton)(({ theme }) => ({
+  width: '100%',
+  borderRadius: theme.spacing(1),
+  marginBottom: theme.spacing(0.5),
+  transition: 'var(--transition-normal)',
+  '&:hover': {
+    backgroundColor: theme.palette.action.hover,
+    transform: 'translateX(4px)',
+  },
+  '&.Mui-selected': {
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.primary.contrastText,
+    '&:hover': {
+      backgroundColor: theme.palette.primary.dark,
+    },
+    '& .MuiListItemIcon-root': {
+      color: theme.palette.primary.contrastText,
+    },
+  },
+}));
+
+const StyledUserSection = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  padding: theme.spacing(1),
+  borderRadius: theme.spacing(1),
+  backgroundColor: theme.palette.action.hover,
+  transition: 'var(--transition-normal)',
+  '&:hover': {
+    backgroundColor: theme.palette.action.selected,
+  },
+}));
 
 export default function Sidebar() {
+  const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
+  const [openProducts, setOpenProducts] = React.useState(false);
+
+  const handleProductsClick = () => {
+    setOpenProducts(!openProducts);
+  };
 
   return (
-    <StyledPaper
-      className="Sidebar"
-      elevation={0}
-    >
+    <StyledPaper className="Sidebar" elevation={0}>
       <GlobalStyles
         styles={(theme) => ({
           ':root': {
-            '--Sidebar-width': '220px',
+            '--Sidebar-width': '240px',
             [theme.breakpoints.up('lg')]: {
-              '--Sidebar-width': '240px',
+              '--Sidebar-width': '260px',
             },
           },
         })}
       />
+
+      {/* Overlay pour mobile */}
       <Box
         className="Sidebar-overlay"
         sx={{
@@ -111,7 +149,7 @@ export default function Sidebar() {
           height: '100vh',
           opacity: 'var(--SideNavigation-slideIn)',
           backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          transition: 'opacity 0.4s',
+          transition: 'var(--transition-normal)',
           transform: {
             xs: 'translateX(calc(100% * (var(--SideNavigation-slideIn, 0) - 1) + var(--SideNavigation-slideIn, 0) * var(--Sidebar-width, 0px)))',
             lg: 'translateX(-100%)',
@@ -119,30 +157,45 @@ export default function Sidebar() {
         }}
         onClick={() => closeSidebar()}
       />
-      <div className=" mx-auto px-4 flex items-center justify-between">
-        {/* Logo */}
-        <Link href="/" className="relative h-12 w-32">
-          <Image
-            src={isDarkMode ? "/images/logo/logo-axignis-nb.png" : "/images/logo/logo-axignis.png"}
-            alt="Axignis Logo"
-            fill={true}
-            sizes="100%"
-            className={`
-              object-contain
-              transition-opacity
-            `}
-          />
+
+      {/* Logo Section */}
+      <StyledLogoContainer>
+        <Link href="/" className="logo-link">
+          <Box
+            sx={{
+              position: 'relative',
+              width: '100%',
+              height: '100%',
+              '& img': {
+                filter: isDarkMode ? 'brightness(0) invert(1)' : 'none',
+                transition: 'var(--transition-normal)',
+              },
+            }}
+          >
+            <Image
+              src={isDarkMode ? "/images/logo/logo-axignis-nb.png" : "/images/logo/logo-axignis.png"}
+              alt="Axignis Logo"
+              fill
+              sizes="128px"
+              style={{
+                objectFit: 'contain',
+              }}
+              priority
+            />
+          </Box>
         </Link>
-      </div>
-      <div className="flex flex-col items-center justify-between w-full p-px">
-        <Chip
+      </StyledLogoContainer>
+
+      {/* Chip Section */}
+      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+        <StyledChip
           label="Base technique"
           size="medium"
           variant="filled"
-          color="primary"
-          sx={{ marginBottom: 2.5 }}
         />
-      </div>
+      </Box>
+
+      {/* Navigation Menu */}
       <Box
         sx={{
           minHeight: 0,
@@ -152,19 +205,10 @@ export default function Sidebar() {
           flexDirection: 'column',
         }}
       >
-        <List
-          dense
-          sx={{
-            gap: 1,
-            '& .MuiListItemButton-root': {
-              gap: 1.5,
-              borderRadius: 1,
-            },
-          }}
-        >
-          <ListItem disablePadding>
-            <ListItemButton>
-              <FolderIcon />
+        <List dense sx={{ gap: 0.5, width: '100%' }}>
+          <ListItem disablePadding sx={{ width: '100%' }}>
+            <StyledListItemButton>
+              <FolderIcon sx={{ mr: 1.5, color: 'var(--color-axignis-primary)' }} />
               <ListItemText
                 primary={
                   <Typography variant="body2" fontWeight="medium">
@@ -172,12 +216,12 @@ export default function Sidebar() {
                   </Typography>
                 }
               />
-            </ListItemButton>
+            </StyledListItemButton>
           </ListItem>
 
-          <ListItem disablePadding>
-            <ListItemButton>
-              <DashboardRoundedIcon />
+          <ListItem disablePadding sx={{ width: '100%' }}>
+            <StyledListItemButton>
+              <DashboardRoundedIcon sx={{ mr: 1.5, color: 'var(--color-axignis-primary)' }} />
               <ListItemText
                 primary={
                   <Typography variant="body2" fontWeight="medium">
@@ -185,12 +229,12 @@ export default function Sidebar() {
                   </Typography>
                 }
               />
-            </ListItemButton>
+            </StyledListItemButton>
           </ListItem>
 
-          <ListItem disablePadding>
-            <ListItemButton>
-              <CableIcon />
+          <ListItem disablePadding sx={{ width: '100%' }}>
+            <StyledListItemButton>
+              <CableIcon sx={{ mr: 1.5, color: 'var(--color-axignis-primary)' }} />
               <ListItemText
                 primary={
                   <Typography variant="body2" fontWeight="medium">
@@ -198,12 +242,12 @@ export default function Sidebar() {
                   </Typography>
                 }
               />
-            </ListItemButton>
+            </StyledListItemButton>
           </ListItem>
 
-          <ListItem disablePadding>
-            <ListItemButton>
-              <AppsIcon />
+          <ListItem disablePadding sx={{ width: '100%' }}>
+            <StyledListItemButton>
+              <AppsIcon sx={{ mr: 1.5, color: 'var(--color-axignis-primary)' }} />
               <ListItemText
                 primary={
                   <Typography variant="body2" fontWeight="medium">
@@ -211,141 +255,139 @@ export default function Sidebar() {
                   </Typography>
                 }
               />
-            </ListItemButton>
+            </StyledListItemButton>
           </ListItem>
 
-          <ListItem disablePadding>
-            <Toggler
-              renderToggle={({ open, setOpen }) => (
-                <ListItemButton onClick={() => setOpen(!open)}>
-                  <ShoppingCartRoundedIcon />
-                  <ListItemText
-                    primary={
-                      <Typography variant="body2" fontWeight="medium">
-                        Produits
-                      </Typography>
-                    }
-                  />
-                  <KeyboardArrowDownIcon
-                    sx={{
-                      transform: open ? 'rotate(180deg)' : 'none',
-                      transition: 'transform 0.2s',
-                    }}
-                  />
-                </ListItemButton>
-              )}
-            >
-              <List sx={{ gap: 0.5, pl: 4 }}>
-                <ListItem sx={{ mt: 0.5 }} disablePadding>
-                  <ListItemButton>
-                    <ListItemText primary="Produits" />
-                  </ListItemButton>
-                </ListItem>
-                <ListItem disablePadding>
-                  <ListItemButton>
-                    <ListItemText primary="Types de documents de produits" />
-                  </ListItemButton>
-                </ListItem>
-                <ListItem disablePadding>
-                  <ListItemButton>
-                    <ListItemText primary="Documents de produits" />
-                  </ListItemButton>
-                </ListItem>
-              </List>
-            </Toggler>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton>
-              <AppsIcon />
+          {/* Menu Produits avec sous-menu */}
+          <ListItem disablePadding sx={{ width: '100%', flexDirection: 'column', alignItems: 'stretch' }}>
+            <StyledListItemButton onClick={handleProductsClick}>
+              <ShoppingCartRoundedIcon sx={{ mr: 1.5, color: 'var(--color-axignis-primary)' }} />
               <ListItemText
                 primary={
                   <Typography variant="body2" fontWeight="medium">
-                    Marques
+                    Produits
                   </Typography>
                 }
               />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <Toggler
-              renderToggle={({ open, setOpen }) => (
-                <ListItemButton onClick={() => setOpen(!open)}>
-                  <ShoppingCartRoundedIcon />
-                  <ListItemText
-                    primary={
-                      <Typography variant="body2" fontWeight="medium">
-                        Produits
-                      </Typography>
-                    }
-                  />
-                  <KeyboardArrowDownIcon
-                    sx={{
-                      transform: open ? 'rotate(180deg)' : 'none',
-                      transition: 'transform 0.2s',
-                    }}
-                  />
-                </ListItemButton>
-              )}
-            >
-              <List sx={{ gap: 0.5, pl: 4 }}>
-                <ListItem sx={{ mt: 0.5 }} disablePadding>
-                  <ListItemButton>
-                    <ListItemText primary="Produits" />
-                  </ListItemButton>
+              <KeyboardArrowDownIcon
+                sx={{
+                  transform: openProducts ? 'rotate(180deg)' : 'none',
+                  transition: 'var(--transition-normal)',
+                  color: 'var(--color-axignis-primary)',
+                }}
+              />
+            </StyledListItemButton>
+
+            <Collapse in={openProducts} timeout="auto" unmountOnExit>
+              <List component="div" disablePadding sx={{ pl: 4 }}>
+                <ListItem disablePadding>
+                  <StyledListItemButton sx={{ py: 0.5, mb: 0.25 }}>
+                    <ListItemText
+                      primary={
+                        <Typography variant="body2" color="textSecondary">
+                          Produits
+                        </Typography>
+                      }
+                    />
+                  </StyledListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
-                  <ListItemButton>
-                    <ListItemText primary="Types de documents de produits" />
-                  </ListItemButton>
+                  <StyledListItemButton sx={{ py: 0.5, mb: 0.25 }}>
+                    <ListItemText
+                      primary={
+                        <Typography variant="body2" color="textSecondary">
+                          Types de documents
+                        </Typography>
+                      }
+                    />
+                  </StyledListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
-                  <ListItemButton>
-                    <ListItemText primary="Documents de produits" />
-                  </ListItemButton>
+                  <StyledListItemButton sx={{ py: 0.5, mb: 0.25 }}>
+                    <ListItemText
+                      primary={
+                        <Typography variant="body2" color="textSecondary">
+                          Documents
+                        </Typography>
+                      }
+                    />
+                  </StyledListItemButton>
                 </ListItem>
               </List>
-            </Toggler>
+            </Collapse>
           </ListItem>
-
         </List>
+
+        {/* Bottom Menu */}
         <List
           dense
           sx={{
             mt: 'auto',
             flexGrow: 0,
-            mb: 2,
-            '& .MuiListItemButton-root': {
-              borderRadius: 1,
-            },
+            mb: 1,
           }}
         >
           <ListItem disablePadding>
-            <ListItemButton>
-              <SupportRoundedIcon />
-              <ListItemText primary="Support" />
-            </ListItemButton>
+            <StyledListItemButton>
+              <SupportRoundedIcon sx={{ mr: 1.5, color: 'var(--color-axignis-secondary)' }} />
+              <ListItemText
+                primary={
+                  <Typography variant="body2" fontWeight="medium">
+                    Support
+                  </Typography>
+                }
+              />
+            </StyledListItemButton>
           </ListItem>
           <ListItem disablePadding>
-            <ListItemButton>
-              <SettingsRoundedIcon />
-              <ListItemText primary="Settings" />
-            </ListItemButton>
+            <StyledListItemButton>
+              <SettingsRoundedIcon sx={{ mr: 1.5, color: 'var(--color-axignis-secondary)' }} />
+              <ListItemText
+                primary={
+                  <Typography variant="body2" fontWeight="medium">
+                    Paramètres
+                  </Typography>
+                }
+              />
+            </StyledListItemButton>
           </ListItem>
         </List>
       </Box>
-      <Divider />
-      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+
+      <Divider sx={{ my: 1 }} />
+
+      {/* User Section */}
+      <StyledUserSection>
         <Avatar
-          sx={{ width: 32, height: 32 }}
+          sx={{
+            width: 36,
+            height: 36,
+            border: '2px solid var(--color-axignis-primary)',
+          }}
           src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=286"
         />
         <Box sx={{ minWidth: 0, flex: 1 }}>
-          <Typography variant="body2" fontWeight="medium">Loïc Rome</Typography>
+          <Typography variant="body2" fontWeight="600" noWrap>
+            Loïc Rome
+          </Typography>
+          <Typography variant="caption" color="textSecondary" noWrap>
+            Administrateur
+          </Typography>
         </Box>
-        <IconButton size="small" color="inherit">
-          <LogoutRoundedIcon />
+        <IconButton
+          size="small"
+          color="inherit"
+          sx={{
+            color: 'var(--color-axignis-primary)',
+            '&:hover': {
+              backgroundColor: 'var(--color-axignis-primary)',
+              color: 'white',
+            },
+          }}
+        >
+          <LogoutRoundedIcon fontSize="small" />
         </IconButton>
-      </Box>
+      </StyledUserSection>
     </StyledPaper>
   );
 }

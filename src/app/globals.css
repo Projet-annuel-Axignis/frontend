@@ -2,41 +2,34 @@
 @import 'tailwindcss';
 @plugin "daisyui";
 
-/* Couleurs du thème Axignis comme variables CSS optionnelles */
+/* Variables CSS unifiées pour Axignis */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --axignis-primary: #0082ca;
-  --axignis-secondary: #36b8ff;
-  --axignis-dark: #363636;
-  --axignis-black: #000000;
-  --axignis-gray-dark: #363636;
-  --axignis-gray-medium: #6b6b6b;
-}
-
-@theme inline {
-  /* Variables principales */
+  /* Couleurs de base */
   --color-background: #ffffff;
   --color-foreground: #171717;
 
-  /* Couleurs Axignis - seulement primaire et secondaire */
+  /* Couleurs Axignis */
   --color-axignis-primary: #0082ca; /* Bleu - C100 M50 J19 N1,8 */
   --color-axignis-secondary: #36b8ff; /* Cyan - C79 M11 J0 N0 */
+  --color-axignis-dark: #363636; /* Gris foncé */
+  --color-axignis-black: #000000; /* Noir */
+  --color-axignis-gray-medium: #6b6b6b; /* Gris moyen */
 
-  /* Espacement de base */
+  /* Espacement et transitions */
+  --spacing-base: 0.25rem;
   --spacing: 0.25rem;
-
-  /* Transitions */
   --transition-normal: 0.3s ease-in-out;
 }
 
+/* Mode sombre */
 @media (prefers-color-scheme: dark) {
-  @theme inline {
+  :root {
     --color-background: #121212;
     --color-foreground: #f5f5f5;
   }
 }
 
+/* Styles de base */
 body {
   background-color: var(--color-background);
   color: var(--color-foreground);
@@ -52,6 +45,7 @@ h6 {
   font-family: var(--font-centurygothic), sans-serif;
 }
 
+/* Animations personnalisées */
 @keyframes float {
   0% {
     transform: translateY(0px);
@@ -68,6 +62,7 @@ h6 {
   animation: float 6s ease-in-out infinite;
 }
 
+/* Classes utilitaires */
 .active {
   text-decoration: underline;
   text-underline-offset: 0.25rem;
