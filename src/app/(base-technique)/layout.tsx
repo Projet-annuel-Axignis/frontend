@@ -1,6 +1,6 @@
 'use client';
 import Sidebar from '@/components/base-technique/Sidebar';
-import { Box } from '@mui/joy';
+import { Box } from '@mui/material';
 
 export default function RootLayout({
   children,

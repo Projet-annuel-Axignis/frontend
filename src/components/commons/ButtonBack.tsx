@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@mui/joy";
+import { Button } from "@mui/material";
 import { useRouter } from "next/navigation";
 
 const ButtonBack = ({ children }: { children: React.ReactNode }) => {
@@ -8,8 +8,8 @@ const ButtonBack = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <Button
-      variant="solid"
-      color="danger"
+      variant="outlined"
+      color="error"
       onClick={() => router.back()}
     >
       {children}

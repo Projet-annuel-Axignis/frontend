@@ -1,8 +1,9 @@
-import Snackbar, { SnackbarProps } from '@mui/joy/Snackbar';
+import Alert, { AlertColor } from '@mui/material/Alert';
+import Snackbar from '@mui/material/Snackbar';
 import React, { createContext, useCallback, useContext, useState } from 'react';
 
 interface ToastContextType {
-  showToast: (message: string, color?: SnackbarProps['color']) => void;
+  showToast: (message: string, severity?: AlertColor) => void;
 }
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
@@ -22,30 +23,38 @@ interface ToastProviderProps {
 export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState('');
-  const [color, setColor] = useState<SnackbarProps['color']>('neutral');
+  const [severity, setSeverity] = useState<AlertColor>('success');
 
-  const showToast = useCallback((message: string, severity: SnackbarProps['color'] = 'success') => {
+  const showToast = useCallback((message: string, severityType: AlertColor = 'success') => {
     setMessage(message);
-    setColor(severity);
+    setSeverity(severityType);
     setOpen(true);
   }, []);
+
+  const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setOpen(false);
+  };
 
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
       <Snackbar
-        autoHideDuration={6000}
         open={open}
-        variant="soft"
-        color={color}
-        onClose={(event, reason) => {
-          if (reason === 'clickaway') {
-            return;
-          }
-          setOpen(false);
-        }}
+        autoHideDuration={6000}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
       >
-        {message}
+        <Alert
+          onClose={handleClose}
+          severity={severity}
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {message}
+        </Alert>
       </Snackbar>
     </ToastContext.Provider>
   );

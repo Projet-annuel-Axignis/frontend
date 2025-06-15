@@ -1,8 +1,8 @@
 'use client';
 
 import { KeyboardArrowDown } from '@mui/icons-material';
-import Tooltip from '@mui/joy/Tooltip';
 import { Box } from '@mui/material';
+import Tooltip from '@mui/material/Tooltip';
 import { useEffect, useState } from 'react';
 
 export default function FooterIndicator() {

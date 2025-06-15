@@ -103,7 +103,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       // Utiliser notre fonction utilitaire pour obtenir le message d'erreur traduit
       setError(getErrorMessage(err, t));
       console.error('Login error:', err);
-      showToast('Une erreur est survenue lors de la connexion', 'danger');
+      showToast('Une erreur est survenue lors de la connexion', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -149,7 +149,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       // Utiliser notre fonction utilitaire pour obtenir le message d'erreur traduit
       setError(getErrorMessage(err, t));
       console.error('Register error:', err);
-      showToast('Une erreur est survenue lors de l\'inscription', 'danger');
+      showToast('Une erreur est survenue lors de l\'inscription', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -170,7 +170,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       showToast('Vous êtes déconnecté', 'success');
     } catch (err) {
       console.error('Logout error:', err);
-      showToast('Une erreur est survenue lors de la déconnexion', 'danger');
+      showToast('Une erreur est survenue lors de la déconnexion', 'error');
     } finally {
       setIsLoading(false);
     }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useUser } from '@/app/_providers';
-import { Box, CircularProgress } from '@mui/joy';
+import { Box, CircularProgress } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { ReactNode, useEffect } from 'react';
 
@@ -93,7 +93,7 @@ export default function ProtectedRoute({
         items-center
         justify-center
       ">
-        <CircularProgress size="lg" />
+        <CircularProgress size="40" />
       </Box>
     );
   }
