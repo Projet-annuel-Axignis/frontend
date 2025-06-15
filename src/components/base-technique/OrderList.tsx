@@ -192,7 +192,7 @@ export default function OrderList() {
         }}
       >
         {listItems.map((listItem, index) => (
-          <React.Fragment key={listItem.id}>
+          <div key={listItem.id}>
             <ListItem
               sx={{
                 display: 'flex',
@@ -298,7 +298,7 @@ export default function OrderList() {
             {index < listItems.length - 1 && (
               <Divider sx={{ borderColor: theme.palette.divider }} />
             )}
-          </React.Fragment>
+          </div>
         ))}
       </Paper>
 
