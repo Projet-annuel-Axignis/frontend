@@ -131,7 +131,7 @@ export default function SearchFilters({ filters, onFiltersChange }: SearchFilter
       {/* Mobile Search and Filters */}
       <Paper
         sx={{
-          display: { xs: 'flex', sm: 'none' },
+          display: { xs: 'flex', md: 'none' },
           my: 1,
           gap: 1,
           p: 2,
@@ -222,7 +222,7 @@ export default function SearchFilters({ filters, onFiltersChange }: SearchFilter
       {/* Desktop Search and Filters */}
       <StyledSearchFilters
         sx={{
-          display: { xs: 'none', sm: 'flex' },
+          display: { xs: 'none', md: 'flex' },
           flexWrap: 'wrap',
           gap: 2,
           alignItems: 'center',
