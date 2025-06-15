@@ -52,7 +52,7 @@ export const getStatusIcon = (status: string) => {
 };
 
 export function handleRowClick(id: string) {
-  location.href = `/base-technique/produits/${id}`;
+  location.href = `/dashboard/produits/${id}`;
 }
 
 export function filterProducts(products: Product[], filters: { search: string; status: string; marque: string; type: string }) {

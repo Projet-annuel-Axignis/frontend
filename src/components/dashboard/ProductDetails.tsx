@@ -96,7 +96,7 @@ export default function ProductDetails({ id }: { id: string }) {
           <Link
             underline="none"
             color="inherit"
-            href="/base-technique"
+            href="/dashboard"
             sx={{
               transition: 'var(--transition-normal)',
               '&:hover': {
