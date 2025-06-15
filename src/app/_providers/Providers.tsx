@@ -1,6 +1,7 @@
 import theme from '@/theme/theme';
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
+import { NextIntlClientProvider } from 'next-intl';
 import { ReactNode } from 'react';
 import { ToastProvider } from './ToastProvider';
 import { UserProvider } from './UserProvider';
@@ -20,20 +21,23 @@ interface ProvidersProps {
  */
 export function Providers({ children }: ProvidersProps) {
   return (
-    <AppRouterCacheProvider options={{ enableCssLayer: true }}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <ToastProvider>
-          <UserProvider>
-            {children}
-          </UserProvider>
-        </ToastProvider>
-      </ThemeProvider>
-    </AppRouterCacheProvider>
+    <NextIntlClientProvider>
+      <AppRouterCacheProvider options={{ enableCssLayer: true }}>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <ToastProvider>
+            <UserProvider>
+              {children}
+            </UserProvider>
+          </ToastProvider>
+        </ThemeProvider>
+      </AppRouterCacheProvider>
+    </NextIntlClientProvider>
   );
 }
 
 // Exporter aussi les providers individuellement pour usage spécifique
 export { useToast } from '@/app/_providers/ToastProvider';
+export { useTheme } from '@mui/material/styles';
 export { UserProvider, useUser } from './UserProvider';
 

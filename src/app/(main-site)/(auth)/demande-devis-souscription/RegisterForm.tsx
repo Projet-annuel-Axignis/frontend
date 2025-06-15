@@ -1,6 +1,6 @@
 'use client';
 
-import { useUser } from '@/app/_providers';
+import { useUser } from '@/app/_providers/Providers';
 import { Plans } from '@/types/plans';
 import { Email, Info as InfoIcon, Lock, Person, Visibility, VisibilityOff } from '@mui/icons-material';
 import {

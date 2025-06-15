@@ -1,6 +1,6 @@
 'use client';
 
-import { useToast } from '@/app/_providers';
+import { useToast } from '@/app/_providers/Providers';
 import { getErrorMessage } from '@/lib/utils';
 import authService from '@/services/authService';
 import { RegisterCredentials, User } from '@/types/auth';
