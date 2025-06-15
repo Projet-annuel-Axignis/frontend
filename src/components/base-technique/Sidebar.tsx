@@ -21,7 +21,7 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import { styled } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import Image from 'next/image';
 import Link from 'next/link';
 import * as React from 'react';
@@ -80,6 +80,9 @@ function Toggler({
 }
 
 export default function Sidebar() {
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
+
   return (
     <StyledPaper
       className="Sidebar"
@@ -118,13 +121,12 @@ export default function Sidebar() {
         {/* Logo */}
         <Link href="/" className="relative h-12 w-32">
           <Image
-            src={"/images/logo/logo-axignis-nb.png"}
+            src={isDarkMode ? "/images/logo/logo-axignis-nb.png" : "/images/logo/logo-axignis.png"}
             alt="Axignis Logo"
             fill
             className={`
               object-contain
               transition-opacity
-              brightness-0 invert
             `}
           />
         </Link>
