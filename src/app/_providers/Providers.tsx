@@ -1,6 +1,7 @@
 import theme from '@/theme/theme';
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
+import InitColorSchemeScript from '@mui/material/InitColorSchemeScript';
 import { NextIntlClientProvider } from 'next-intl';
 import { ReactNode } from 'react';
 import { ToastProvider } from './ToastProvider';
@@ -22,6 +23,7 @@ interface ProvidersProps {
 export function Providers({ children }: ProvidersProps) {
   return (
     <NextIntlClientProvider>
+      <InitColorSchemeScript attribute="class" />
       <AppRouterCacheProvider options={{ enableCssLayer: true }}>
         <ThemeProvider theme={theme}>
           <CssBaseline />
