@@ -254,7 +254,7 @@ export default function OrderTable() {
   const [open, setOpen] = React.useState(false);
 
   const renderFilters = () => (
-    <React.Fragment>
+    <>
       <FormControl size="small" sx={{ minWidth: 140 }}>
         <InputLabel sx={{ fontWeight: 500 }}>Statut</InputLabel>
         <Select
@@ -324,7 +324,7 @@ export default function OrderTable() {
           <MenuItem value="sirene">Sirène</MenuItem>
         </Select>
       </FormControl>
-    </React.Fragment>
+    </>
   );
 
   const getStatusColor = (status: string) => {
@@ -354,7 +354,7 @@ export default function OrderTable() {
   };
 
   return (
-    <React.Fragment>
+    <>
       {/* Mobile Search and Filters */}
       <Paper
         className="SearchAndFilters-mobile"
@@ -699,6 +699,6 @@ export default function OrderTable() {
           Suivant
         </Button>
       </Box>
-    </React.Fragment>
+    </>
   );
 }
