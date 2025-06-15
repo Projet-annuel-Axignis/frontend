@@ -3,10 +3,26 @@
 import CancelIcon from '@mui/icons-material/Cancel';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
+import DownloadIcon from '@mui/icons-material/Download';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import InfoIcon from '@mui/icons-material/Info';
+import InventoryIcon from '@mui/icons-material/Inventory';
 import VerifiedIcon from '@mui/icons-material/Verified';
-import { Box, Breadcrumbs, Button, Card, CardContent, Grid, Link, Paper, Tab, Tabs, Typography } from '@mui/material';
+import {
+  Box,
+  Breadcrumbs,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  Grid,
+  Link,
+  Paper,
+  Tab,
+  Tabs,
+  Typography,
+  useTheme
+} from '@mui/material';
 import Image from 'next/image';
 import React from 'react';
 
@@ -41,25 +57,39 @@ function a11yProps(index: number) {
 
 export default function ProductDetails({ id }: { id: string }) {
   const [value, setValue] = React.useState(0);
+  const theme = useTheme();
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
 
   return (
-    <>
-      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+    <Box sx={{ p: 3 }}>
+      {/* Breadcrumbs */}
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
         <Breadcrumbs
           aria-label="breadcrumbs"
           separator={<ChevronRightRoundedIcon fontSize="small" />}
-          sx={{ pl: 0 }}
+          sx={{
+            pl: 0,
+            '& .MuiBreadcrumbs-separator': {
+              color: 'var(--color-axignis-primary)',
+            }
+          }}
         >
           <Link
             underline="none"
             color="inherit"
             href="/"
             aria-label="Home"
-            sx={{ display: 'flex', alignItems: 'center' }}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              transition: 'var(--transition-normal)',
+              '&:hover': {
+                color: 'var(--color-axignis-primary)',
+              }
+            }}
           >
             <HomeRoundedIcon />
           </Link>
@@ -67,680 +97,652 @@ export default function ProductDetails({ id }: { id: string }) {
             underline="none"
             color="inherit"
             href="/base-technique"
-            aria-label="Home"
+            sx={{
+              transition: 'var(--transition-normal)',
+              '&:hover': {
+                color: 'var(--color-axignis-primary)',
+              }
+            }}
           >
-            <Typography sx={{ fontWeight: 500, fontSize: 12 }}>
+            <Typography sx={{ fontWeight: 500, fontSize: 14 }}>
               Produits
             </Typography>
           </Link>
-          <Typography color="primary" sx={{ fontWeight: 500, fontSize: 12 }}>
+          <Typography
+            sx={{
+              fontWeight: 600,
+              fontSize: 14,
+              color: 'var(--color-axignis-primary)'
+            }}
+          >
             {id}
           </Typography>
         </Breadcrumbs>
       </Box>
-      <Box
-        sx={{
-          display: 'flex',
-          mb: 1,
-          gap: 1,
-          flexDirection: { xs: 'column', sm: 'row' },
-          alignItems: { xs: 'start', sm: 'center' },
-          flexWrap: 'wrap',
-          justifyContent: 'space-between',
-        }}
-      >
-        <Typography variant="h2" component="h1">
-          {id} JOD-1 - LBXJOD110017 - Déclencheur Manuel Incendie Rouge NF
-        </Typography>
-      </Box>
-      <Box sx={{ flexGrow: 1, m: -2, overflowX: 'hidden', my: 2, borderRadius: '8px' }}>
-        <Paper sx={{ width: '100%' }}>
-          <Tabs
-            value={value}
-            onChange={handleChange}
-            aria-label="product details tabs"
+
+      {/* Header */}
+      <Box sx={{ mb: 4 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+          <Typography
+            variant="h4"
+            component="h1"
             sx={{
-              borderBottom: 1,
-              borderColor: 'divider',
-              '& .MuiTabs-flexContainer': {
-                justifyContent: 'flex-start',
-              },
+              fontWeight: 700,
+              background: `linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))`,
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
             }}
           >
-            <Tab label="Informations" {...a11yProps(0)} />
-            <Tab label="Documents" {...a11yProps(1)} />
-            <Tab label="Inventaire" {...a11yProps(2)} />
-            <Tab label="Compatibilités" {...a11yProps(3)} />
-          </Tabs>
-
-          <CustomTabPanel value={value} index={0}>
-            <Box
-              sx={{
-                width: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                flexGrow: 1,
-                height: '100%'
-              }}
-            >
-              <Paper variant="outlined">
-                <CardContent>
-                  <Typography variant="h4" component='h1' sx={{ mb: 2 }}>Informations générales</Typography>
-                  <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2 }}>
-                    {/* Ligne 1 */}
-                    <Box>
-                      <Typography variant="body2" fontWeight="bold">Référence</Typography>
-                      <Typography variant="body1">JOD-1</Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="body2" fontWeight="bold">Modèle</Typography>
-                      <Typography variant="body1">LBXJOD110017</Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="body2" fontWeight="bold">Marque</Typography>
-                      <Typography variant="body1">Legrand</Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="body2" fontWeight="bold">Type</Typography>
-                      <Typography variant="body1">Déclencheur</Typography>
-                    </Box>
-
-                    {/* Ligne 2 */}
-                    <Box>
-                      <Typography variant="body2" fontWeight="bold">Gamme</Typography>
-                      <Typography variant="body1">Sécurité</Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="body2" fontWeight="bold">Certification</Typography>
-                      <Typography variant="body1">NF</Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="body2" fontWeight="bold">Couleur</Typography>
-                      <Typography variant="body1">Rouge</Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="body2" fontWeight="bold">Statut</Typography>
-                      <Typography variant="body1">Actif</Typography>
-                    </Box>
-
-                    {/* Ligne 3 */}
-                    <Box>
-                      <Typography variant="body2" fontWeight="bold">Date de création</Typography>
-                      <Typography variant="body1">15/01/2023</Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="body2" fontWeight="bold">Dernière modification</Typography>
-                      <Typography variant="body1">20/03/2023</Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="body2" fontWeight="bold">Prix unitaire</Typography>
-                      <Typography variant="body1">45,99 €</Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="body2" fontWeight="bold">Stock</Typography>
-                      <Typography variant="body1">128 unités</Typography>
-                    </Box>
-
-                    {/* Ligne 4 */}
-                    <Box>
-                      <Typography variant="body2" fontWeight="bold">Poids</Typography>
-                      <Typography variant="body1">125g</Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="body2" fontWeight="bold">Dimensions</Typography>
-                      <Typography variant="body1">90 x 90 x 45 mm</Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="body2" fontWeight="bold">Garantie</Typography>
-                      <Typography variant="body1">2 ans</Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="body2" fontWeight="bold">Code EAN</Typography>
-                      <Typography variant="body1">3245060298715</Typography>
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Paper>
-            </Box>
-          </CustomTabPanel>
-          <CustomTabPanel value={value} index={1}>
-            <Box
-              sx={{
-                width: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                flexGrow: 1,
-                height: '100%'
-              }}
-            >
-              <Paper variant="outlined" sx={{ width: '100%', height: '100%' }}>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Typography variant="h4" component='h1'>Documents</Typography>
-                    <Typography variant="body2" sx={{ ml: 1 }}>(3)</Typography>
-                  </Box>
-
-                  {/* Liste des documents */}
-                  <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2 }}>
-                    <Paper variant="outlined">
-                      <CardContent sx={{ p: 2 }}>
-                        <Box sx={{ mb: 1, display: 'flex', justifyContent: 'center' }}>
-                          <Image
-                            src="/images/base-technique/pdf.png"
-                            alt="PDF"
-                            width={48}
-                            height={48}
-                            style={{ width: 48, height: 48 }}
-                            onError={(e) => {
-                              // Fallback si l'image ne charge pas
-                              (e.target as HTMLImageElement).src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"><path fill="red" d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"/></svg>';
-                            }}
-                          />
-                        </Box>
-                        <Typography variant="body2" fontWeight="bold" textAlign="center">
-                          Notice d&apos;utilisation
-                        </Typography>
-                        <Typography variant="caption" textAlign="center">PDF - 2.4 MB</Typography>
-                        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
-                          <Link variant="body2" download>Télécharger</Link>
-                        </Box>
-                      </CardContent>
-                    </Paper>
-
-                    <Card variant="outlined">
-                      <CardContent sx={{ p: 2 }}>
-                        <Box sx={{ mb: 1, display: 'flex', justifyContent: 'center' }}>
-                          <Image
-                            src="/images/base-technique/pdf.png"
-                            alt="PDF"
-                            width={48}
-                            height={48}
-                            style={{ width: 48, height: 48 }}
-                            onError={(e) => {
-                              // Fallback si l'image ne charge pas
-                              (e.target as HTMLImageElement).src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"><path fill="red" d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"/></svg>';
-                            }}
-                          />
-                        </Box>
-                        <Typography variant="body2" fontWeight="bold" textAlign="center">
-                          Fiche technique
-                        </Typography>
-                        <Typography variant="caption" textAlign="center">PDF - 1.2 MB</Typography>
-                        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
-                          <Link variant="body2" download>Télécharger</Link>
-                        </Box>
-                      </CardContent>
-                    </Card>
-
-                    <Card variant="outlined">
-                      <CardContent sx={{ p: 2 }}>
-                        <Box sx={{ mb: 1, display: 'flex', justifyContent: 'center' }}>
-                          <Image
-                            src="/images/base-technique/pdf.png"
-                            alt="PDF"
-                            width={48}
-                            height={48}
-                            style={{ width: 48, height: 48 }}
-                            onError={(e) => {
-                              // Fallback si l'image ne charge pas
-                              (e.target as HTMLImageElement).src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"><path fill="red" d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"/></svg>';
-                            }}
-                          />
-                        </Box>
-                        <Typography variant="body2" fontWeight="bold" textAlign="center">
-                          Plan CAD
-                        </Typography>
-                        <Typography variant="caption" textAlign="center">DWG - 3.7 MB</Typography>
-                        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
-                          <Link variant="body2" download>Télécharger</Link>
-                        </Box>
-                      </CardContent>
-                    </Card>
-                  </Box>
-
-                  {/* Zone d'upload */}
-                  <Box sx={{ mt: 3, p: 2, border: '1px dashed', borderColor: 'divider', borderRadius: 1, textAlign: 'center' }}>
-                    <Typography variant="body2">
-                      Déposez des fichiers ici ou cliquez pour télécharger
-                    </Typography>
-                    <Typography variant="caption" sx={{ mt: 1, color: 'text.secondary' }}>
-                      Formats acceptés: PDF, DOC, DOCX, DWG, JPG, PNG (max 10 MB)
-                    </Typography>
-                  </Box>
-                </CardContent>
-              </Paper>
-            </Box>
-          </CustomTabPanel>
-          <CustomTabPanel value={value} index={2}>
-            <Box
-              sx={{
-                width: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                flexGrow: 1,
-                height: '100%'
-              }}
-            >
-              <Paper variant="outlined" sx={{ width: '100%', height: '100%' }}>
-                <CardContent>
-                  <Typography variant="h4" component='h1' sx={{ mb: 2 }}>Détails d&apos;inventaire</Typography>
-
-                  {/* Informations de stock */}
-                  <Box sx={{ mb: 4 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <Typography variant="h5">Résumé du stock</Typography>
-                    </Box>
-                    <Grid container spacing={2}>
-                      <Grid
-                        size={{ xs: 12, sm: 6, md: 3 }}
-                      >
-                        <Paper variant="outlined">
-                          <CardContent>
-                            <Typography variant="caption" sx={{ mb: 1, color: 'text.secondary' }}>
-                              Stock total
-                            </Typography>
-                            <Typography variant="h3" fontWeight="bold">
-                              128
-                            </Typography>
-                            <Typography variant="body2" sx={{ color: 'success.main' }}>
-                              En stock
-                            </Typography>
-                          </CardContent>
-                        </Paper>
-                      </Grid>
-                      <Grid
-                        size={{ xs: 12, sm: 6, md: 3 }}
-                      >
-                        <Paper variant="outlined">
-                          <CardContent>
-                            <Typography variant="caption" sx={{ mb: 1, color: 'text.secondary' }}>
-                              Réservé
-                            </Typography>
-                            <Typography variant="h3" fontWeight="bold">
-                              15
-                            </Typography>
-                            <Typography variant="body2" sx={{ color: 'warning.main' }}>
-                              Pour commandes
-                            </Typography>
-                          </CardContent>
-                        </Paper>
-                      </Grid>
-                      <Grid
-                        size={{ xs: 12, sm: 6, md: 3 }}
-                      >
-                        <Paper variant="outlined">
-                          <CardContent>
-                            <Typography variant="caption" sx={{ mb: 1, color: 'text.secondary' }}>
-                              Seuil minimal
-                            </Typography>
-                            <Typography variant="h3" fontWeight="bold">
-                              20
-                            </Typography>
-                            <Typography variant="body2">
-                              Pour réapprovisionnement
-                            </Typography>
-                          </CardContent>
-                        </Paper>
-                      </Grid>
-                      <Grid
-                        size={{ xs: 12, sm: 6, md: 3 }}
-                      >
-                        <Paper variant="outlined">
-                          <CardContent>
-                            <Typography variant="caption" sx={{ mb: 1, color: 'text.secondary' }}>
-                              Valeur du stock
-                            </Typography>
-                            <Typography variant="h3" fontWeight="bold">
-                              5 886,72 €
-                            </Typography>
-                            <Typography variant="body2">
-                              Au prix unitaire actuel
-                            </Typography>
-                          </CardContent>
-                        </Paper>
-                      </Grid>
-                    </Grid>
-                  </Box>
-
-                  {/* Historique des mouvements */}
-                  <Box sx={{ mb: 4 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                      <Typography variant="h5">Historique des mouvements</Typography>
-                      <Link variant="body2" href="#">Voir tout l&apos;historique</Link>
-                    </Box>
-                    <Paper variant="outlined">
-                      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                        <thead>
-                          <tr style={{ borderBottom: '1px solid var(--mui-palette-divider)' }}>
-                            <th style={{ textAlign: 'left', padding: '12px 16px' }}>
-                              <Typography variant="caption">Date</Typography>
-                            </th>
-                            <th style={{ textAlign: 'left', padding: '12px 16px' }}>
-                              <Typography variant="caption">Type</Typography>
-                            </th>
-                            <th style={{ textAlign: 'left', padding: '12px 16px' }}>
-                              <Typography variant="caption">Quantité</Typography>
-                            </th>
-                            <th style={{ textAlign: 'left', padding: '12px 16px' }}>
-                              <Typography variant="caption">Document</Typography>
-                            </th>
-                            <th style={{ textAlign: 'left', padding: '12px 16px' }}>
-                              <Typography variant="caption">Opérateur</Typography>
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <td style={{ padding: '12px 16px' }}>
-                              <Typography variant="body2">25/04/2025</Typography>
-                            </td>
-                            <td style={{ padding: '12px 16px' }}>
-                              <Typography variant="body2" sx={{ color: 'success.main' }}>Entrée</Typography>
-                            </td>
-                            <td style={{ padding: '12px 16px' }}>
-                              <Typography variant="body2">+50</Typography>
-                            </td>
-                            <td style={{ padding: '12px 16px' }}>
-                              <Typography variant="body2">BL-2025-0421</Typography>
-                            </td>
-                            <td style={{ padding: '12px 16px' }}>
-                              <Typography variant="body2">Jean Dupont</Typography>
-                            </td>
-                          </tr>
-                          <tr style={{ backgroundColor: 'rgba(0, 0, 0, 0.04)' }}>
-                            <td style={{ padding: '12px 16px' }}>
-                              <Typography variant="body2">18/04/2025</Typography>
-                            </td>
-                            <td style={{ padding: '12px 16px' }}>
-                              <Typography variant="body2" sx={{ color: 'error.main' }}>Sortie</Typography>
-                            </td>
-                            <td style={{ padding: '12px 16px' }}>
-                              <Typography variant="body2">-12</Typography>
-                            </td>
-                            <td style={{ padding: '12px 16px' }}>
-                              <Typography variant="body2">CMD-2025-0365</Typography>
-                            </td>
-                            <td style={{ padding: '12px 16px' }}>
-                              <Typography variant="body2">Marie Martin</Typography>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td style={{ padding: '12px 16px' }}>
-                              <Typography variant="body2">05/04/2025</Typography>
-                            </td>
-                            <td style={{ padding: '12px 16px' }}>
-                              <Typography variant="body2" sx={{ color: 'success.main' }}>Entrée</Typography>
-                            </td>
-                            <td style={{ padding: '12px 16px' }}>
-                              <Typography variant="body2">+30</Typography>
-                            </td>
-                            <td style={{ padding: '12px 16px' }}>
-                              <Typography variant="body2">BL-2025-0387</Typography>
-                            </td>
-                            <td style={{ padding: '12px 16px' }}>
-                              <Typography variant="body2">Jean Dupont</Typography>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </Paper>
-                  </Box>
-                </CardContent>
-              </Paper>
-            </Box>
-          </CustomTabPanel>
-          <CustomTabPanel value={value} index={3}>
-            <Box
-              sx={{
-                width: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                flexGrow: 1,
-                height: '100%'
-              }}
-            >
-              <Paper variant="outlined" sx={{ width: '100%', height: '100%' }}>
-                <CardContent>
-                  <Typography variant="h4" component='h1' sx={{ mb: 2 }}>Compatibilités</Typography>
-
-                  {/* Produits compatibles */}
-                  <Box sx={{ mb: 4 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                      <Typography variant="h5">Produits compatibles</Typography>
-                      <Typography variant="body2">12 produits associés</Typography>
-                    </Box>
-                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 2 }}>
-                      <Paper variant="outlined">
-                        <CardContent sx={{ p: 2 }}>
-                          <Box sx={{ display: 'flex', gap: 2 }}>
-                            <Box sx={{ width: 70, height: 70, bgcolor: 'grey.100', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 1, overflow: 'hidden', flexShrink: 0 }}>
-                              <Image
-                                src="/images/base-technique/cables.png"
-                                alt="Produit"
-                                width={63}
-                                height={63}
-                                style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain' }}
-                              />                                                        </Box>
-                            <Box sx={{ flexGrow: 1 }}>
-                              <Typography variant="body2" fontWeight="bold">Clé de réarmement DMI</Typography>
-                              <Typography variant="caption" sx={{ mb: 1 }}>Réf: CRM-01</Typography>
-                              <Typography variant="caption" sx={{ color: 'success.main' }}>En stock</Typography>
-                            </Box>
-                          </Box>
-                        </CardContent>
-                      </Paper>
-
-                      <Paper variant="outlined">
-                        <CardContent sx={{ p: 2 }}>
-                          <Box sx={{ display: 'flex', gap: 2 }}>
-                            <Box sx={{ width: 70, height: 70, bgcolor: 'grey.100', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 1, overflow: 'hidden', flexShrink: 0 }}>
-                              <Image
-                                src="/images/base-technique/cables.png"
-                                alt="Produit"
-                                width={63}
-                                height={63}
-                                style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain' }}
-                              />
-                            </Box>
-                            <Box sx={{ flexGrow: 1 }}>
-                              <Typography variant="body2" fontWeight="bold">Volet de protection</Typography>
-                              <Typography variant="caption" sx={{ mb: 1 }}>Réf: VPT-102</Typography>
-                              <Typography variant="caption" sx={{ color: 'success.main' }}>En stock</Typography>
-                            </Box>
-                          </Box>
-                        </CardContent>
-                      </Paper>
-
-                      <Paper variant="outlined">
-                        <CardContent sx={{ p: 2 }}>
-                          <Box sx={{ display: 'flex', gap: 2 }}>
-                            <Box sx={{ width: 70, height: 70, bgcolor: 'grey.100', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 1, overflow: 'hidden', flexShrink: 0 }}>
-                              <Image
-                                src="/images/base-technique/cables.png"
-                                alt="Produit"
-                                width={63}
-                                height={63}
-                                style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain' }}
-                              />
-                            </Box>
-                            <Box sx={{ flexGrow: 1 }}>
-                              <Typography variant="body2" fontWeight="bold">Centrale incendie 4 zones</Typography>
-                              <Typography variant="caption" sx={{ mb: 1 }}>Réf: CI4Z-450</Typography>
-                              <Typography variant="caption" sx={{ color: 'warning.main' }}>Stock faible</Typography>
-                            </Box>
-                          </Box>
-                        </CardContent>
-                      </Paper>
-
-                      <Paper variant="outlined">
-                        <CardContent sx={{ p: 2 }}>
-                          <Box sx={{ display: 'flex', gap: 2 }}>
-                            <Box sx={{ width: 70, height: 70, bgcolor: 'grey.100', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 1, overflow: 'hidden', flexShrink: 0 }}>
-                              <Image
-                                src="/images/base-technique/cables.png"
-                                alt="Produit"
-                                width={63}
-                                height={63}
-                                style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain' }}
-                              />
-                            </Box>
-                            <Box sx={{ flexGrow: 1 }}>
-                              <Typography variant="body2" fontWeight="bold">Câble résistant au feu</Typography>
-                              <Typography variant="caption" sx={{ mb: 1 }}>Réf: CR2-100</Typography>
-                              <Typography variant="caption" sx={{ color: 'success.main' }}>En stock</Typography>
-                            </Box>
-                          </Box>
-                        </CardContent>
-                      </Paper>
-                    </Box>
-                    {/* Bouton pour voir plus */}
-                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                      <Button variant="outlined" size="small">
-                        Voir tous les produits compatibles
-                      </Button>
-                    </Box>
-                  </Box>
-
-                  {/* Normes et standards */}
-                  <Box sx={{ mb: 4 }}>
-                    <Typography variant="h5" sx={{ mb: 2 }}>Normes et standards</Typography>
-                    <Grid container spacing={2}>
-                      <Grid
-                        size={{ xs: 12, sm: 6 }}
-                      >
-                        <Paper variant="outlined">
-                          <CardContent>
-                            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                              <Box
-                                sx={{
-                                  width: 40,
-                                  height: 40,
-                                  bgcolor: 'primary.light',
-                                  color: 'primary.main',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  borderRadius: '50%'
-                                }}
-                              >
-                                <VerifiedIcon />
-                              </Box>
-                              <Box>
-                                <Typography variant="subtitle1">NF 61-936</Typography>
-                                <Typography variant="caption">
-                                  Norme française pour les systèmes de sécurité incendie.
-                                  Ce produit est certifié conforme aux exigences de cette norme.
-                                </Typography>
-                              </Box>
-                            </Box>
-                          </CardContent>
-                        </Paper>
-                      </Grid>
-                      <Grid
-                        size={{ xs: 12, sm: 6 }}
-                      >
-                        <Paper variant="outlined">
-                          <CardContent>
-                            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                              <Box
-                                sx={{
-                                  width: 40,
-                                  height: 40,
-                                  bgcolor: 'primary.light',
-                                  color: 'primary.main',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  borderRadius: '50%'
-                                }}
-                              >
-                                <VerifiedIcon />
-                              </Box>
-                              <Box>
-                                <Typography variant="subtitle1">EN 54-11</Typography>
-                                <Typography variant="caption">
-                                  Norme européenne pour les déclencheurs manuels d&apos;alarme incendie.
-                                  Ce produit est conforme aux standards européens.
-                                </Typography>
-                              </Box>
-                            </Box>
-                          </CardContent>
-                        </Paper>
-                      </Grid>
-                    </Grid>
-                  </Box>
-
-                  {/* Systèmes compatibles */}
-                  <Box>
-                    <Typography variant="h5" sx={{ mb: 2 }}>Systèmes compatibles</Typography>
-                    <Paper variant="outlined">
-                      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                        <thead>
-                          <tr style={{ borderBottom: '1px solid var(--mui-palette-divider)' }}>
-                            <th style={{ textAlign: 'left', padding: '12px 16px' }}>
-                              <Typography variant="caption">Type de système</Typography>
-                            </th>
-                            <th style={{ textAlign: 'left', padding: '12px 16px' }}>
-                              <Typography variant="caption">Compatibilité</Typography>
-                            </th>
-                            <th style={{ textAlign: 'left', padding: '12px 16px' }}>
-                              <Typography variant="caption">Notes</Typography>
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <td style={{ padding: '12px 16px' }}>
-                              <Typography variant="body2">Centrales conventionnelles</Typography>
-                            </td>
-                            <td style={{ padding: '12px 16px' }}>
-                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                <CheckCircleIcon sx={{ color: 'success.main', mr: 1, fontSize: 18 }} />
-                                <Typography variant="body2">Totale</Typography>
-                              </Box>
-                            </td>
-                            <td style={{ padding: '12px 16px' }}>
-                              <Typography variant="body2">Compatible avec toutes les centrales conventionnelles du marché</Typography>
-                            </td>
-                          </tr>
-                          <tr style={{ backgroundColor: 'rgba(0, 0, 0, 0.04)' }}>
-                            <td style={{ padding: '12px 16px' }}>
-                              <Typography variant="body2">Centrales adressables</Typography>
-                            </td>
-                            <td style={{ padding: '12px 16px' }}>
-                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                <InfoIcon sx={{ color: 'warning.main', mr: 1, fontSize: 18 }} />
-                                <Typography variant="body2">Partielle</Typography>
-                              </Box>
-                            </td>
-                            <td style={{ padding: '12px 16px' }}>
-                              <Typography variant="body2">Nécessite un module d&apos;interface spécifique (IF-200)</Typography>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td style={{ padding: '12px 16px' }}>
-                              <Typography variant="body2">Systèmes sans fil</Typography>
-                            </td>
-                            <td style={{ padding: '12px 16px' }}>
-                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                <CancelIcon sx={{ color: 'error.main', mr: 1, fontSize: 18 }} />
-                                <Typography variant="body2">Non compatible</Typography>
-                              </Box>
-                            </td>
-                            <td style={{ padding: '12px 16px' }}>
-                              <Typography variant="body2">Produit filaire uniquement</Typography>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </Paper>
-                  </Box>
-                </CardContent>
-              </Paper>
-            </Box>
-          </CustomTabPanel>
-        </Paper>
+            {id} JOD-1 - LBXJOD110017
+          </Typography>
+          <Chip
+            label="Actif"
+            color="success"
+            size="small"
+            sx={{ fontWeight: 600 }}
+          />
+        </Box>
+        <Typography variant="h6" color="textSecondary" sx={{ fontWeight: 400 }}>
+          Déclencheur Manuel Incendie Rouge NF
+        </Typography>
       </Box>
-    </>
+
+      {/* Tabs Container */}
+      <Paper
+        sx={{
+          width: '100%',
+          borderRadius: 2,
+          overflow: 'hidden',
+          boxShadow: theme.shadows[3],
+        }}
+        elevation={0}
+      >
+        <Tabs
+          value={value}
+          onChange={handleChange}
+          aria-label="product details tabs"
+          sx={{
+            borderBottom: 1,
+            borderColor: 'divider',
+            background: `linear-gradient(135deg, var(--color-axignis-primary)10, var(--color-axignis-secondary)10)`,
+            '& .MuiTabs-flexContainer': {
+              justifyContent: 'flex-start',
+            },
+            '& .MuiTab-root': {
+              fontWeight: 600,
+              textTransform: 'none',
+              fontSize: '1rem',
+              transition: 'var(--transition-normal)',
+              '&:hover': {
+                color: 'var(--color-axignis-primary)',
+              },
+              '&.Mui-selected': {
+                color: 'var(--color-axignis-primary)',
+              },
+            },
+            '& .MuiTabs-indicator': {
+              backgroundColor: 'var(--color-axignis-primary)',
+              height: 3,
+            },
+          }}
+        >
+          <Tab label="Informations" {...a11yProps(0)} />
+          <Tab label="Documents" {...a11yProps(1)} />
+          <Tab label="Inventaire" {...a11yProps(2)} />
+          <Tab label="Compatibilités" {...a11yProps(3)} />
+        </Tabs>
+
+        {/* Tab Panel 1: Informations */}
+        <CustomTabPanel value={value} index={0}>
+          <Card
+            variant="outlined"
+            sx={{
+              borderRadius: 2,
+              border: `1px solid ${theme.palette.divider}`,
+              boxShadow: theme.shadows[1],
+            }}
+          >
+            <CardContent sx={{ p: 4 }}>
+              <Typography
+                variant="h5"
+                component="h2"
+                sx={{
+                  mb: 3,
+                  fontWeight: 700,
+                  color: 'var(--color-axignis-dark)',
+                }}
+              >
+                Informations générales
+              </Typography>
+              <Grid container spacing={3}>
+                {[
+                  { label: 'Référence', value: 'JOD-1' },
+                  { label: 'Modèle', value: 'LBXJOD110017' },
+                  { label: 'Marque', value: 'Legrand' },
+                  { label: 'Type', value: 'Déclencheur' },
+                  { label: 'Gamme', value: 'Sécurité' },
+                  { label: 'Certification', value: 'NF' },
+                  { label: 'Couleur', value: 'Rouge' },
+                  { label: 'Statut', value: 'Actif' },
+                  { label: 'Date de création', value: '15/01/2023' },
+                  { label: 'Dernière modification', value: '20/03/2023' },
+                  { label: 'Prix unitaire', value: '45,99 €' },
+                  { label: 'Stock', value: '128 unités' },
+                  { label: 'Poids', value: '125g' },
+                  { label: 'Dimensions', value: '90 x 90 x 45 mm' },
+                  { label: 'Garantie', value: '2 ans' },
+                  { label: 'Code EAN', value: '3245060298715' },
+                ].map((item, index) => (
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index}>
+                    <Box
+                      sx={{
+                        p: 2,
+                        borderRadius: 1,
+                        backgroundColor: theme.palette.action.hover,
+                        transition: 'var(--transition-normal)',
+                        '&:hover': {
+                          backgroundColor: theme.palette.action.selected,
+                          transform: 'translateY(-2px)',
+                        },
+                      }}
+                    >
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          fontWeight: 600,
+                          color: 'var(--color-axignis-primary)',
+                          textTransform: 'uppercase',
+                          letterSpacing: 0.5,
+                        }}
+                      >
+                        {item.label}
+                      </Typography>
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          fontWeight: 500,
+                          mt: 0.5,
+                        }}
+                      >
+                        {item.value}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                ))}
+              </Grid>
+            </CardContent>
+          </Card>
+        </CustomTabPanel>
+
+        {/* Tab Panel 2: Documents */}
+        <CustomTabPanel value={value} index={1}>
+          <Card variant="outlined" sx={{ borderRadius: 2, boxShadow: theme.shadows[1] }}>
+            <CardContent sx={{ p: 4 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                <Typography
+                  variant="h5"
+                  component="h2"
+                  sx={{
+                    fontWeight: 700,
+                    color: 'var(--color-axignis-dark)',
+                  }}
+                >
+                  Documents
+                </Typography>
+                <Chip
+                  label="3"
+                  size="small"
+                  color="primary"
+                  sx={{ ml: 2 }}
+                />
+              </Box>
+
+              <Grid container spacing={3} sx={{ mb: 4 }}>
+                {[
+                  { name: 'Notice d\'utilisation', type: 'PDF', size: '2.4 MB' },
+                  { name: 'Fiche technique', type: 'PDF', size: '1.2 MB' },
+                  { name: 'Plan CAD', type: 'DWG', size: '3.7 MB' },
+                ].map((doc, index) => (
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }} key={index}>
+                    <Card
+                      variant="outlined"
+                      sx={{
+                        transition: 'var(--transition-normal)',
+                        '&:hover': {
+                          boxShadow: theme.shadows[4],
+                          transform: 'translateY(-4px)',
+                        },
+                      }}
+                    >
+                      <CardContent sx={{ p: 3, textAlign: 'center' }}>
+                        <Box sx={{ mb: 2 }}>
+                          <Image
+                            src="/images/base-technique/pdf.png"
+                            alt={doc.type}
+                            width={48}
+                            height={48}
+                            style={{ width: 48, height: 48 }}
+                          />
+                        </Box>
+                        <Typography variant="body1" fontWeight="600" sx={{ mb: 1 }}>
+                          {doc.name}
+                        </Typography>
+                        <Typography variant="caption" color="textSecondary" sx={{ mb: 2, display: 'block' }}>
+                          {doc.type} - {doc.size}
+                        </Typography>
+                        <Button
+                          variant="contained"
+                          size="small"
+                          startIcon={<DownloadIcon />}
+                          sx={{
+                            background: `linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))`,
+                            '&:hover': {
+                              background: `linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))`,
+                            },
+                          }}
+                        >
+                          Télécharger
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+
+              {/* Zone d'upload */}
+              <Paper
+                variant="outlined"
+                sx={{
+                  p: 4,
+                  textAlign: 'center',
+                  borderStyle: 'dashed',
+                  borderWidth: 2,
+                  borderColor: 'var(--color-axignis-primary)',
+                  backgroundColor: theme.palette.action.hover,
+                  transition: 'var(--transition-normal)',
+                  '&:hover': {
+                    backgroundColor: theme.palette.action.selected,
+                    borderColor: 'var(--color-axignis-secondary)',
+                  },
+                }}
+              >
+                <Typography variant="h6" sx={{ mb: 1, color: 'var(--color-axignis-primary)' }}>
+                  Déposez des fichiers ici ou cliquez pour télécharger
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  Formats acceptés: PDF, DOC, DOCX, DWG, JPG, PNG (max 10 MB)
+                </Typography>
+              </Paper>
+            </CardContent>
+          </Card>
+        </CustomTabPanel>
+
+        {/* Tab Panel 3: Inventaire */}
+        <CustomTabPanel value={value} index={2}>
+          <Card variant="outlined" sx={{ borderRadius: 2, boxShadow: theme.shadows[1] }}>
+            <CardContent sx={{ p: 4 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                <InventoryIcon sx={{ mr: 2, color: 'var(--color-axignis-primary)' }} />
+                <Typography
+                  variant="h5"
+                  component="h2"
+                  sx={{
+                    fontWeight: 700,
+                    color: 'var(--color-axignis-dark)',
+                  }}
+                >
+                  Détails d&apos;inventaire
+                </Typography>
+              </Box>
+
+              {/* Résumé du stock */}
+              <Box sx={{ mb: 4 }}>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+                  Résumé du stock
+                </Typography>
+                <Grid container spacing={3}>
+                  {[
+                    { title: 'Stock total', value: '128', subtitle: 'En stock', color: 'success' },
+                    { title: 'Réservé', value: '15', subtitle: 'Pour commandes', color: 'warning' },
+                    { title: 'Seuil minimal', value: '20', subtitle: 'Pour réapprovisionnement', color: 'info' },
+                    { title: 'Valeur du stock', value: '5 886,72 €', subtitle: 'Au prix unitaire actuel', color: 'primary' },
+                  ].map((item, index) => (
+                    <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index}>
+                      <Card
+                        variant="outlined"
+                        sx={{
+                          textAlign: 'center',
+                          transition: 'var(--transition-normal)',
+                          '&:hover': {
+                            boxShadow: theme.shadows[3],
+                            transform: 'translateY(-2px)',
+                          },
+                        }}
+                      >
+                        <CardContent>
+                          <Typography variant="caption" color="textSecondary" sx={{ mb: 1, display: 'block' }}>
+                            {item.title}
+                          </Typography>
+                          <Typography
+                            variant="h4"
+                            sx={{
+                              fontWeight: 700,
+                              color: `${item.color}.main`,
+                              mb: 1,
+                            }}
+                          >
+                            {item.value}
+                          </Typography>
+                          <Typography variant="body2" color="textSecondary">
+                            {item.subtitle}
+                          </Typography>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Box>
+
+              {/* Historique des mouvements */}
+              <Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    Historique des mouvements
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    sx={{
+                      borderColor: 'var(--color-axignis-primary)',
+                      color: 'var(--color-axignis-primary)',
+                      '&:hover': {
+                        borderColor: 'var(--color-axignis-secondary)',
+                        backgroundColor: 'var(--color-axignis-primary)',
+                        color: 'white',
+                      },
+                    }}
+                  >
+                    Voir tout l&apos;historique
+                  </Button>
+                </Box>
+                <Paper variant="outlined" sx={{ borderRadius: 1, overflow: 'hidden' }}>
+                  {/* Table content remains the same but with improved styling */}
+                  <Box sx={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr style={{ backgroundColor: theme.palette.action.hover }}>
+                          {['Date', 'Type', 'Quantité', 'Document', 'Opérateur'].map((header) => (
+                            <th key={header} style={{ textAlign: 'left', padding: '16px' }}>
+                              <Typography variant="subtitle2" fontWeight="600">
+                                {header}
+                              </Typography>
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {[
+                          { date: '25/04/2025', type: 'Entrée', quantity: '+50', doc: 'BL-2025-0421', operator: 'Jean Dupont', typeColor: 'success' },
+                          { date: '18/04/2025', type: 'Sortie', quantity: '-12', doc: 'CMD-2025-0365', operator: 'Marie Martin', typeColor: 'error' },
+                          { date: '05/04/2025', type: 'Entrée', quantity: '+30', doc: 'BL-2025-0387', operator: 'Jean Dupont', typeColor: 'success' },
+                        ].map((row, index) => (
+                          <tr
+                            key={index}
+                            style={{
+                              backgroundColor: index % 2 === 1 ? theme.palette.action.hover : 'transparent',
+                            }}
+                          >
+                            <td style={{ padding: '16px' }}>
+                              <Typography variant="body2">{row.date}</Typography>
+                            </td>
+                            <td style={{ padding: '16px' }}>
+                              <Chip
+                                label={row.type}
+                                size="small"
+                                color={row.typeColor as any}
+                                variant="outlined"
+                              />
+                            </td>
+                            <td style={{ padding: '16px' }}>
+                              <Typography variant="body2" fontWeight="600">{row.quantity}</Typography>
+                            </td>
+                            <td style={{ padding: '16px' }}>
+                              <Typography variant="body2">{row.doc}</Typography>
+                            </td>
+                            <td style={{ padding: '16px' }}>
+                              <Typography variant="body2">{row.operator}</Typography>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </Box>
+                </Paper>
+              </Box>
+            </CardContent>
+          </Card>
+        </CustomTabPanel>
+
+        {/* Tab Panel 4: Compatibilités */}
+        <CustomTabPanel value={value} index={3}>
+          <Card variant="outlined" sx={{ borderRadius: 2, boxShadow: theme.shadows[1] }}>
+            <CardContent sx={{ p: 4 }}>
+              <Typography
+                variant="h5"
+                component="h2"
+                sx={{
+                  mb: 3,
+                  fontWeight: 700,
+                  color: 'var(--color-axignis-dark)',
+                }}
+              >
+                Compatibilités
+              </Typography>
+
+              {/* Produits compatibles */}
+              <Box sx={{ mb: 4 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    Produits compatibles
+                  </Typography>
+                  <Chip label="12 produits associés" color="primary" variant="outlined" />
+                </Box>
+                <Grid container spacing={2}>
+                  {[
+                    { name: 'Clé de réarmement DMI', ref: 'CRM-01', status: 'En stock', statusColor: 'success' },
+                    { name: 'Volet de protection', ref: 'VPT-102', status: 'En stock', statusColor: 'success' },
+                    { name: 'Centrale incendie 4 zones', ref: 'CI4Z-450', status: 'Stock faible', statusColor: 'warning' },
+                    { name: 'Câble résistant au feu', ref: 'CR2-100', status: 'En stock', statusColor: 'success' },
+                  ].map((product, index) => (
+                    <Grid size={{ xs: 12, sm: 6, md: 6 }} key={index}>
+                      <Card
+                        variant="outlined"
+                        sx={{
+                          transition: 'var(--transition-normal)',
+                          '&:hover': {
+                            boxShadow: theme.shadows[3],
+                            transform: 'translateY(-2px)',
+                          },
+                        }}
+                      >
+                        <CardContent sx={{ p: 2 }}>
+                          <Box sx={{ display: 'flex', gap: 2 }}>
+                            <Box
+                              sx={{
+                                width: 60,
+                                height: 60,
+                                bgcolor: 'grey.100',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderRadius: 1,
+                                flexShrink: 0,
+                              }}
+                            >
+                              <Image
+                                src="/images/base-technique/cables.png"
+                                alt="Produit"
+                                width={50}
+                                height={50}
+                                style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain' }}
+                              />
+                            </Box>
+                            <Box sx={{ flexGrow: 1 }}>
+                              <Typography variant="body1" fontWeight="600" sx={{ mb: 0.5 }}>
+                                {product.name}
+                              </Typography>
+                              <Typography variant="caption" color="textSecondary" sx={{ mb: 1, display: 'block' }}>
+                                Réf: {product.ref}
+                              </Typography>
+                              <Chip
+                                label={product.status}
+                                size="small"
+                                color={product.statusColor as any}
+                                variant="outlined"
+                              />
+                            </Box>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+                  <Button
+                    variant="outlined"
+                    sx={{
+                      borderColor: 'var(--color-axignis-primary)',
+                      color: 'var(--color-axignis-primary)',
+                      '&:hover': {
+                        borderColor: 'var(--color-axignis-secondary)',
+                        backgroundColor: 'var(--color-axignis-primary)',
+                        color: 'white',
+                      },
+                    }}
+                  >
+                    Voir tous les produits compatibles
+                  </Button>
+                </Box>
+              </Box>
+
+              {/* Normes et standards */}
+              <Box sx={{ mb: 4 }}>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+                  Normes et standards
+                </Typography>
+                <Grid container spacing={2}>
+                  {[
+                    { norm: 'NF 61-936', description: 'Norme française pour les systèmes de sécurité incendie. Ce produit est certifié conforme aux exigences de cette norme.' },
+                    { norm: 'EN 54-11', description: 'Norme européenne pour les déclencheurs manuels d\'alarme incendie. Ce produit est conforme aux standards européens.' },
+                  ].map((item, index) => (
+                    <Grid size={{ xs: 12, sm: 6 }} key={index}>
+                      <Card variant="outlined">
+                        <CardContent>
+                          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                            <Box
+                              sx={{
+                                width: 40,
+                                height: 40,
+                                bgcolor: 'var(--color-axignis-primary)',
+                                color: 'white',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderRadius: '50%',
+                                flexShrink: 0,
+                              }}
+                            >
+                              <VerifiedIcon />
+                            </Box>
+                            <Box>
+                              <Typography variant="subtitle1" fontWeight="600" sx={{ mb: 1 }}>
+                                {item.norm}
+                              </Typography>
+                              <Typography variant="body2" color="textSecondary">
+                                {item.description}
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Box>
+
+              {/* Systèmes compatibles */}
+              <Box>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+                  Systèmes compatibles
+                </Typography>
+                <Paper variant="outlined" sx={{ borderRadius: 1, overflow: 'hidden' }}>
+                  <Box sx={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr style={{ backgroundColor: theme.palette.action.hover }}>
+                          {['Type de système', 'Compatibilité', 'Notes'].map((header) => (
+                            <th key={header} style={{ textAlign: 'left', padding: '16px' }}>
+                              <Typography variant="subtitle2" fontWeight="600">
+                                {header}
+                              </Typography>
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {[
+                          {
+                            system: 'Centrales conventionnelles',
+                            compatibility: 'Totale',
+                            icon: CheckCircleIcon,
+                            color: 'success',
+                            notes: 'Compatible avec toutes les centrales conventionnelles du marché'
+                          },
+                          {
+                            system: 'Centrales adressables',
+                            compatibility: 'Partielle',
+                            icon: InfoIcon,
+                            color: 'warning',
+                            notes: 'Nécessite un module d\'interface spécifique (IF-200)'
+                          },
+                          {
+                            system: 'Systèmes sans fil',
+                            compatibility: 'Non compatible',
+                            icon: CancelIcon,
+                            color: 'error',
+                            notes: 'Produit filaire uniquement'
+                          },
+                        ].map((row, index) => (
+                          <tr
+                            key={index}
+                            style={{
+                              backgroundColor: index % 2 === 1 ? theme.palette.action.hover : 'transparent',
+                            }}
+                          >
+                            <td style={{ padding: '16px' }}>
+                              <Typography variant="body2" fontWeight="500">{row.system}</Typography>
+                            </td>
+                            <td style={{ padding: '16px' }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                <row.icon sx={{ color: `${row.color}.main`, mr: 1, fontSize: 18 }} />
+                                <Typography variant="body2">{row.compatibility}</Typography>
+                              </Box>
+                            </td>
+                            <td style={{ padding: '16px' }}>
+                              <Typography variant="body2" color="textSecondary">{row.notes}</Typography>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </Box>
+                </Paper>
+              </Box>
+            </CardContent>
+          </Card>
+        </CustomTabPanel>
+      </Paper>
+    </Box>
   );
 }
