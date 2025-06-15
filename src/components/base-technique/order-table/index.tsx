@@ -10,12 +10,13 @@ import SearchFilters from './SearchFilters';
 import { FilterValues, Order, Product } from './types';
 import { filterProducts, getComparator } from './utils';
 
-const ITEMS_PER_PAGE = 5;
+const DEFAULT_ITEMS_PER_PAGE = 5;
 
 export default function OrderTable() {
   const [order, setOrder] = React.useState<Order>('asc');
   const [orderBy, setOrderBy] = React.useState<keyof Product>('id');
   const [page, setPage] = React.useState(1);
+  const [itemsPerPage, setItemsPerPage] = React.useState(DEFAULT_ITEMS_PER_PAGE);
   const [filters, setFilters] = React.useState<FilterValues>({
     search: '',
     status: '',
@@ -42,6 +43,11 @@ export default function OrderTable() {
     setPage(newPage);
   };
 
+  const handleItemsPerPageChange = (newItemsPerPage: number) => {
+    setItemsPerPage(newItemsPerPage);
+    setPage(1); // Reset to first page when changing items per page
+  };
+
   // Filter and sort products
   const filteredProducts = filterProducts(products, filters);
   const sortedProducts = React.useMemo(
@@ -50,10 +56,10 @@ export default function OrderTable() {
   );
 
   // Pagination
-  const totalPages = Math.ceil(sortedProducts.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(sortedProducts.length / itemsPerPage);
   const paginatedProducts = sortedProducts.slice(
-    (page - 1) * ITEMS_PER_PAGE,
-    page * ITEMS_PER_PAGE,
+    (page - 1) * itemsPerPage,
+    page * itemsPerPage,
   );
 
   return (
@@ -79,15 +85,14 @@ export default function OrderTable() {
       </Box>
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <Pagination
-          currentPage={page}
-          totalPages={totalPages}
-          totalItems={sortedProducts.length}
-          itemsPerPage={ITEMS_PER_PAGE}
-          onPageChange={handlePageChange}
-        />
-      )}
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        totalItems={sortedProducts.length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={handlePageChange}
+        onItemsPerPageChange={handleItemsPerPageChange}
+      />
     </Box>
   );
 } 
