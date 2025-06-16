@@ -8,8 +8,10 @@ import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import FolderIcon from '@mui/icons-material/Folder';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import MenuIcon from '@mui/icons-material/Menu';
+import PeopleIcon from '@mui/icons-material/People';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
+import StorageIcon from '@mui/icons-material/Storage';
 import SupportRoundedIcon from '@mui/icons-material/SupportRounded';
 import {
   Badge,
@@ -172,8 +174,6 @@ const ScrollableContent = styled(Box)(({ theme }) => ({
   },
 }));
 
-
-
 export default function Sidebar() {
   const theme = useTheme();
   const { user } = useUser();
@@ -181,9 +181,14 @@ export default function Sidebar() {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isDarkMode = theme.palette.mode === 'dark';
   const [openProducts, setOpenProducts] = React.useState(false);
+  const [openAdministration, setOpenAdministration] = React.useState(false);
 
   const handleProductsClick = () => {
     setOpenProducts(!openProducts);
+  };
+
+  const handleAdministrationClick = () => {
+    setOpenAdministration(!openAdministration);
   };
 
   const isActive = (path: string) => pathname === path || pathname.startsWith(path + '/');
@@ -499,11 +504,14 @@ export default function Sidebar() {
 
           {/* Administration - Visible uniquement pour les administrateurs */}
           {user?.role?.type === UserRoleType.ADMINISTRATOR && (
-            <ListItem disablePadding>
-              <Tooltip title="Panneau d'administration" placement="right" arrow>
-                <Box sx={{ width: '100%' }}>
-                  <Link href="/dashboard/administration" style={{ textDecoration: 'none', color: 'inherit' }}>
-                    <StyledListItemButton isActive={isActive('/dashboard/administration')}>
+            <>
+              <ListItem disablePadding>
+                <Tooltip title="Panneau d'administration" placement="right" arrow>
+                  <Box sx={{ width: '100%' }}>
+                    <StyledListItemButton
+                      onClick={handleAdministrationClick}
+                      isActive={isActive('/dashboard/administration')}
+                    >
                       <AdminPanelSettings sx={{ mr: 1.5, color: 'var(--color-axignis-secondary)' }} />
                       <ListItemText
                         primary={
@@ -512,11 +520,57 @@ export default function Sidebar() {
                           </Typography>
                         }
                       />
+                      <KeyboardArrowDownIcon
+                        sx={{
+                          transform: openAdministration ? 'rotate(180deg)' : 'none',
+                          transition: 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
+                          color: 'var(--color-axignis-secondary)',
+                        }}
+                      />
+                    </StyledListItemButton>
+                  </Box>
+                </Tooltip>
+              </ListItem>
+
+              {/* Sous-menu Administration */}
+              <Collapse in={openAdministration} timeout={400} unmountOnExit>
+                <Box sx={{ pl: 4, py: 1 }}>
+                  <Link href="/dashboard/administration/utilisateurs" style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <StyledListItemButton
+                      sx={{ py: 0.75, mb: 0.5, width: '100%' }}
+                      isActive={isActive('/dashboard/administration/utilisateurs')}
+                    >
+                      <PeopleIcon sx={{ mr: 1.5, fontSize: '1rem', color: 'var(--color-axignis-primary)' }} />
+                      <Typography variant="body2" color="textSecondary">
+                        Utilisateurs
+                      </Typography>
+                    </StyledListItemButton>
+                  </Link>
+                  <Link href="/dashboard/administration/entreprises" style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <StyledListItemButton
+                      sx={{ py: 0.75, mb: 0.5, width: '100%' }}
+                      isActive={isActive('/dashboard/administration/entreprises')}
+                    >
+                      <BusinessIcon sx={{ mr: 1.5, fontSize: '1rem', color: 'var(--color-axignis-primary)' }} />
+                      <Typography variant="body2" color="textSecondary">
+                        Entreprises
+                      </Typography>
+                    </StyledListItemButton>
+                  </Link>
+                  <Link href="/dashboard/administration/donnees" style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <StyledListItemButton
+                      sx={{ py: 0.75, mb: 0.5, width: '100%' }}
+                      isActive={isActive('/dashboard/administration/donnees')}
+                    >
+                      <StorageIcon sx={{ mr: 1.5, fontSize: '1rem', color: 'var(--color-axignis-primary)' }} />
+                      <Typography variant="body2" color="textSecondary">
+                        Données
+                      </Typography>
                     </StyledListItemButton>
                   </Link>
                 </Box>
-              </Tooltip>
-            </ListItem>
+              </Collapse>
+            </>
           )}
         </List>
 
