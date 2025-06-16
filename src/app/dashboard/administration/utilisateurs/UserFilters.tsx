@@ -75,12 +75,15 @@ export default function UserFiltersComponent({ filters, onFiltersChange, onReset
             placeholder="Rechercher par nom, prénom ou email..."
             value={filters.search || ''}
             onChange={(e) => handleFilterChange('search', e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon color="action" />
-                </InputAdornment>
-              ),
+            name="search"
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon color="action" />
+                  </InputAdornment>
+                ),
+              }
             }}
           />
         </Grid>
