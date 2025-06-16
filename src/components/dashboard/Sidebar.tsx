@@ -7,14 +7,17 @@ import CableIcon from '@mui/icons-material/Cable';
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import FolderIcon from '@mui/icons-material/Folder';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import MenuIcon from '@mui/icons-material/Menu';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
 import SupportRoundedIcon from '@mui/icons-material/SupportRounded';
 import {
+  Badge,
   Box,
   Chip,
   Collapse,
   Divider,
+  Fab,
   GlobalStyles,
   List,
   ListItem,
@@ -22,22 +25,26 @@ import {
   ListItemText,
   Paper,
   styled,
+  Tooltip,
   Typography,
+  useMediaQuery,
   useTheme
 } from '@mui/material';
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import * as React from 'react';
 import SidebarUserSection from './SidebarUserSection';
-import { closeSidebar } from './utils';
+import { closeSidebar, openSidebar } from './utils';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   position: 'sticky',
   [theme.breakpoints.down('md')]: {
     position: 'fixed',
     transform: 'translateX(calc(100% * (var(--SideNavigation-slideIn, 0) - 1)))',
+    zIndex: theme.zIndex.drawer + 1,
   },
-  transition: 'var(--transition-normal)',
+  transition: 'transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)',
   zIndex: 10000,
   height: '100dvh',
   width: 'var(--Sidebar-width)',
@@ -49,7 +56,16 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   gap: theme.spacing(2),
   borderRight: `1px solid ${theme.palette.divider}`,
   backgroundColor: theme.palette.background.paper,
-  boxShadow: theme.shadows[2],
+  boxShadow: theme.shadows[8],
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '4px',
+    background: 'linear-gradient(90deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+  },
 }));
 
 const StyledLogoContainer = styled(Box)(({ theme }) => ({
@@ -63,9 +79,10 @@ const StyledLogoContainer = styled(Box)(({ theme }) => ({
     height: '48px',
     width: '128px',
     display: 'block',
-    transition: 'var(--transition-normal)',
+    transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
     '&:hover': {
       transform: 'scale(1.05)',
+      filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))',
     },
   },
 }));
@@ -76,28 +93,92 @@ const StyledChip = styled(Chip)(({ theme }) => ({
   fontWeight: 600,
   fontSize: '0.875rem',
   marginBottom: theme.spacing(2),
+  boxShadow: theme.shadows[2],
+  transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
   '&:hover': {
     background: `linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))`,
+    transform: 'translateY(-2px)',
+    boxShadow: theme.shadows[4],
   },
 }));
 
-const StyledListItemButton = styled(ListItemButton)(({ theme }) => ({
+const StyledListItemButton = styled(ListItemButton, {
+  shouldForwardProp: (prop) => prop !== 'isActive',
+})<{ isActive?: boolean }>(({ theme, isActive }) => ({
   width: '100%',
-  borderRadius: theme.spacing(1),
+  borderRadius: theme.spacing(1.5),
   marginBottom: theme.spacing(0.5),
-  transition: 'var(--transition-normal)',
+  transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
+  position: 'relative',
+  overflow: 'hidden',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: isActive ? '4px' : '0px',
+    background: 'linear-gradient(180deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+    transition: 'width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
+  },
   '&:hover': {
     backgroundColor: theme.palette.action.hover,
-    transform: 'translateX(4px)',
-  },
-  '&.Mui-selected': {
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.primary.contrastText,
-    '&:hover': {
-      backgroundColor: theme.palette.primary.dark,
+    transform: 'translateX(8px)',
+    boxShadow: theme.shadows[2],
+    '&::before': {
+      width: '4px',
     },
+  },
+  ...(isActive && {
+    backgroundColor: `${theme.palette.primary.main}15`,
+    color: theme.palette.primary.main,
+    fontWeight: 600,
     '& .MuiListItemIcon-root': {
-      color: theme.palette.primary.contrastText,
+      color: theme.palette.primary.main,
+    },
+    '& .MuiTypography-root': {
+      fontWeight: 600,
+    },
+  }),
+}));
+
+const MobileMenuButton = styled(Fab)(({ theme }) => ({
+  position: 'fixed',
+  top: theme.spacing(2),
+  left: theme.spacing(2),
+  zIndex: theme.zIndex.drawer + 2,
+  background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+  color: theme.palette.common.white,
+  boxShadow: theme.shadows[6],
+  transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
+  '&:hover': {
+    background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+    transform: 'scale(1.1) rotate(90deg)',
+    boxShadow: theme.shadows[12],
+  },
+  [theme.breakpoints.up('md')]: {
+    display: 'none',
+  },
+}));
+
+const ScrollableContent = styled(Box)(({ theme }) => ({
+  minHeight: 0,
+  overflow: 'hidden auto',
+  flexGrow: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  paddingRight: theme.spacing(0.5),
+  '&::-webkit-scrollbar': {
+    width: '6px',
+  },
+  '&::-webkit-scrollbar-track': {
+    background: 'transparent',
+  },
+  '&::-webkit-scrollbar-thumb': {
+    background: theme.palette.divider,
+    borderRadius: '3px',
+    '&:hover': {
+      background: theme.palette.action.hover,
     },
   },
 }));
@@ -105,6 +186,8 @@ const StyledListItemButton = styled(ListItemButton)(({ theme }) => ({
 export default function Sidebar() {
   const theme = useTheme();
   const { user } = useUser();
+  const pathname = usePathname();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isDarkMode = theme.palette.mode === 'dark';
   const [openProducts, setOpenProducts] = React.useState(false);
 
@@ -112,281 +195,345 @@ export default function Sidebar() {
     setOpenProducts(!openProducts);
   };
 
+  const isActive = (path: string) => pathname === path || pathname.startsWith(path + '/');
+
   return (
-    <StyledPaper className="Sidebar" elevation={0}>
-      <GlobalStyles
-        styles={(theme) => ({
-          ':root': {
-            '--Sidebar-width': '240px',
-            [theme.breakpoints.up('lg')]: {
-              '--Sidebar-width': '260px',
-            },
-          },
-        })}
-      />
+    <>
+      {/* Mobile Menu Button */}
+      {isMobile && (
+        <MobileMenuButton
+          size="medium"
+          onClick={() => openSidebar()}
+          aria-label="Ouvrir le menu"
+        >
+          <MenuIcon />
+        </MobileMenuButton>
+      )}
 
-      {/* Overlay pour mobile */}
-      <Box
-        className="Sidebar-overlay"
-        sx={{
-          position: 'fixed',
-          zIndex: 9998,
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          opacity: 'var(--SideNavigation-slideIn)',
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          transition: 'var(--transition-normal)',
-          transform: {
-            xs: 'translateX(calc(100% * (var(--SideNavigation-slideIn, 0) - 1) + var(--SideNavigation-slideIn, 0) * var(--Sidebar-width, 0px)))',
-            lg: 'translateX(-100%)',
-          },
-        }}
-        onClick={() => closeSidebar()}
-      />
-
-      {/* Logo Section */}
-      <StyledLogoContainer>
-        <Link href="/" className="logo-link">
-          <Box
-            sx={{
-              position: 'relative',
-              width: '100%',
-              height: '100%',
-              '& img': {
-                filter: isDarkMode ? 'brightness(0) invert(1)' : 'none',
-                transition: 'var(--transition-normal)',
+      <StyledPaper className="Sidebar" elevation={0}>
+        <GlobalStyles
+          styles={(theme) => ({
+            ':root': {
+              '--Sidebar-width': '240px',
+              [theme.breakpoints.up('lg')]: {
+                '--Sidebar-width': '260px',
               },
-            }}
-          >
-            <Image
-              src={isDarkMode ? "/images/logo/logo-axignis-nb.png" : "/images/logo/logo-axignis.png"}
-              alt="Axignis Logo"
-              fill
-              sizes="128px"
-              style={{
-                objectFit: 'contain',
+            },
+          })}
+        />
+
+        {/* Overlay pour mobile */}
+        <Box
+          className="Sidebar-overlay"
+          sx={{
+            position: 'fixed',
+            zIndex: 9998,
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            opacity: 'var(--SideNavigation-slideIn)',
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            transition: 'opacity 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)',
+            backdropFilter: 'blur(4px)',
+            transform: {
+              xs: 'translateX(calc(100% * (var(--SideNavigation-slideIn, 0) - 1) + var(--SideNavigation-slideIn, 0) * var(--Sidebar-width, 0px)))',
+              lg: 'translateX(-100%)',
+            },
+          }}
+          onClick={() => closeSidebar()}
+        />
+
+        {/* Logo Section */}
+        <StyledLogoContainer>
+          <Link href="/" className="logo-link">
+            <Box
+              sx={{
+                position: 'relative',
+                width: '100%',
+                height: '100%',
+                '& img': {
+                  filter: isDarkMode ? 'brightness(0) invert(1)' : 'none',
+                  transition: 'var(--transition-normal)',
+                },
               }}
-              priority
+            >
+              <Image
+                src={isDarkMode ? "/images/logo/logo-axignis-nb.png" : "/images/logo/logo-axignis.png"}
+                alt="Axignis Logo"
+                fill
+                sizes="128px"
+                style={{
+                  objectFit: 'contain',
+                }}
+                priority
+              />
+            </Box>
+          </Link>
+        </StyledLogoContainer>
+
+        <ScrollableContent>
+          {/* Base technique */}
+          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+            <StyledChip
+              label="Base technique"
+              size="medium"
+              variant="filled"
             />
           </Box>
-        </Link>
-      </StyledLogoContainer>
 
-      {/* Base technique */}
-      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-        <StyledChip
-          label="Base technique"
-          size="medium"
-          variant="filled"
-        />
-      </Box>
+          {/* Navigation Menu */}
+          <List dense sx={{ gap: 0.5, width: '100%', mb: 3 }}>
+            <ListItem disablePadding sx={{ width: '100%' }}>
+              <Tooltip title="Gérer les domaines d'équipements" placement="right" arrow>
+                <Box sx={{ width: '100%' }}>
+                  <Link href="/dashboard/domaines" style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <StyledListItemButton isActive={isActive('/dashboard/domaines')}>
+                      <FolderIcon sx={{ mr: 1.5, color: 'var(--color-axignis-primary)' }} />
+                      <ListItemText
+                        primary={
+                          <Typography variant="body2" fontWeight="medium">
+                            Domaines d&apos;équipements
+                          </Typography>
+                        }
+                      />
+                    </StyledListItemButton>
+                  </Link>
+                </Box>
+              </Tooltip>
+            </ListItem>
 
-      {/* Navigation Menu */}
-      <Box
-        sx={{
-          minHeight: 0,
-          overflow: 'hidden auto',
-          flexGrow: 1,
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        <List dense sx={{ gap: 0.5, width: '100%' }}>
-          <ListItem disablePadding sx={{ width: '100%' }}>
-            <StyledListItemButton>
-              <FolderIcon sx={{ mr: 1.5, color: 'var(--color-axignis-primary)' }} />
-              <ListItemText
-                primary={
-                  <Typography variant="body2" fontWeight="medium">
-                    Domaines d&apos;équipements
-                  </Typography>
-                }
-              />
-            </StyledListItemButton>
-          </ListItem>
+            <ListItem disablePadding sx={{ width: '100%' }}>
+              <Tooltip title="Gérer les familles d'équipements" placement="right" arrow>
+                <Box sx={{ width: '100%' }}>
+                  <Link href="/dashboard/familles" style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <StyledListItemButton isActive={isActive('/dashboard/familles')}>
+                      <DashboardRoundedIcon sx={{ mr: 1.5, color: 'var(--color-axignis-primary)' }} />
+                      <ListItemText
+                        primary={
+                          <Typography variant="body2" fontWeight="medium">
+                            Familles d&apos;équipements
+                          </Typography>
+                        }
+                      />
+                    </StyledListItemButton>
+                  </Link>
+                </Box>
+              </Tooltip>
+            </ListItem>
 
-          <ListItem disablePadding sx={{ width: '100%' }}>
-            <StyledListItemButton>
-              <DashboardRoundedIcon sx={{ mr: 1.5, color: 'var(--color-axignis-primary)' }} />
-              <ListItemText
-                primary={
-                  <Typography variant="body2" fontWeight="medium">
-                    Familles d&apos;équipements
-                  </Typography>
-                }
-              />
-            </StyledListItemButton>
-          </ListItem>
+            <ListItem disablePadding sx={{ width: '100%' }}>
+              <Tooltip title="Gérer les types d'équipements" placement="right" arrow>
+                <Box sx={{ width: '100%' }}>
+                  <Link href="/dashboard/types" style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <StyledListItemButton isActive={isActive('/dashboard/types')}>
+                      <CableIcon sx={{ mr: 1.5, color: 'var(--color-axignis-primary)' }} />
+                      <ListItemText
+                        primary={
+                          <Typography variant="body2" fontWeight="medium">
+                            Types d&apos;équipements
+                          </Typography>
+                        }
+                      />
+                    </StyledListItemButton>
+                  </Link>
+                </Box>
+              </Tooltip>
+            </ListItem>
 
-          <ListItem disablePadding sx={{ width: '100%' }}>
-            <StyledListItemButton>
-              <CableIcon sx={{ mr: 1.5, color: 'var(--color-axignis-primary)' }} />
-              <ListItemText
-                primary={
-                  <Typography variant="body2" fontWeight="medium">
-                    Types d&apos;équipements
-                  </Typography>
-                }
-              />
-            </StyledListItemButton>
-          </ListItem>
+            <ListItem disablePadding sx={{ width: '100%' }}>
+              <Tooltip title="Gérer les marques" placement="right" arrow>
+                <Box sx={{ width: '100%' }}>
+                  <Link href="/dashboard/marques" style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <StyledListItemButton isActive={isActive('/dashboard/marques')}>
+                      <AppsIcon sx={{ mr: 1.5, color: 'var(--color-axignis-primary)' }} />
+                      <ListItemText
+                        primary={
+                          <Typography variant="body2" fontWeight="medium">
+                            Marques
+                          </Typography>
+                        }
+                      />
+                    </StyledListItemButton>
+                  </Link>
+                </Box>
+              </Tooltip>
+            </ListItem>
 
-          <ListItem disablePadding sx={{ width: '100%' }}>
-            <StyledListItemButton>
-              <AppsIcon sx={{ mr: 1.5, color: 'var(--color-axignis-primary)' }} />
-              <ListItemText
-                primary={
-                  <Typography variant="body2" fontWeight="medium">
-                    Marques
-                  </Typography>
-                }
-              />
-            </StyledListItemButton>
-          </ListItem>
+            {/* Menu Produits avec sous-menu */}
+            <ListItem disablePadding sx={{ width: '100%' }}>
+              <Tooltip title="Gérer les produits et documents" placement="right" arrow>
+                <Box sx={{ width: '100%' }}>
+                  <StyledListItemButton
+                    onClick={handleProductsClick}
+                    isActive={isActive('/dashboard/produits')}
+                  >
+                    <ShoppingCartRoundedIcon sx={{ mr: 1.5, color: 'var(--color-axignis-primary)' }} />
+                    <ListItemText
+                      primary={
+                        <Typography variant="body2" fontWeight="medium">
+                          Produits
+                        </Typography>
+                      }
+                    />
+                    <Badge
+                      badgeContent="3"
+                      color="primary"
+                      sx={{
+                        mr: 1,
+                        '& .MuiBadge-badge': {
+                          fontSize: '0.6rem',
+                          minWidth: '16px',
+                          height: '16px',
+                        }
+                      }}
+                    />
+                    <KeyboardArrowDownIcon
+                      sx={{
+                        transform: openProducts ? 'rotate(180deg)' : 'none',
+                        transition: 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
+                        color: 'var(--color-axignis-primary)',
+                      }}
+                    />
+                  </StyledListItemButton>
+                </Box>
+              </Tooltip>
+            </ListItem>
 
-          {/* Menu Produits avec sous-menu */}
-          <ListItem disablePadding sx={{ width: '100%' }}>
-            <StyledListItemButton onClick={handleProductsClick}>
-              <ShoppingCartRoundedIcon sx={{ mr: 1.5, color: 'var(--color-axignis-primary)' }} />
-              <ListItemText
-                primary={
-                  <Typography variant="body2" fontWeight="medium">
-                    Produits
-                  </Typography>
-                }
-              />
-              <KeyboardArrowDownIcon
-                sx={{
-                  transform: openProducts ? 'rotate(180deg)' : 'none',
-                  transition: 'var(--transition-normal)',
-                  color: 'var(--color-axignis-primary)',
-                }}
-              />
-            </StyledListItemButton>
-          </ListItem>
-
-          {/* Sous-menu Produits */}
-          <Collapse in={openProducts} timeout="auto" unmountOnExit>
-            <Box sx={{ pl: 4 }}>
-              <Link href="/dashboard/produits" style={{ textDecoration: 'none', color: 'inherit' }}>
-                <StyledListItemButton sx={{ py: 0.5, mb: 0.25, width: '100%' }}>
+            {/* Sous-menu Produits */}
+            <Collapse in={openProducts} timeout={400} unmountOnExit>
+              <Box sx={{ pl: 4, py: 1 }}>
+                <Link href="/dashboard/produits" style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <StyledListItemButton
+                    sx={{ py: 0.75, mb: 0.5, width: '100%' }}
+                    isActive={isActive('/dashboard/produits')}
+                  >
+                    <Typography variant="body2" color="textSecondary">
+                      📦 Produits
+                    </Typography>
+                  </StyledListItemButton>
+                </Link>
+                <StyledListItemButton sx={{ py: 0.75, mb: 0.5, width: '100%' }}>
                   <Typography variant="body2" color="textSecondary">
-                    Produits
+                    📄 Types de documents
                   </Typography>
                 </StyledListItemButton>
-              </Link>
-              <StyledListItemButton sx={{ py: 0.5, mb: 0.25, width: '100%' }}>
-                <Typography variant="body2" color="textSecondary">
-                  Types de documents
-                </Typography>
-              </StyledListItemButton>
-              <StyledListItemButton sx={{ py: 0.5, mb: 0.25, width: '100%' }}>
-                <Typography variant="body2" color="textSecondary">
-                  Documents
-                </Typography>
-              </StyledListItemButton>
-            </Box>
-          </Collapse>
-        </List>
-      </Box>
+                <StyledListItemButton sx={{ py: 0.75, mb: 0.5, width: '100%' }}>
+                  <Typography variant="body2" color="textSecondary">
+                    📋 Documents
+                  </Typography>
+                </StyledListItemButton>
+              </Box>
+            </Collapse>
+          </List>
 
-      {/* Registre de sécurité */}
-      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-        <StyledChip
-          label="Registre de sécurité"
-          size="medium"
-          variant="filled"
-        />
-      </Box>
-      {/* Navigation Menu Registre de sécurité */}
-      <Box
-        sx={{
-          minHeight: 0,
-          overflow: 'hidden auto',
-          flexGrow: 1,
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        <List dense sx={{ gap: 0.5, width: '100%' }}>
-          <ListItem disablePadding sx={{ width: '100%' }}>
-            <Link href="/dashboard/sites" style={{ textDecoration: 'none', color: 'inherit' }}>
-              <StyledListItemButton>
-                <BusinessIcon sx={{ mr: 1.5, color: 'var(--color-axignis-primary)' }} />
-                <ListItemText
-                  primary={
-                    <Typography variant="body2" fontWeight="medium">
-                      Sites
-                    </Typography>
-                  }
-                />
-              </StyledListItemButton>
-            </Link>
-          </ListItem>
-        </List>
-      </Box>
-
-
-      {/* Bottom Menu */}
-      <List
-        dense
-        sx={{
-          mt: 'auto',
-          flexGrow: 0,
-          mb: 1,
-        }}
-      >
-        <ListItem disablePadding>
-          <StyledListItemButton>
-            <SupportRoundedIcon sx={{ mr: 1.5, color: 'var(--color-axignis-secondary)' }} />
-            <ListItemText
-              primary={
-                <Typography variant="body2" fontWeight="medium">
-                  Support
-                </Typography>
-              }
+          {/* Registre de sécurité */}
+          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+            <StyledChip
+              label="Registre de sécurité"
+              size="medium"
+              variant="filled"
             />
-          </StyledListItemButton>
-        </ListItem>
-        <ListItem disablePadding>
-          <StyledListItemButton>
-            <SettingsRoundedIcon sx={{ mr: 1.5, color: 'var(--color-axignis-secondary)' }} />
-            <ListItemText
-              primary={
-                <Typography variant="body2" fontWeight="medium">
-                  Paramètres
-                </Typography>
-              }
-            />
-          </StyledListItemButton>
-        </ListItem>
+          </Box>
 
-        {/* Administration */}
-        {user?.role?.type === UserRoleType.ADMINISTRATOR && (
+          {/* Navigation Menu Registre de sécurité */}
+          <List dense sx={{ gap: 0.5, width: '100%' }}>
+            <ListItem disablePadding sx={{ width: '100%' }}>
+              <Tooltip title="Gérer les sites de l'entreprise" placement="right" arrow>
+                <Box sx={{ width: '100%' }}>
+                  <Link href="/dashboard/sites" style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <StyledListItemButton isActive={isActive('/dashboard/sites')}>
+                      <BusinessIcon sx={{ mr: 1.5, color: 'var(--color-axignis-primary)' }} />
+                      <ListItemText
+                        primary={
+                          <Typography variant="body2" fontWeight="medium">
+                            Sites
+                          </Typography>
+                        }
+                      />
+                    </StyledListItemButton>
+                  </Link>
+                </Box>
+              </Tooltip>
+            </ListItem>
+          </List>
+        </ScrollableContent>
+
+        {/* Bottom Menu */}
+        <List
+          dense
+          sx={{
+            mt: 'auto',
+            flexGrow: 0,
+            mb: 1,
+          }}
+        >
           <ListItem disablePadding>
-            <Link href="/dashboard/administration" style={{ textDecoration: 'none', color: 'inherit' }}>
-              <StyledListItemButton>
-                <AdminPanelSettings sx={{ mr: 1.5, color: 'var(--color-axignis-secondary)' }} />
-                <ListItemText
-                  primary={
-                    <Typography variant="body2" fontWeight="medium">
-                      Administration
-                    </Typography>
-                  }
-                />
-              </StyledListItemButton>
-            </Link>
+            <Tooltip title="Obtenir de l'aide" placement="right" arrow>
+              <Box sx={{ width: '100%' }}>
+                <Link href="/dashboard/support" style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <StyledListItemButton isActive={isActive('/dashboard/support')}>
+                    <SupportRoundedIcon sx={{ mr: 1.5, color: 'var(--color-axignis-secondary)' }} />
+                    <ListItemText
+                      primary={
+                        <Typography variant="body2" fontWeight="medium">
+                          Support
+                        </Typography>
+                      }
+                    />
+                  </StyledListItemButton>
+                </Link>
+              </Box>
+            </Tooltip>
           </ListItem>
-        )}
 
-      </List>
+          <ListItem disablePadding>
+            <Tooltip title="Configurer l'application" placement="right" arrow>
+              <Box sx={{ width: '100%' }}>
+                <Link href="/dashboard/parametres" style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <StyledListItemButton isActive={isActive('/dashboard/parametres')}>
+                    <SettingsRoundedIcon sx={{ mr: 1.5, color: 'var(--color-axignis-secondary)' }} />
+                    <ListItemText
+                      primary={
+                        <Typography variant="body2" fontWeight="medium">
+                          Paramètres
+                        </Typography>
+                      }
+                    />
+                  </StyledListItemButton>
+                </Link>
+              </Box>
+            </Tooltip>
+          </ListItem>
 
-      <Divider sx={{ my: 1 }} />
+          {/* Administration - Visible uniquement pour les administrateurs */}
+          {user?.role?.type === UserRoleType.ADMINISTRATOR && (
+            <ListItem disablePadding>
+              <Tooltip title="Panneau d'administration" placement="right" arrow>
+                <Box sx={{ width: '100%' }}>
+                  <Link href="/dashboard/administration" style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <StyledListItemButton isActive={isActive('/dashboard/administration')}>
+                      <AdminPanelSettings sx={{ mr: 1.5, color: 'var(--color-axignis-secondary)' }} />
+                      <ListItemText
+                        primary={
+                          <Typography variant="body2" fontWeight="medium">
+                            Administration
+                          </Typography>
+                        }
+                      />
+                    </StyledListItemButton>
+                  </Link>
+                </Box>
+              </Tooltip>
+            </ListItem>
+          )}
+        </List>
 
-      {/* User Section */}
-      <SidebarUserSection />
-    </StyledPaper>
+        <Divider sx={{ my: 1 }} />
+
+        {/* User Section */}
+        <SidebarUserSection />
+      </StyledPaper>
+    </>
   );
 }
