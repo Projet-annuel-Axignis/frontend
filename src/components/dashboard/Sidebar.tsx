@@ -362,6 +362,8 @@ export default function Sidebar() {
             />
           </StyledListItemButton>
         </ListItem>
+
+        {/* Administration */}
         {user?.role?.type === UserRoleType.ADMINISTRATOR && (
           <ListItem disablePadding>
             <Link href="/dashboard/administration" style={{ textDecoration: 'none', color: 'inherit' }}>
@@ -378,6 +380,7 @@ export default function Sidebar() {
             </Link>
           </ListItem>
         )}
+
       </List>
 
       <Divider sx={{ my: 1 }} />
