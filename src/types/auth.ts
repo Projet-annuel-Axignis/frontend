@@ -17,14 +17,14 @@ import { Plans } from "./plans";
  * y compris son rôle et les métadonnées temporelles.
  */
 export interface User {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  isEmailVerified: boolean;
+  id: number;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string | null;
   role: UserRole;
 }
 
