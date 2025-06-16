@@ -30,7 +30,7 @@ export default async function Home() {
       title: t('homepage.services.items.2.title'),
       description: t('homepage.services.items.2.description'),
       imageSrc: "/images/services/service-3.jpg",
-      link: "/base-technique"
+      link: "#"
     }
   ];
 
