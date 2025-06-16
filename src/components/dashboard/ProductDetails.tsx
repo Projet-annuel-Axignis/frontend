@@ -21,6 +21,7 @@ import {
 } from '@mui/material';
 import Image from 'next/image';
 import React from 'react';
+import DashBoardHeader from './DashBoardHeader';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -62,32 +63,23 @@ export default function ProductDetails({ id }: { id: string }) {
   return (
     <>
       {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-          <Typography
-            variant="h4"
-            component="h1"
-            sx={{
-              fontWeight: 700,
-              background: `linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))`,
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
-          >
-            {id} JOD-1 - LBXJOD110017
-          </Typography>
+      <DashBoardHeader
+        title={`${id} JOD-1 - LBXJOD110017`}
+        titleVariant="h4"
+        orientation="column"
+        chip={
           <Chip
             label="Actif"
             color="success"
             size="small"
             sx={{ fontWeight: 600 }}
           />
-        </Box>
+        }
+      >
         <Typography variant="h6" color="textSecondary" sx={{ fontWeight: 400 }}>
           Déclencheur Manuel Incendie Rouge NF
         </Typography>
-      </Box>
+      </DashBoardHeader>
 
       {/* Tabs Container */}
       <Paper

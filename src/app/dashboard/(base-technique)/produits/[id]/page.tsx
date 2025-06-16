@@ -1,4 +1,5 @@
 import ProductsDetails from '@/components/dashboard/ProductDetails';
+import { Metadata } from 'next';
 
 export async function generateStaticParams() {
   return [
@@ -6,6 +7,11 @@ export async function generateStaticParams() {
     { id: 'INV-5678' },
   ];
 }
+
+export const metadata: Metadata = {
+  title: 'Produit',
+  description: 'Produit',
+};
 
 export default async function TechnicalBaseDetail({ params }: { params: Promise<{ id: string }> }) {
   // Await the params promise to get the actual id value
