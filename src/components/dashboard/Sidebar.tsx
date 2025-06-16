@@ -45,7 +45,7 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
     zIndex: theme.zIndex.drawer + 1,
   },
   transition: 'transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)',
-  zIndex: 10000,
+  zIndex: theme.zIndex.drawer,
   height: '100dvh',
   width: 'var(--Sidebar-width)',
   top: 0,
@@ -79,11 +79,6 @@ const StyledLogoContainer = styled(Box)(({ theme }) => ({
     height: '48px',
     width: '128px',
     display: 'block',
-    transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
-    '&:hover': {
-      transform: 'scale(1.05)',
-      filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))',
-    },
   },
 }));
 
@@ -95,18 +90,13 @@ const StyledChip = styled(Chip)(({ theme }) => ({
   marginBottom: theme.spacing(2),
   boxShadow: theme.shadows[2],
   transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
-  '&:hover': {
-    background: `linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))`,
-    transform: 'translateY(-2px)',
-    boxShadow: theme.shadows[4],
-  },
 }));
 
 const StyledListItemButton = styled(ListItemButton, {
   shouldForwardProp: (prop) => prop !== 'isActive',
 })<{ isActive?: boolean }>(({ theme, isActive }) => ({
   width: '100%',
-  borderRadius: theme.spacing(1.5),
+  borderRadius: theme.spacing(0.5),
   marginBottom: theme.spacing(0.5),
   transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
   position: 'relative',
@@ -123,7 +113,6 @@ const StyledListItemButton = styled(ListItemButton, {
   },
   '&:hover': {
     backgroundColor: theme.palette.action.hover,
-    transform: 'translateX(8px)',
     boxShadow: theme.shadows[2],
     '&::before': {
       width: '4px',
@@ -182,6 +171,8 @@ const ScrollableContent = styled(Box)(({ theme }) => ({
     },
   },
 }));
+
+
 
 export default function Sidebar() {
   const theme = useTheme();

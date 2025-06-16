@@ -2,7 +2,7 @@
 
 import { useUser } from '@/app/_providers/Providers';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
-import { Avatar, Box, IconButton, styled, Typography } from '@mui/material';
+import { Avatar, Box, IconButton, styled, Tooltip, Typography } from '@mui/material';
 
 const StyledUserSection = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -33,9 +33,11 @@ const SidebarUserSection = () => {
         <Typography variant="body2" fontWeight="600" noWrap>
           {user?.firstName ? `${user.firstName.charAt(0).toUpperCase()}${user.firstName.slice(1)}` : ''} {user?.lastName ? `${user.lastName.charAt(0).toUpperCase()}${user.lastName.slice(1)}` : ''}
         </Typography>
-        <Typography variant="caption" color="textSecondary" noWrap>
-          {user?.role?.name || ''}
-        </Typography>
+        <Tooltip title={user?.role?.description || ''} placement="right" arrow>
+          <Typography variant="caption" color="textSecondary" noWrap>
+            {user?.role?.name || ''}
+          </Typography>
+        </Tooltip>
       </Box>
       <IconButton
         size="small"
