@@ -1,7 +1,12 @@
+import ProtectedRoute from "@/components/auth/ProtectedRoute"
 
 const AdminPage = () => {
   return (
-    <div>AdminPage</div>
+    <ProtectedRoute
+      allowedRoles={['ADMINISTRATOR']}
+    >
+      <div>AdminPage</div>
+    </ProtectedRoute>
   )
 }
 
