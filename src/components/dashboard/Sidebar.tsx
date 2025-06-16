@@ -1,3 +1,5 @@
+import { useUser } from '@/app/_providers/Providers';
+import { UserRoleType } from '@/types/auth';
 import { AdminPanelSettings } from '@mui/icons-material';
 import AppsIcon from '@mui/icons-material/Apps';
 import BusinessIcon from '@mui/icons-material/Business';
@@ -5,18 +7,15 @@ import CableIcon from '@mui/icons-material/Cable';
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import FolderIcon from '@mui/icons-material/Folder';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
 import SupportRoundedIcon from '@mui/icons-material/SupportRounded';
 import {
-  Avatar,
   Box,
   Chip,
   Collapse,
   Divider,
   GlobalStyles,
-  IconButton,
   List,
   ListItem,
   ListItemButton,
@@ -29,6 +28,7 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import * as React from 'react';
+import SidebarUserSection from './SidebarUserSection';
 import { closeSidebar } from './utils';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
@@ -102,21 +102,9 @@ const StyledListItemButton = styled(ListItemButton)(({ theme }) => ({
   },
 }));
 
-const StyledUserSection = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(1),
-  padding: theme.spacing(1),
-  borderRadius: theme.spacing(1),
-  backgroundColor: theme.palette.action.hover,
-  transition: 'var(--transition-normal)',
-  '&:hover': {
-    backgroundColor: theme.palette.action.selected,
-  },
-}));
-
 export default function Sidebar() {
   const theme = useTheme();
+  const { user } = useUser();
   const isDarkMode = theme.palette.mode === 'dark';
   const [openProducts, setOpenProducts] = React.useState(false);
 
@@ -374,56 +362,28 @@ export default function Sidebar() {
             />
           </StyledListItemButton>
         </ListItem>
-        <ListItem disablePadding>
-          <Link href="/dashboard/administration" style={{ textDecoration: 'none', color: 'inherit' }}>
-            <StyledListItemButton>
-              <AdminPanelSettings sx={{ mr: 1.5, color: 'var(--color-axignis-secondary)' }} />
-              <ListItemText
-                primary={
-                  <Typography variant="body2" fontWeight="medium">
-                    Administration
-                  </Typography>
-                }
-              />
-            </StyledListItemButton>
-          </Link>
-        </ListItem>
+        {user?.role?.type === UserRoleType.ADMINISTRATOR && (
+          <ListItem disablePadding>
+            <Link href="/dashboard/administration" style={{ textDecoration: 'none', color: 'inherit' }}>
+              <StyledListItemButton>
+                <AdminPanelSettings sx={{ mr: 1.5, color: 'var(--color-axignis-secondary)' }} />
+                <ListItemText
+                  primary={
+                    <Typography variant="body2" fontWeight="medium">
+                      Administration
+                    </Typography>
+                  }
+                />
+              </StyledListItemButton>
+            </Link>
+          </ListItem>
+        )}
       </List>
 
       <Divider sx={{ my: 1 }} />
 
       {/* User Section */}
-      <StyledUserSection>
-        <Avatar
-          sx={{
-            width: 36,
-            height: 36,
-            border: '2px solid var(--color-axignis-primary)',
-          }}
-          src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=286"
-        />
-        <Box sx={{ minWidth: 0, flex: 1 }}>
-          <Typography variant="body2" fontWeight="600" noWrap>
-            Loïc Rome
-          </Typography>
-          <Typography variant="caption" color="textSecondary" noWrap>
-            Administrateur
-          </Typography>
-        </Box>
-        <IconButton
-          size="small"
-          color="inherit"
-          sx={{
-            color: 'var(--color-axignis-primary)',
-            '&:hover': {
-              backgroundColor: 'var(--color-axignis-primary)',
-              color: 'white',
-            },
-          }}
-        >
-          <LogoutRoundedIcon fontSize="small" />
-        </IconButton>
-      </StyledUserSection>
+      <SidebarUserSection />
     </StyledPaper>
   );
 }
