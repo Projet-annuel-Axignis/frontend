@@ -25,6 +25,15 @@ import UserDialog from './UserDialog';
 import UserFiltersComponent from './UserFilters';
 import UserTable from './UserTable';
 
+interface UserUpdateData {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  role?: string;
+  password?: string;
+  confirmPassword?: string;
+}
+
 export default function UtilisateursPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [total, setTotal] = useState(0);
@@ -97,7 +106,7 @@ export default function UtilisateursPage() {
     setDialogOpen(true);
   };
 
-  const handleSave = async (userData: Partial<User>) => {
+  const handleSave = async (userData: UserUpdateData) => {
     try {
       if (selectedUser) {
         // Mise à jour
@@ -119,14 +128,15 @@ export default function UtilisateursPage() {
   // Gestion de la suppression/restauration
   const handleDelete = async (user: User) => {
     try {
-      if (user.deletedAt) {
-        // Restaurer
-        await userService.restoreUser(user.id);
+      const result = await userService.toggleUserState(user.id);
+
+      // Afficher le message retourné par l'API
+      if (result.message === 'User archived') {
+        showToast('Utilisateur supprimé avec succès', 'success');
+      } else if (result.message === 'User restored') {
         showToast('Utilisateur restauré avec succès', 'success');
       } else {
-        // Supprimer
-        await userService.deleteUser(user.id);
-        showToast('Utilisateur supprimé avec succès', 'success');
+        showToast(result.message, 'success');
       }
 
       await loadUsers(); // Recharger la liste
