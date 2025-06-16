@@ -1,7 +1,15 @@
+import DashBoardHeader from "@/components/dashboard/DashBoardHeader";
+import BusinessIcon from '@mui/icons-material/Business';
 
 const SitesPage = () => {
   return (
-    <div>SitesPage</div>
+    <>
+      {/* Header */}
+      <DashBoardHeader
+        title="Sites"
+        icon={<BusinessIcon />}
+      />
+    </>
   )
 }
 
