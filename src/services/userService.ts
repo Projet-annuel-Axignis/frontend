@@ -52,7 +52,7 @@ class UserService {
   /**
    * Met à jour un utilisateur
    */
-  async updateUser(id: string | number, userData: Partial<User>): Promise<User> {
+  async updateUser(id: string | number, userData: any): Promise<User> {
     try {
       const response = await api.patch(`/users/${id}`, userData);
       return response.data;
@@ -63,24 +63,17 @@ class UserService {
   }
 
   /**
-   * Supprime un utilisateur (soft delete)
+   * Bascule l'état d'un utilisateur (suppression/restauration)
    */
-  async deleteUser(id: string | number): Promise<void> {
-    await api.delete(`/users/${id}`);
-  }
-
-  /**
-   * Restaure un utilisateur supprimé
-   */
-  async restoreUser(id: string | number): Promise<User> {
-    const response = await api.patch(`/users/${id}/restore`);
+  async toggleUserState(id: string | number): Promise<{ message: string; id: number }> {
+    const response = await api.patch(`/users/${id}/update-state`);
     return response.data;
   }
 
   /**
    * Crée un nouvel utilisateur
    */
-  async createUser(userData: Partial<User>): Promise<User> {
+  async createUser(userData: any): Promise<User> {
     try {
       const response = await api.post('/users', userData);
       return response.data;
