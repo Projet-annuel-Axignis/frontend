@@ -1,6 +1,7 @@
 'use client';
 
 import { useUser } from '@/app/_providers/Providers';
+import { UserRoleType } from '@/types/auth';
 import { Box, CircularProgress } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { ReactNode, useEffect } from 'react';
@@ -9,11 +10,11 @@ import { ReactNode, useEffect } from 'react';
  * Interface pour les propriétés du composant ProtectedRoute
  * 
  * @property {ReactNode} children - Les composants enfants à rendre si l'utilisateur est autorisé
- * @property {string[]} [allowedRoles] - Liste optionnelle des rôles autorisés à accéder à ce contenu
+ * @property {UserRoleType[]} [allowedRoles] - Liste optionnelle des rôles autorisés à accéder à ce contenu
  */
 interface ProtectedRouteProps {
   children: ReactNode;
-  allowedRoles?: string[];
+  allowedRoles?: (keyof typeof UserRoleType)[];
 }
 
 /**
@@ -68,7 +69,7 @@ export default function ProtectedRoute({
 
     // Si des rôles sont spécifiés et que l'utilisateur n'a pas le rôle requis, rediriger vers une page interdite
     if (!isLoading && isAuthenticated && allowedRoles && user) {
-      if (!allowedRoles.includes(user.role.name)) {
+      if (!allowedRoles.includes(user.role.type)) {
         router.push('/acces-non-autorise');
       }
     }
@@ -104,7 +105,7 @@ export default function ProtectedRoute({
   }
 
   // Si des rôles sont requis et que l'utilisateur n'a pas le bon rôle, ne pas afficher le contenu
-  if (allowedRoles && user && !allowedRoles.includes(user.role.name)) {
+  if (allowedRoles && user && !allowedRoles.includes(user.role.type)) {
     return null;
   }
 

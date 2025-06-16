@@ -29,6 +29,17 @@ export interface User {
 }
 
 /**
+ * Énumération des types de rôles utilisateur
+ */
+export enum UserRoleType {
+  ADMINISTRATOR = 'ADMINISTRATOR',
+  COMPANY_ADMINISTRATOR = 'COMPANY_ADMINISTRATOR',
+  COMPANY_MANAGER = 'COMPANY_MANAGER',
+  COMPANY_MEMBER = 'COMPANY_MEMBER',
+  VISITOR = 'VISITOR'
+}
+
+/**
  * Interface représentant un rôle utilisateur
  * 
  * Définit les permissions et le niveau d'accès d'un utilisateur
@@ -40,7 +51,7 @@ export interface UserRole {
   updatedAt: string;
   deletedAt: string | null;
   name: string;
-  type: string;
+  type: UserRoleType;
   description: string;
 }
 
