@@ -35,7 +35,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import * as React from 'react';
 import SidebarUserSection from './SidebarUserSection';
-import { closeSidebar, openSidebar } from './utils';
+import { closeSidebar, toggleSidebar } from './utils';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   position: 'sticky',
@@ -133,8 +133,8 @@ const StyledListItemButton = styled(ListItemButton, {
 
 const MobileMenuButton = styled(Fab)(({ theme }) => ({
   position: 'fixed',
-  top: theme.spacing(2),
-  left: theme.spacing(2),
+  top: theme.spacing(1.5),
+  left: theme.spacing(1.5),
   zIndex: theme.zIndex.drawer + 2,
   background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
   color: theme.palette.common.white,
@@ -193,8 +193,8 @@ export default function Sidebar() {
       {/* Mobile Menu Button */}
       {isMobile && (
         <MobileMenuButton
-          size="medium"
-          onClick={() => openSidebar()}
+          size="small"
+          onClick={() => toggleSidebar()}
           aria-label="Ouvrir le menu"
         >
           <MenuIcon />
