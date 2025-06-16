@@ -53,8 +53,13 @@ class UserService {
    * Met à jour un utilisateur
    */
   async updateUser(id: string | number, userData: Partial<User>): Promise<User> {
-    const response = await api.patch(`/users/${id}`, userData);
-    return response.data;
+    try {
+      const response = await api.patch(`/users/${id}`, userData);
+      return response.data;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   }
 
   /**
@@ -76,8 +81,13 @@ class UserService {
    * Crée un nouvel utilisateur
    */
   async createUser(userData: Partial<User>): Promise<User> {
-    const response = await api.post('/users', userData);
-    return response.data;
+    try {
+      const response = await api.post('/users', userData);
+      return response.data;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   }
 
 

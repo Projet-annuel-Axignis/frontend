@@ -19,11 +19,20 @@ import {
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 
+interface UserUpdateData {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  role?: string;
+  password?: string;
+  confirmPassword?: string;
+}
+
 interface UserDialogProps {
   open: boolean;
   user: User | null;
   onClose: () => void;
-  onSave: (userData: Partial<User>) => Promise<void>;
+  onSave: (userData: UserUpdateData) => Promise<void>;
   loading?: boolean;
 }
 
@@ -32,6 +41,8 @@ export default function UserDialog({ open, user, onClose, onSave, loading = fals
     firstName: '',
     lastName: '',
     email: '',
+    password: '',
+    confirmPassword: '',
     roleType: UserRoleType.COMPANY_MEMBER,
   });
   const [error, setError] = useState<string>('');
@@ -42,6 +53,8 @@ export default function UserDialog({ open, user, onClose, onSave, loading = fals
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
+        password: '',
+        confirmPassword: '',
         roleType: user.role.type,
       });
     } else {
@@ -49,6 +62,8 @@ export default function UserDialog({ open, user, onClose, onSave, loading = fals
         firstName: '',
         lastName: '',
         email: '',
+        password: '',
+        confirmPassword: '',
         roleType: UserRoleType.COMPANY_MEMBER,
       });
     }
@@ -80,15 +95,36 @@ export default function UserDialog({ open, user, onClose, onSave, loading = fals
         return;
       }
 
-      await onSave({
+      // Validation mot de passe pour création
+      if (!user) {
+        if (!formData.password || !formData.confirmPassword) {
+          setError('Le mot de passe et sa confirmation sont obligatoires');
+          return;
+        }
+        if (formData.password !== formData.confirmPassword) {
+          setError('Les mots de passe ne correspondent pas');
+          return;
+        }
+        if (formData.password.length < 6) {
+          setError('Le mot de passe doit contenir au moins 6 caractères');
+          return;
+        }
+      }
+
+      const userData: UserUpdateData = {
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
         email: formData.email.trim(),
-        role: {
-          ...user?.role,
-          type: formData.roleType,
-        } as any,
-      });
+        role: formData.roleType,
+      };
+
+      // Ajouter les mots de passe seulement pour la création
+      if (!user) {
+        userData.password = formData.password;
+        userData.confirmPassword = formData.confirmPassword;
+      }
+
+      await onSave(userData);
 
       onClose();
     } catch (err: any) {
@@ -119,14 +155,16 @@ export default function UserDialog({ open, user, onClose, onSave, loading = fals
       onClose={onClose}
       maxWidth="md"
       fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: 2,
-          boxShadow: (theme) => theme.shadows[8],
+      slotProps={{
+        paper: {
+          sx: {
+            borderRadius: 2,
+            boxShadow: (theme) => theme.shadows[8],
+          }
         }
       }}
     >
-      <DialogTitle sx={{ pb: 1 }}>
+      <DialogTitle sx={{ pb: 1 }} component="div">
         <Typography variant="h5" component="h2" fontWeight="600">
           {user ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur'}
         </Typography>
@@ -187,6 +225,35 @@ export default function UserDialog({ open, user, onClose, onSave, loading = fals
               disabled={loading}
             />
           </Grid>
+
+          {/* Mots de passe (seulement pour création) */}
+          {!user && (
+            <>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  fullWidth
+                  label="Mot de passe"
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => handleChange('password', e.target.value)}
+                  required
+                  disabled={loading}
+                />
+              </Grid>
+
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  fullWidth
+                  label="Confirmer le mot de passe"
+                  type="password"
+                  value={formData.confirmPassword}
+                  onChange={(e) => handleChange('confirmPassword', e.target.value)}
+                  required
+                  disabled={loading}
+                />
+              </Grid>
+            </>
+          )}
 
           {/* Paramètres du compte */}
           <Grid size={{ xs: 12 }}>
