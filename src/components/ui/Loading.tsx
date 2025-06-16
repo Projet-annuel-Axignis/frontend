@@ -16,7 +16,7 @@ const StyledLoadingContainer = styled(Box)(({ theme }) => ({
 interface LoadingProps {
   message?: string;
   size?: 'small' | 'medium' | 'large';
-  variant?: 'page' | 'component' | 'overlay';
+  variant?: 'page' | 'component' | 'overlay' | 'content';
 }
 
 export default function Loading({
@@ -50,6 +50,18 @@ export default function Loading({
       zIndex: 9999,
       minHeight: '100vh',
       width: '100vw',
+    },
+    content: {
+      position: 'absolute' as const,
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+      backdropFilter: 'blur(4px)',
+      zIndex: 1000,
+      minHeight: '100%',
+      width: '100%',
     }
   };
 

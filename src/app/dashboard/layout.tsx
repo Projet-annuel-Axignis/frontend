@@ -1,7 +1,9 @@
 'use client';
+import { useLoadingContext } from '@/app/_providers/LoadingProvider';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import BreadCrumb from '@/components/dashboard/BreadCrumb';
 import Sidebar from '@/components/dashboard/Sidebar';
+import Loading from '@/components/ui/Loading';
 import { Box } from '@mui/material';
 
 export default function RootLayout({
@@ -9,6 +11,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const { isNavigating } = useLoadingContext();
+
   return (
     <>
       <ProtectedRoute
@@ -28,12 +32,21 @@ export default function RootLayout({
               minWidth: 0,
               height: '100dvh',
               gap: 1,
+              position: 'relative',
             }}
           >
             <Box sx={{ p: 3 }}>
               <BreadCrumb />
               {children}
             </Box>
+
+            {isNavigating && (
+              <Loading
+                variant="content"
+                message="Navigation en cours..."
+                size="medium"
+              />
+            )}
           </Box>
         </Box>
       </ProtectedRoute>
