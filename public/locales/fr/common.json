@@ -97,6 +97,13 @@
     "address": "123 Avenue de la République, 75011 Paris, France",
     "copyright": "Tous droits réservés."
   },
+  "header": {
+    "dashboard": "Tableau de bord",
+    "administration": "Administration",
+    "plans": "Plans",
+    "contact": "Contact",
+    "hello": "Bonjour {name}"
+  },
   "language_selector": {
     "french": "Français",
     "english": "Anglais",

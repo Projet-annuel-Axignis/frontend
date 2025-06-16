@@ -293,7 +293,7 @@ export default function Header() {
                 >
                   <MenuItem onClick={handleUserMenuClose}>
                     <Typography variant="body2" fontWeight="600">
-                      {user?.firstName || t('common.profile')}
+                      {t('header.hello', { name: user?.firstName || t('common.profile') })}
                     </Typography>
                   </MenuItem>
                   <MenuItem onClick={handleLogout}>
