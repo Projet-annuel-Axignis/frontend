@@ -1,20 +1,15 @@
-import ProtectedRoute from "@/components/auth/ProtectedRoute";
-import DashBoardHeader from "@/components/dashboard/DashBoardHeader";
-import { AdminPanelSettings } from "@mui/icons-material";
+'use client';
 
-const AdminPage = () => {
-  return (
-    <ProtectedRoute
-      allowedRoles={['ADMINISTRATOR']}
-    >
-      {/* Header */}
-      <DashBoardHeader
-        title="Administration"
-        icon={<AdminPanelSettings />}
-      />
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
-    </ProtectedRoute>
-  )
+export default function AdministrationPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    // Redirige automatiquement vers la première tab
+    router.replace('/dashboard/administration/utilisateurs');
+  }, [router]);
+
+  return null; // Cette page ne s'affiche jamais car elle redirige
 }
-
-export default AdminPage
