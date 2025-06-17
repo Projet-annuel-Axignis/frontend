@@ -144,7 +144,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       });
       setUser(response.user);
       showToast('Votre demande a bien été prise en compte. Vous serez contacté dans les plus brefs délais.', 'success');
-      router.push('/auth/connexion'); // Rediriger vers le tableau de bord après inscription
+      router.push('/connexion'); // Rediriger vers le tableau de bord après inscription
     } catch (err) {
       // Utiliser notre fonction utilitaire pour obtenir le message d'erreur traduit
       setError(getErrorMessage(err, t));
