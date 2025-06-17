@@ -33,16 +33,7 @@
 body {
   background-color: var(--color-background);
   color: var(--color-foreground);
-  font-family: var(--font-montserrat), sans-serif;
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: var(--font-centurygothic), sans-serif;
+  /* Les polices sont maintenant gérées par le thème Material-UI */
 }
 
 /* Animations personnalisées */

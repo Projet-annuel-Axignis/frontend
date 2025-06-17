@@ -67,6 +67,8 @@ export default function AdministrationLayout({
           value={currentTab}
           onChange={handleTabChange}
           aria-label="administration tabs"
+          variant="scrollable"
+          scrollButtons="auto"
           sx={{
             borderBottom: 1,
             borderColor: 'divider',
