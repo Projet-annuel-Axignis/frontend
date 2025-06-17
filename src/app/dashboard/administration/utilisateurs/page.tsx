@@ -2,6 +2,7 @@
 
 import { useToast } from '@/app/_providers/ToastProvider';
 import Loading from '@/components/ui/Loading';
+import Pagination from '@/components/ui/Pagination';
 import { useLoading } from '@/hooks/useLoading';
 import userService, { UserFilters } from '@/services/userService';
 import { User } from '@/types/auth';
@@ -17,7 +18,6 @@ import {
   Card,
   CardContent,
   Divider,
-  Pagination,
   Typography
 } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
@@ -91,7 +91,7 @@ export default function UtilisateursPage() {
   };
 
   // Gestion de la pagination
-  const handlePageChange = (event: React.ChangeEvent<unknown>, page: number) => {
+  const handlePageChange = (page: number) => {
     setFilters(prev => ({ ...prev, page }));
   };
 
@@ -144,6 +144,10 @@ export default function UtilisateursPage() {
       const errorMessage = err.response?.data?.message || err.message || 'Erreur lors de l\'opération';
       showToast(errorMessage, 'error');
     }
+  };
+
+  const handleItemsPerPageChange = (newItemsPerPage: number) => {
+    setFilters(prev => ({ ...prev, limit: newItemsPerPage }));
   };
 
   const totalPages = Math.ceil(total / (filters.limit || 10));
@@ -222,18 +226,15 @@ export default function UtilisateursPage() {
           />
 
           {/* Pagination */}
-          {totalPages > 1 && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
-              <Pagination
-                count={totalPages}
-                page={currentPage}
-                onChange={handlePageChange}
-                color="primary"
-                size="large"
-                showFirstButton
-                showLastButton
-              />
-            </Box>
+          {total > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={total}
+              itemsPerPage={filters.limit || 10}
+              onPageChange={handlePageChange}
+              onItemsPerPageChange={handleItemsPerPageChange}
+            />
           )}
 
           {/* Loading overlay pour les actions */}
