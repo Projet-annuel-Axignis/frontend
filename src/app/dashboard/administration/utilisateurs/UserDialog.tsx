@@ -1,6 +1,6 @@
 'use client';
 
-import { User, UserRoleType } from '@/types/auth';
+import { User, UserRoleType, UserUpdateDto } from '@/types/auth';
 import {
   Alert,
   Button,
@@ -19,20 +19,11 @@ import {
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 
-interface UserUpdateData {
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  role?: string;
-  password?: string;
-  confirmPassword?: string;
-}
-
 interface UserDialogProps {
   open: boolean;
   user: User | null;
   onClose: () => void;
-  onSave: (userData: UserUpdateData) => Promise<void>;
+  onSave: (userData: UserUpdateDto) => Promise<void>;
   loading?: boolean;
 }
 
@@ -111,7 +102,7 @@ export default function UserDialog({ open, user, onClose, onSave, loading = fals
         }
       }
 
-      const userData: UserUpdateData = {
+      const userData: UserUpdateDto = {
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
         email: formData.email.trim(),

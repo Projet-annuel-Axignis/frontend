@@ -8,6 +8,7 @@
  * - La gestion des erreurs
  */
 
+import { Company } from "./company";
 import { Plans } from "./plans";
 
 /**
@@ -26,6 +27,7 @@ export interface User {
   email: string;
   phoneNumber: string | null;
   role: UserRole;
+  company: Company | null;
 }
 
 /**
@@ -53,6 +55,31 @@ export interface UserRole {
   name: string;
   type: UserRoleType;
   description: string;
+}
+
+/**
+ * Interface pour la mise à jour d'un utilisateur
+ * 
+ * Contient les informations nécessaires pour mettre à jour un utilisateur.
+ * 
+ * Tous les champs sont optionnels, sauf le mot de passe et la confirmation du mot de passe.
+ * 
+ * @param {string} [firstName] - Prénom de l'utilisateur
+ * @param {string} [lastName] - Nom de l'utilisateur
+ * @param {string} [email] - Email de l'utilisateur
+ * @param {string} [role] - Rôle de l'utilisateur
+ * @param {number} [companyId] - ID de l'entreprise associée à l'utilisateur
+ * @param {string} [password] - Mot de passe de l'utilisateur
+ * @param {string} [confirmPassword] - Confirmation du mot de passe de l'utilisateur
+ */
+export interface UserUpdateDto {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  role?: string;
+  companyId?: number;
+  password?: string;
+  confirmPassword?: string;
 }
 
 /**
