@@ -65,7 +65,7 @@ export default function ProductDetails({ id }: { id: string }) {
       {/* Header */}
       <DashBoardHeader
         title={`${id} JOD-1 - LBXJOD110017`}
-        titleVariant="h4"
+        titleVariant="h3"
         orientation="column"
         chip={
           <Chip
@@ -76,7 +76,7 @@ export default function ProductDetails({ id }: { id: string }) {
           />
         }
       >
-        <Typography variant="h6" color="textSecondary" sx={{ fontWeight: 400 }}>
+        <Typography variant="h5" color="textSecondary" sx={{ fontWeight: 400 }}>
           Déclencheur Manuel Incendie Rouge NF
         </Typography>
       </DashBoardHeader>

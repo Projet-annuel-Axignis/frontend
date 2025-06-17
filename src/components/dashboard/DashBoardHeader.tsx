@@ -8,13 +8,13 @@ const DashBoardHeader = (
     icon = null,
     chip = null,
     orientation = 'row',
-    titleVariant = 'h3',
+    titleVariant = 'h1',
     children
   }: {
     title: string,
     icon?: React.ReactElement<SvgIconProps> | null,
     chip?: React.ReactElement<ChipProps> | null,
-    titleVariant?: 'h3' | 'h4' | 'h5' | 'h6',
+    titleVariant?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6',
     orientation?: 'row' | 'column',
     children?: React.ReactNode
   }) => {
