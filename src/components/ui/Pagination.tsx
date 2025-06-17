@@ -113,6 +113,11 @@ export default function Pagination({
     const range = [];
     const rangeWithDots = [];
 
+    // Si une seule page, afficher juste la page 1
+    if (totalPages <= 1) {
+      return [1];
+    }
+
     for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
       range.push(i);
     }
@@ -134,7 +139,7 @@ export default function Pagination({
     return rangeWithDots;
   };
 
-  const visiblePages = totalPages > 1 ? getVisiblePages() : [];
+  const visiblePages = getVisiblePages();
 
   return (
     <StyledPaginationContainer>
@@ -163,79 +168,78 @@ export default function Pagination({
         </Box>
       </Box>
 
-      {/* Contrôles de pagination */}
-      {totalPages > 1 && (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          {/* Première page */}
-          <StyledIconButton
-            size="small"
-            onClick={() => onPageChange(1)}
-            disabled={currentPage === 1}
-            aria-label="Première page"
-          >
-            <FirstPageIcon fontSize="small" />
-          </StyledIconButton>
+      {/* Contrôles de pagination - Toujours affichés */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        {/* Première page */}
+        <StyledIconButton
+          size="small"
+          onClick={() => onPageChange(1)}
+          disabled={currentPage === 1 || totalPages <= 1}
+          aria-label="Première page"
+        >
+          <FirstPageIcon fontSize="small" />
+        </StyledIconButton>
 
-          {/* Page précédente */}
-          <StyledIconButton
-            size="small"
-            onClick={() => onPageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            aria-label="Page précédente"
-          >
-            <ChevronLeftIcon fontSize="small" />
-          </StyledIconButton>
+        {/* Page précédente */}
+        <StyledIconButton
+          size="small"
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1 || totalPages <= 1}
+          aria-label="Page précédente"
+        >
+          <ChevronLeftIcon fontSize="small" />
+        </StyledIconButton>
 
-          {/* Numéros de pages */}
-          <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: 0.5 }}>
-            {visiblePages.map((page, index) => (
-              <React.Fragment key={index}>
-                {page === '...' ? (
-                  <Typography variant="body2" sx={{ px: 1, color: 'text.secondary' }}>
-                    ...
-                  </Typography>
-                ) : (
-                  <StyledPageButton
-                    size="small"
-                    variant="outlined"
-                    className={currentPage === page ? 'active' : ''}
-                    onClick={() => onPageChange(page as number)}
-                  >
-                    {page}
-                  </StyledPageButton>
-                )}
-              </React.Fragment>
-            ))}
-          </Box>
-
-          {/* Indicateur mobile */}
-          <Box sx={{ display: { xs: 'flex', sm: 'none' }, alignItems: 'center', px: 2 }}>
-            <Typography variant="body2" sx={{ fontWeight: 600, color: 'var(--color-axignis-primary)' }}>
-              {currentPage} / {totalPages}
-            </Typography>
-          </Box>
-
-          {/* Page suivante */}
-          <StyledIconButton
-            size="small"
-            onClick={() => onPageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            aria-label="Page suivante"
-          >
-            <ChevronRightIcon fontSize="small" />
-          </StyledIconButton>
-
-          {/* Dernière page */}
-          <StyledIconButton
-            size="small"
-            onClick={() => onPageChange(totalPages)}
-            disabled={currentPage === totalPages}
-            aria-label="Dernière page"
-          >
-            <LastPageIcon fontSize="small" />
-          </StyledIconButton>
+        {/* Numéros de pages */}
+        <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: 0.5 }}>
+          {visiblePages.map((page, index) => (
+            <React.Fragment key={index}>
+              {page === '...' ? (
+                <Typography variant="body2" sx={{ px: 1, color: 'text.secondary' }}>
+                  ...
+                </Typography>
+              ) : (
+                <StyledPageButton
+                  size="small"
+                  variant="outlined"
+                  className={currentPage === page ? 'active' : ''}
+                  onClick={() => onPageChange(page as number)}
+                  disabled={totalPages <= 1}
+                >
+                  {page}
+                </StyledPageButton>
+              )}
+            </React.Fragment>
+          ))}
         </Box>
-      )}
+
+        {/* Indicateur mobile */}
+        <Box sx={{ display: { xs: 'flex', sm: 'none' }, alignItems: 'center', px: 2 }}>
+          <Typography variant="body2" sx={{ fontWeight: 600, color: 'var(--color-axignis-primary)' }}>
+            {currentPage} / {totalPages || 1}
+          </Typography>
+        </Box>
+
+        {/* Page suivante */}
+        <StyledIconButton
+          size="small"
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages || totalPages <= 1}
+          aria-label="Page suivante"
+        >
+          <ChevronRightIcon fontSize="small" />
+        </StyledIconButton>
+
+        {/* Dernière page */}
+        <StyledIconButton
+          size="small"
+          onClick={() => onPageChange(totalPages || 1)}
+          disabled={currentPage === totalPages || totalPages <= 1}
+          aria-label="Dernière page"
+        >
+          <LastPageIcon fontSize="small" />
+        </StyledIconButton>
+      </Box>
     </StyledPaginationContainer>
   );
 } 

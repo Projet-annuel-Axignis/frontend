@@ -1,9 +1,9 @@
 "use client"
 
+import Pagination from '@/components/ui/Pagination';
 import Box from '@mui/material/Box';
 import * as React from 'react';
 import { products } from './data';
-import Pagination from './Pagination';
 import ProductCard from './ProductCard';
 import ProductTable from './ProductTable';
 import SearchFilters from './SearchFilters';

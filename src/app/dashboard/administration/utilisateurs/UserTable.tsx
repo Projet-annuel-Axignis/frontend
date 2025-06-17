@@ -98,6 +98,7 @@ export default function UserTable({ users = [], onEdit, onDelete, loading = fals
             <TableCell>Email</TableCell>
             <TableCell>Rôle</TableCell>
             <TableCell>Statut</TableCell>
+            <TableCell>Entreprise</TableCell>
             <TableCell>Créé le</TableCell>
             <TableCell>Dernière MAJ</TableCell>
             <TableCell align="center">Actions</TableCell>
@@ -169,6 +170,14 @@ export default function UserTable({ users = [], onEdit, onDelete, loading = fals
                 />
               </TableCell>
 
+              {/* Entreprise */}
+
+              <TableCell>
+                <Typography variant="body2">
+                  {user.company?.name}
+                </Typography>
+              </TableCell>
+
               {/* Date de création */}
               <TableCell>
                 <Typography variant="body2">
@@ -231,4 +240,4 @@ export default function UserTable({ users = [], onEdit, onDelete, loading = fals
       )}
     </TableContainer>
   );
-} 
+}
