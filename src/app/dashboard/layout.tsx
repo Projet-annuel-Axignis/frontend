@@ -33,6 +33,7 @@ export default function RootLayout({
               height: '100dvh',
               gap: 1,
               position: 'relative',
+              ml: { xs: 0, md: 'var(--Sidebar-width)' },
             }}
           >
             <Box sx={{ p: 3 }}>
