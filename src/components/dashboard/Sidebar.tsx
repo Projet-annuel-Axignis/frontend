@@ -206,7 +206,12 @@ export default function Sidebar() {
         </MobileMenuButton>
       )}
 
-      <StyledPaper className="Sidebar" elevation={0}>
+      <StyledPaper className="Sidebar" elevation={0} sx={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        height: '100vh',
+      }}>
         <GlobalStyles
           styles={(theme) => ({
             ':root': {
