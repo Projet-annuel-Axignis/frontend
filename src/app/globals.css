@@ -58,3 +58,22 @@ body {
   text-decoration: underline;
   text-underline-offset: 0.25rem;
 }
+
+/* Force le background en mode sombre */
+[data-theme='dark'] {
+  background-color: var(--color-background) !important;
+}
+
+:root[class~='dark'] {
+  background-color: var(--color-background) !important;
+}
+
+/* S'assure que le body prend toute la hauteur */
+html,
+body {
+  min-height: 100vh;
+}
+
+body {
+  background-color: inherit;
+}
