@@ -249,17 +249,10 @@ export default function Sidebar() {
         <StyledLogoContainer>
           <Link href="/" className="logo-link">
             <Box
-              sx={{
-                position: 'relative',
-                width: '100%',
-                height: '100%',
-                '& img': {
-                  filter: isDarkMode ? 'brightness(0) invert(1)' : 'none',
-                  transition: 'var(--transition-normal)',
-                },
-              }}
+              className={`relative w-full h-full`}
             >
               <Image
+                className={`transition-all duration-300 ${isDarkMode && 'brightness-0 invert'}`}
                 src={isDarkMode ? "/images/logo/logo-axignis-nb.png" : "/images/logo/logo-axignis.png"}
                 alt="Axignis Logo"
                 fill
