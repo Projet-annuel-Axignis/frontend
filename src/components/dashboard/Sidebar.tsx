@@ -158,7 +158,16 @@ const ScrollableContent = styled(Box)(({ theme }) => ({
   flexGrow: 1,
   display: 'flex',
   flexDirection: 'column',
-  paddingRight: theme.spacing(0.5),
+  //paddingRight: theme.spacing(0.5),
+  backgroundColor: theme.palette.mode === 'dark'
+    ? 'rgba(255, 255, 255, 0.02)'
+    : 'rgba(0, 0, 0, 0.02)',
+  borderRadius: theme.spacing(1),
+  //margin: theme.spacing(0.5),
+  padding: theme.spacing(1),
+  boxShadow: theme.palette.mode === 'dark'
+    ? 'inset 0 0 10px rgba(255, 255, 255, 0.05)'
+    : 'inset 0 0 10px rgba(0, 0, 0, 0.05)',
   '&::-webkit-scrollbar': {
     width: '6px',
   },
@@ -211,6 +220,7 @@ export default function Sidebar() {
         top: 0,
         left: 0,
         height: '100vh',
+        gap: 0,
       }}>
         <GlobalStyles
           styles={(theme) => ({
@@ -459,7 +469,7 @@ export default function Sidebar() {
           sx={{
             mt: 'auto',
             flexGrow: 0,
-            mb: 1,
+            mb: 0,
           }}
         >
           <ListItem disablePadding>
