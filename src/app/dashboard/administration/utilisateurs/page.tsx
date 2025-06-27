@@ -21,6 +21,7 @@ import {
   Typography
 } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
+import UserCard from './UserCard';
 import UserDialog from './UserDialog';
 import UserFiltersComponent from './UserFilters';
 import UserTable from './UserTable';
@@ -208,28 +209,60 @@ export default function UtilisateursPage() {
                 {filteredUsers.length !== allUsers.length && ` sur ${allUsers.length} au total`}
               </Typography>
             </Box>
-            <Button
-              variant="outlined"
-              startIcon={<RefreshIcon />}
-              onClick={loadUsers}
-              disabled={isLoading}
-              size="small"
-            >
-              Actualiser
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={handleCreate}
-              sx={{
-                background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
-                '&:hover': {
-                  background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
-                },
-              }}
-            >
-              Nouvel utilisateur
-            </Button>
+
+            {/* Boutons - Version Desktop */}
+            <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 1 }}>
+              <Button
+                variant="outlined"
+                startIcon={<RefreshIcon />}
+                onClick={loadUsers}
+                disabled={isLoading}
+                size="small"
+              >
+                Actualiser
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={handleCreate}
+                sx={{
+                  background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                  },
+                }}
+              >
+                Nouvel utilisateur
+              </Button>
+            </Box>
+
+            {/* Boutons - Version Mobile (icônes seulement) */}
+            <Box sx={{ display: { xs: 'flex', sm: 'none' }, gap: 1 }}>
+              <Button
+                variant="outlined"
+                onClick={loadUsers}
+                disabled={isLoading}
+                size="small"
+                sx={{ minWidth: 'auto', px: 1 }}
+              >
+                <RefreshIcon fontSize="small" />
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleCreate}
+                size="small"
+                sx={{
+                  minWidth: 'auto',
+                  px: 1,
+                  background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                  },
+                }}
+              >
+                <AddIcon fontSize="small" />
+              </Button>
+            </Box>
           </Box>
 
           <Divider sx={{ mb: 3 }} />
@@ -247,13 +280,27 @@ export default function UtilisateursPage() {
             </Alert>
           )}
 
-          {/* Table des utilisateurs */}
-          <UserTable
-            users={paginatedUsers}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            loading={isLoading}
-          />
+          {/* Table des utilisateurs - Vue Desktop */}
+          <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+            <UserTable
+              users={paginatedUsers}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              loading={isLoading}
+            />
+          </Box>
+
+          {/* Vue Mobile - Cards */}
+          <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+            {paginatedUsers.map((user) => (
+              <UserCard
+                key={user.id}
+                user={user}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            ))}
+          </Box>
 
           {/* Pagination */}
           {filteredUsers.length > 0 && (
