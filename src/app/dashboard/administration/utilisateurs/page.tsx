@@ -4,7 +4,7 @@ import { useToast } from '@/app/_providers/ToastProvider';
 import Loading from '@/components/ui/Loading';
 import Pagination from '@/components/ui/Pagination';
 import { useLoading } from '@/hooks/useLoading';
-import userService, { UserFilters } from '@/services/userService';
+import userService from '@/services/userService';
 import { User } from '@/types/auth';
 import {
   Add as AddIcon,
@@ -34,13 +34,20 @@ interface UserUpdateData {
   confirmPassword?: string;
 }
 
+interface UserFilters {
+  search: string;
+  role: string;
+  includeDeleted: boolean;
+}
+
 export default function UtilisateursPage() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [total, setTotal] = useState(0);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [filters, setFilters] = useState<UserFilters>({
-    page: 1,
-    limit: 10,
+    search: '',
+    role: '',
+    includeDeleted: false,
   });
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -49,51 +56,80 @@ export default function UtilisateursPage() {
   const { isLoading, withLoading } = useLoading();
   const { showToast } = useToast();
 
-  // Chargement des utilisateurs
+  // Fonction de filtrage côté client (comme pour les produits)
+  const filterUsers = (users: User[], filters: UserFilters): User[] => {
+    return users.filter(user => {
+      // Filtre par recherche
+      if (filters.search) {
+        const searchLower = filters.search.toLowerCase();
+        const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
+        if (!fullName.includes(searchLower) &&
+          !user.email.toLowerCase().includes(searchLower)) {
+          return false;
+        }
+      }
+
+      // Filtre par rôle
+      if (filters.role && user.role?.type !== filters.role) {
+        return false;
+      }
+
+      // Filtre par état (supprimé ou non)
+      if (!filters.includeDeleted && user.deletedAt) {
+        return false;
+      }
+
+      return true;
+    });
+  };
+
+  // Chargement des utilisateurs (une seule fois, sans filtres dans l'URL)
   const loadUsers = useCallback(async () => {
     try {
       setError('');
-      const response = await withLoading(() => userService.getUsers(filters));
+      // Charger TOUS les utilisateurs (y compris supprimés) une seule fois
+      const response = await withLoading(() => userService.getUsers({
+        includeDeleted: true,
+        limit: 1000 // Récupérer tous les utilisateurs
+      }));
 
-      // Protection supplémentaire pour s'assurer que response.users est un tableau
-      setUsers(Array.isArray(response.users) ? response.users : []);
-      setTotal(response.total || 0);
-      setCurrentPage(response.page || 1);
+      setAllUsers(response.users || []);
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || err.message || 'Erreur lors du chargement des utilisateurs';
       setError(errorMessage);
       showToast(errorMessage, 'error');
-      // En cas d'erreur, s'assurer que users reste un tableau vide
-      setUsers([]);
-      setTotal(0);
+      setAllUsers([]);
     }
-  }, [filters, withLoading, showToast]);
+  }, [withLoading, showToast]);
 
   // Chargement initial
   useEffect(() => {
     loadUsers();
   }, [loadUsers]);
 
-  // Gestion des filtres
+  // Gestion des filtres (comme pour les produits)
   const handleFiltersChange = (newFilters: UserFilters) => {
-    setFilters({
-      ...newFilters,
-      page: 1, // Reset à la première page lors du changement de filtres
-      limit: filters.limit,
-    });
-  };
-
-  const handleFiltersReset = () => {
-    setFilters({
-      page: 1,
-      limit: 10,
-    });
+    setFilters(newFilters);
+    setCurrentPage(1); // Reset à la première page lors du changement de filtres
   };
 
   // Gestion de la pagination
   const handlePageChange = (page: number) => {
-    setFilters(prev => ({ ...prev, page }));
+    setCurrentPage(page);
   };
+
+  const handleItemsPerPageChange = (newItemsPerPage: number) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1);
+  };
+
+  // Appliquer les filtres et la pagination (comme pour les produits)
+  const filteredUsers = filterUsers(allUsers, filters);
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const paginatedUsers = filteredUsers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   // Gestion de l'édition
   const handleEdit = (user: User) => {
@@ -146,13 +182,7 @@ export default function UtilisateursPage() {
     }
   };
 
-  const handleItemsPerPageChange = (newItemsPerPage: number) => {
-    setFilters(prev => ({ ...prev, limit: newItemsPerPage }));
-  };
-
-  const totalPages = Math.ceil(total / (filters.limit || 10));
-
-  if (isLoading && (!users || users.length === 0)) {
+  if (isLoading && allUsers.length === 0) {
     return (
       <Loading
         message="Chargement des utilisateurs..."
@@ -174,7 +204,8 @@ export default function UtilisateursPage() {
                 Gestion des Utilisateurs
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {total} utilisateur{total > 1 ? 's' : ''} au total
+                {filteredUsers.length} utilisateur{filteredUsers.length > 1 ? 's' : ''} trouvé{filteredUsers.length > 1 ? 's' : ''}
+                {filteredUsers.length !== allUsers.length && ` sur ${allUsers.length} au total`}
               </Typography>
             </Box>
             <Button
@@ -207,7 +238,6 @@ export default function UtilisateursPage() {
           <UserFiltersComponent
             filters={filters}
             onFiltersChange={handleFiltersChange}
-            onReset={handleFiltersReset}
           />
 
           {/* Erreur */}
@@ -219,26 +249,26 @@ export default function UtilisateursPage() {
 
           {/* Table des utilisateurs */}
           <UserTable
-            users={users}
+            users={paginatedUsers}
             onEdit={handleEdit}
             onDelete={handleDelete}
             loading={isLoading}
           />
 
           {/* Pagination */}
-          {total > 0 && (
+          {filteredUsers.length > 0 && (
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
-              totalItems={total}
-              itemsPerPage={filters.limit || 10}
+              totalItems={filteredUsers.length}
+              itemsPerPage={itemsPerPage}
               onPageChange={handlePageChange}
               onItemsPerPageChange={handleItemsPerPageChange}
             />
           )}
 
           {/* Loading overlay pour les actions */}
-          {isLoading && users && users.length > 0 && (
+          {isLoading && allUsers.length > 0 && (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
               <Loading
                 message="Chargement..."
@@ -250,13 +280,12 @@ export default function UtilisateursPage() {
         </CardContent>
       </Card>
 
-      {/* Dialog d'édition/création */}
+      {/* Dialog pour création/édition */}
       <UserDialog
         open={dialogOpen}
-        user={selectedUser}
         onClose={() => setDialogOpen(false)}
+        user={selectedUser}
         onSave={handleSave}
-        loading={isLoading}
       />
     </Box>
   );

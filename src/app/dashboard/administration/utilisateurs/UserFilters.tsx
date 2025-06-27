@@ -1,6 +1,5 @@
 'use client';
 
-import { UserFilters } from '@/services/userService';
 import { UserRoleType } from '@/types/auth';
 import {
   Clear as ClearIcon,
@@ -24,13 +23,18 @@ import {
 } from '@mui/material';
 import { useState } from 'react';
 
+interface UserFilters {
+  search: string;
+  role: string;
+  includeDeleted: boolean;
+}
+
 interface UserFiltersProps {
   filters: UserFilters;
   onFiltersChange: (filters: UserFilters) => void;
-  onReset: () => void;
 }
 
-export default function UserFiltersComponent({ filters, onFiltersChange, onReset }: UserFiltersProps) {
+export default function UserFiltersComponent({ filters, onFiltersChange }: UserFiltersProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const handleFilterChange = (field: keyof UserFilters, value: any) => {
@@ -38,6 +42,19 @@ export default function UserFiltersComponent({ filters, onFiltersChange, onReset
       ...filters,
       [field]: value,
     });
+  };
+
+  const handleReset = () => {
+    const newFilters = {
+      search: '',
+      role: '',
+      includeDeleted: false,
+    };
+
+    onFiltersChange(newFilters);
+
+    // Fermer les filtres avancés après réinitialisation
+    setShowAdvanced(false);
   };
 
   const getRoleLabel = (roleType: UserRoleType) => {
@@ -59,10 +76,14 @@ export default function UserFiltersComponent({ filters, onFiltersChange, onReset
 
   const getActiveFiltersCount = () => {
     let count = 0;
-    if (filters.search) count++;
+    if (filters.search.trim()) count++;
     if (filters.role) count++;
-    if (filters.includeDeleted) count++;
+    if (filters.includeDeleted === true) count++;
     return count;
+  };
+
+  const hasActiveFilters = () => {
+    return filters.search.trim() !== '' || filters.role !== '' || filters.includeDeleted !== false;
   };
 
   return (
@@ -73,7 +94,7 @@ export default function UserFiltersComponent({ filters, onFiltersChange, onReset
           <TextField
             fullWidth
             placeholder="Rechercher par nom, prénom ou email..."
-            value={filters.search || ''}
+            value={filters.search}
             onChange={(e) => handleFilterChange('search', e.target.value)}
             name="search"
             slotProps={{
@@ -107,11 +128,15 @@ export default function UserFiltersComponent({ filters, onFiltersChange, onReset
             )}
           </Button>
 
-          {getActiveFiltersCount() > 0 && (
+          {hasActiveFilters() && (
             <Button
               variant="text"
               startIcon={<ClearIcon />}
-              onClick={onReset}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleReset();
+              }}
               size="small"
             >
               Réinitialiser
@@ -129,9 +154,9 @@ export default function UserFiltersComponent({ filters, onFiltersChange, onReset
               <FormControl fullWidth>
                 <InputLabel>Rôle</InputLabel>
                 <Select
-                  value={filters.role || ''}
+                  value={filters.role}
                   label="Rôle"
-                  onChange={(e) => handleFilterChange('role', e.target.value || undefined)}
+                  onChange={(e) => handleFilterChange('role', e.target.value)}
                 >
                   <MenuItem value="">Tous les rôles</MenuItem>
                   {Object.values(UserRoleType).map((roleType) => (
@@ -143,15 +168,13 @@ export default function UserFiltersComponent({ filters, onFiltersChange, onReset
               </FormControl>
             </Grid>
 
-
-
             {/* Inclure les supprimés */}
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', height: '100%' }}>
                 <FormControlLabel
                   control={
                     <Switch
-                      checked={filters.includeDeleted || false}
+                      checked={filters.includeDeleted}
                       onChange={(e) => handleFilterChange('includeDeleted', e.target.checked)}
                     />
                   }
