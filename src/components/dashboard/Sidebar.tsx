@@ -417,16 +417,26 @@ export default function Sidebar() {
                     </Typography>
                   </StyledListItemButton>
                 </Link>
-                <StyledListItemButton sx={{ py: 0.75, mb: 0.5, width: '100%' }}>
-                  <Typography variant="body2" color="textSecondary">
-                    📄 Types de documents
-                  </Typography>
-                </StyledListItemButton>
-                <StyledListItemButton sx={{ py: 0.75, mb: 0.5, width: '100%' }}>
-                  <Typography variant="body2" color="textSecondary">
-                    📋 Documents
-                  </Typography>
-                </StyledListItemButton>
+                <Link href="/dashboard/types-documents" style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <StyledListItemButton
+                    sx={{ py: 0.75, mb: 0.5, width: '100%' }}
+                    isActive={isActive('/dashboard/types-documents')}
+                  >
+                    <Typography variant="body2" color="textSecondary">
+                      📄 Types de documents
+                    </Typography>
+                  </StyledListItemButton>
+                </Link>
+                <Link href="/dashboard/documents" style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <StyledListItemButton
+                    sx={{ py: 0.75, mb: 0.5, width: '100%' }}
+                    isActive={isActive('/dashboard/documents')}
+                  >
+                    <Typography variant="body2" color="textSecondary">
+                      📋 Documents
+                    </Typography>
+                  </StyledListItemButton>
+                </Link>
               </Box>
             </Collapse>
           </List>
