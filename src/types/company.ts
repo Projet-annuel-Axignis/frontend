@@ -7,7 +7,8 @@
  * @param {number} id - ID de l'entreprise
  * @param {string} name - Nom de l'entreprise
  * @param {string} siretNumber - Numéro de SIRET de l'entreprise
- * @param {Plan} plan - Plan associé à l'entreprise
+ * @param {number} planId - ID du plan associé à l'entreprise
+ * @param {Plan} plan - Plan associé à l'entreprise (optionnel, selon les endpoints)
  * @param {string} createdAt - Date de création de l'entreprise
  * @param {string} updatedAt - Date de mise à jour de l'entreprise
  * @param {string} deletedAt - Date de suppression de l'entreprise
@@ -16,7 +17,8 @@ export interface Company {
   id: number;
   name: string;
   siretNumber: string;
-  plan: Plan | null;
+  planId: number;
+  plan?: Plan | null; // Optionnel car certains endpoints ne le retournent pas
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;

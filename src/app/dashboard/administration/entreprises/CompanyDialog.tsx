@@ -53,7 +53,7 @@ export default function CompanyDialog({ open, onClose, company, onSave }: Compan
       setFormData({
         name: company.name || '',
         siretNumber: company.siretNumber || '',
-        planId: '', // Note: le schéma Company ne contient pas planId, on pourrait l'ajouter
+        planId: company.planId ? company.planId.toString() : '',
       });
     } else {
       setFormData({
@@ -78,8 +78,8 @@ export default function CompanyDialog({ open, onClose, company, onSave }: Compan
       newErrors.siretNumber = 'Le SIRET doit contenir exactement 14 chiffres';
     }
 
-    if (!isEdit && !formData.planId) {
-      newErrors.planId = 'Le plan est requis pour une nouvelle entreprise';
+    if (!formData.planId) {
+      newErrors.planId = 'Le plan est requis';
     }
 
     setErrors(newErrors);
@@ -94,12 +94,8 @@ export default function CompanyDialog({ open, onClose, company, onSave }: Compan
       const submitData: any = {
         name: formData.name.trim(),
         siretNumber: formData.siretNumber.replace(/\s/g, ''), // Supprimer les espaces
+        planId: parseInt(formData.planId), // Toujours inclure le planId
       };
-
-      // Ajouter planId seulement pour la création
-      if (!isEdit && formData.planId) {
-        submitData.planId = parseInt(formData.planId);
-      }
 
       await onSave(submitData);
       onClose();
@@ -196,30 +192,28 @@ export default function CompanyDialog({ open, onClose, company, onSave }: Compan
             />
           </Grid>
 
-          {/* Plan (uniquement pour la création) */}
-          {!isEdit && (
-            <Grid size={12}>
-              <FormControl fullWidth error={!!errors.planId} required>
-                <InputLabel>Plan</InputLabel>
-                <Select
-                  value={formData.planId}
-                  label="Plan"
-                  onChange={(e) => handleChange('planId', e.target.value)}
-                >
-                  {availablePlans.map((plan) => (
-                    <MenuItem key={plan.id} value={plan.id.toString()}>
-                      {plan.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-                {errors.planId && (
-                  <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.5 }}>
-                    {errors.planId}
-                  </Typography>
-                )}
-              </FormControl>
-            </Grid>
-          )}
+          {/* Plan */}
+          <Grid size={12}>
+            <FormControl fullWidth error={!!errors.planId} required>
+              <InputLabel>Plan</InputLabel>
+              <Select
+                value={formData.planId}
+                label="Plan"
+                onChange={(e) => handleChange('planId', e.target.value)}
+              >
+                {availablePlans.map((plan) => (
+                  <MenuItem key={plan.id} value={plan.id.toString()}>
+                    {plan.name}
+                  </MenuItem>
+                ))}
+              </Select>
+              {errors.planId && (
+                <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.5 }}>
+                  {errors.planId}
+                </Typography>
+              )}
+            </FormControl>
+          </Grid>
 
           {/* Erreur générale */}
           {errors.submit && (

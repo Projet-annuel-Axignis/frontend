@@ -43,11 +43,11 @@ class CompanyService {
     const response = await api.get(url);
     const data = response.data;
 
-    // Retourner directement la réponse de l'API
+    // Adapter la réponse API à notre interface
     return {
-      companies: data.companies || [],
-      total: data.total || 0,
-      page: data.page || filters.page || 1,
+      companies: data.results || [], // L'API retourne "results" et non "companies"
+      total: data.totalResults || 0, // L'API retourne "totalResults"
+      page: filters.page || 1,
       limit: data.limit || filters.limit || 10,
     };
   }
