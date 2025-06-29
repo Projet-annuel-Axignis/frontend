@@ -66,6 +66,7 @@ const BuildingsTab: React.FC<BuildingsTabProps> = ({
   // Load buildings
   useEffect(() => {
     loadBuildings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [siteId, search, includeDeleted]);
 
   const loadBuildings = async () => {
@@ -389,7 +390,7 @@ const BuildingCard: React.FC<BuildingCardProps> = ({
             </Box>
 
             {/* Codes */}
-            <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 1 }}>
+            {/* <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 1 }}>
               {building.typologyCodes.map((code, index) => (
                 <Chip
                   key={index}
@@ -407,7 +408,7 @@ const BuildingCard: React.FC<BuildingCardProps> = ({
                   variant="outlined"
                 />
               ))}
-            </Box>
+            </Box> */}
 
             {/* Status */}
             {isDeleted && (
