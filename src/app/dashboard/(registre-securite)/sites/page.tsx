@@ -19,6 +19,7 @@ import {
   Snackbar,
   Typography,
 } from '@mui/material';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import SiteCard from './components/SiteCard';
 import SiteDialog from './components/SiteDialog';
@@ -26,6 +27,7 @@ import SiteFilters from './components/SiteFilters';
 import SiteTable from './components/SiteTable';
 
 const SitesPage = () => {
+  const router = useRouter();
   const { isLoading: loading, withLoading } = useLoading();
 
   // Data states
@@ -121,9 +123,7 @@ const SitesPage = () => {
   };
 
   const handleViewSite = (site: Site) => {
-    // TODO: Navigate to site detail page
-    console.log('View site:', site);
-    showNotification('Navigation vers les détails du site à implémenter', 'success');
+    router.push(`/dashboard/sites/${site.id}`);
   };
 
   const handleDeleteSite = (site: Site) => {
