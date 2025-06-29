@@ -49,20 +49,43 @@ interface FormErrors {
 
 // Predefined options for codes
 const TOPOLOGY_CODES = [
-  'R+0', 'R+1', 'R+2', 'R+3', 'R+4', 'R+5', 'R+6', 'R+7', 'R+8', 'R+9', 'R+10',
-  'SOUS-SOL', 'ENTRESOL', 'MEZZANINE', 'TERRASSE', 'COMBLES'
+  { code: 'ERP', label: 'ERP', description: 'Établissement Recevant du Public' },
+  { code: 'IGH', label: 'IGH', description: 'Immeuble de Grande Hauteur' },
+  { code: 'BUP', label: 'BUP', description: 'Bâtiment à Utilisation Professionnelle' },
+  { code: 'HAB', label: 'HAB', description: 'Bâtiment d\'Habitation' },
 ];
 
 const IGH_CLASS_CODES = [
-  'GHA', 'GHO', 'GHR', 'GHS', 'GHU', 'GHW1', 'GHW2', 'GHZ'
+  { code: 'GHA', label: 'GHA', description: 'Immeubles à usage d\'habitation' },
+  { code: 'GHO', label: 'GHO', description: 'Immeubles à usage d\'hôtel' },
+  { code: 'GHR', label: 'GHR', description: 'Immeubles à usage d\'enseignement' },
+  {
+    code: 'GHS', label: 'GHS', description: 'Immeubles à usage de dépôt d\'archives'
+  },
+  { code: 'GHTC', label: 'GHTC', description: 'Immeubles à usage de tour de contrôle' },
+  { code: 'GHU', label: 'GHU', description: 'immeubles à usage sanitaire' },
+  {
+    code: 'GHW1', label: 'GHW1', description: 'Immeubles à usage de bureaux répondant aux conditions fixées par le règlement prévu à l\'article R. 122-4 et dont la hauteur du plancher bas tel qu\'il est défini à l\'article R. 146-3 est supérieure à 28 mètres et inférieure ou égale à 50 mètres'
+  },
+  { code: 'GHW2', label: 'GHW2', description: 'Immeubles à usage de bureaux dont la hauteur du plancher bas tel qu\'il est défini ci-dessus est supérieure à 50 mètres' },
+  {
+    code: 'GHZ', label: 'GHZ', description: "Immeubles à usage principal d'habitation dont la hauteur du plancher bas est supérieure à 28 mètres et inférieure ou égale à 50 mètres et comportant des locaux autres que ceux à usage d'habitation ne répondant pas aux conditions d'indépendance fixées par les arrêtés prévus aux articles R. 142-1 et R. 146-5 ; Page à 2 11"
+  },
+  {
+    code: 'ITGH', label: 'ITGH', description: "Immeuble de très grande hauteur. Constitue un immeuble de très grande hauteur tout corps de bâtiment dont le plancher bas du dernier niveau est situé à plus de 200 mètres par rapport au niveau du sol le plus haut utilisable pour les engins des services publics de secours et de lutte contre l'incendie."
+  },
 ];
 
 const ERP_CATEGORIES = [
-  { value: 1, label: 'Catégorie 1 (+ de 1500 personnes)' },
-  { value: 2, label: 'Catégorie 2 (701 à 1500 personnes)' },
-  { value: 3, label: 'Catégorie 3 (301 à 700 personnes)' },
-  { value: 4, label: 'Catégorie 4 (Moins de 300 personnes)' },
-  { value: 5, label: 'Catégorie 5 (Seuils spécifiques)' },
+  { value: 1, label: 'Catégorie 1', description: 'plus de 1500 personnes' },
+  { value: 2, label: 'Catégorie 2', description: '701 à 1500 personnes' },
+  { value: 3, label: 'Catégorie 3', description: '301 à 700 personnes' },
+  {
+    value: 4, label: 'Catégorie 4', description: '300 personnes et au-dessous, à l\'exception des établissements compris dans la 5ème catégorie'
+  },
+  {
+    value: 5, label: 'Catégorie 5', description: 'Etablissements faisant l\'objet de l\'article R. 143-14 dans lesquels l\'effectif du public n\'atteint pas le chiffre minimum fixé par le règlement de sécurité pour chaque type d\'exploitation'
+  },
 ];
 
 const BuildingDialog: React.FC<BuildingDialogProps> = ({
@@ -119,16 +142,22 @@ const BuildingDialog: React.FC<BuildingDialogProps> = ({
       newErrors.name = 'Le nom du bâtiment est requis';
     }
 
-    if (formData.erpCategory === '' || formData.erpCategory < 1 || formData.erpCategory > 5) {
-      newErrors.erpCategory = 'La catégorie ERP est requise (1-5)';
-    }
-
     if (formData.typologyCodes.length === 0) {
-      newErrors.typologyCodes = 'Au moins un code de typologie est requis';
+      newErrors.typologyCodes = 'Au moins une typologie est requise';
     }
 
-    if (formData.ighClassCodes.length === 0) {
-      newErrors.ighClassCodes = 'Au moins un code de classe IGH est requis';
+    // ERP category is required only if ERP is selected in typologies
+    if (formData.typologyCodes.includes('ERP')) {
+      if (formData.erpCategory === '' || formData.erpCategory < 1 || formData.erpCategory > 5) {
+        newErrors.erpCategory = 'La catégorie ERP est requise (1-5)';
+      }
+    }
+
+    // IGH class codes are required only if IGH is selected in typologies
+    if (formData.typologyCodes.includes('IGH')) {
+      if (formData.ighClassCodes.length === 0) {
+        newErrors.ighClassCodes = 'Au moins un code de classe IGH est requis';
+      }
     }
 
     setErrors(newErrors);
@@ -162,7 +191,26 @@ const BuildingDialog: React.FC<BuildingDialogProps> = ({
   };
 
   const handleFieldChange = (field: keyof FormData, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    let newFormData = { ...formData, [field]: value };
+
+    // Clean up dependent fields when topology changes
+    if (field === 'typologyCodes') {
+      const newTypologies = value as string[];
+
+      // Clear ERP category if ERP is not selected
+      if (!newTypologies.includes('ERP') && formData.erpCategory !== '') {
+        newFormData = { ...newFormData, erpCategory: '' };
+        setErrors(prev => ({ ...prev, erpCategory: undefined }));
+      }
+
+      // Clear IGH class codes if IGH is not selected
+      if (!newTypologies.includes('IGH') && formData.ighClassCodes.length > 0) {
+        newFormData = { ...newFormData, ighClassCodes: [] };
+        setErrors(prev => ({ ...prev, ighClassCodes: undefined }));
+      }
+    }
+
+    setFormData(newFormData);
 
     // Clear error when user starts typing
     if (errors[field as keyof FormErrors]) {
@@ -211,87 +259,116 @@ const BuildingDialog: React.FC<BuildingDialogProps> = ({
             />
           </Grid>
 
-          {/* ERP Category */}
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <FormControl fullWidth error={!!errors.erpCategory}>
-              <InputLabel>Catégorie ERP *</InputLabel>
-              <Select
-                value={formData.erpCategory}
-                onChange={handleErpCategoryChange}
-                input={<OutlinedInput label="Catégorie ERP *" />}
-              >
-                {ERP_CATEGORIES.map((category) => (
-                  <MenuItem key={category.value} value={category.value}>
-                    {category.label}
-                  </MenuItem>
-                ))}
-              </Select>
-              {errors.erpCategory && (
-                <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.5 }}>
-                  {errors.erpCategory}
-                </Typography>
-              )}
-            </FormControl>
-          </Grid>
-
           {/* Topology Codes */}
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <Autocomplete
-              multiple
-              options={TOPOLOGY_CODES}
-              value={formData.typologyCodes}
-              onChange={(_, newValue) => handleFieldChange('typologyCodes', newValue)}
-              renderTags={(value, getTagProps) =>
-                value.map((option, index) => (
-                  <Chip
-                    variant="outlined"
-                    label={option}
-                    {...getTagProps({ index })}
-                    key={option}
-                  />
-                ))
-              }
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Codes de typologie *"
-                  error={!!errors.typologyCodes}
-                  helperText={errors.typologyCodes}
-                  placeholder="Sélectionnez les étages..."
-                />
-              )}
-            />
-          </Grid>
-
-          {/* IGH Class Codes */}
           <Grid size={{ xs: 12 }}>
             <Autocomplete
               multiple
-              options={IGH_CLASS_CODES}
-              value={formData.ighClassCodes}
-              onChange={(_, newValue) => handleFieldChange('ighClassCodes', newValue)}
-              renderTags={(value, getTagProps) =>
+              options={TOPOLOGY_CODES}
+              getOptionLabel={(option) => `${option.code} - ${option.description}`}
+              value={formData.typologyCodes.map(code =>
+                TOPOLOGY_CODES.find(option => option.code === code)
+              ).filter((option): option is typeof TOPOLOGY_CODES[0] => option !== undefined)}
+              onChange={(_, newValue) => handleFieldChange('typologyCodes', newValue.map(item => item.code))}
+              renderValue={(value, getItemProps) =>
                 value.map((option, index) => (
                   <Chip
                     variant="outlined"
-                    color="secondary"
-                    label={option}
-                    {...getTagProps({ index })}
-                    key={option}
+                    label={option.code}
+                    {...getItemProps({ index })}
+                    key={option.code}
                   />
                 ))
               }
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  label="Codes de classe IGH *"
-                  error={!!errors.ighClassCodes}
-                  helperText={errors.ighClassCodes || 'IGH = Immeuble de Grande Hauteur'}
-                  placeholder="Sélectionnez les classes IGH..."
+                  label="Typologie du bâtiment *"
+                  error={!!errors.typologyCodes}
+                  helperText={errors.typologyCodes}
+                  placeholder="Sélectionnez les typologies..."
                 />
               )}
             />
           </Grid>
+
+          {/* ERP Category - Conditional display */}
+          {formData.typologyCodes.includes('ERP') && (
+            <Grid size={{ xs: 12 }}>
+              <FormControl fullWidth error={!!errors.erpCategory}>
+                <InputLabel>Catégorie ERP *</InputLabel>
+                <Select
+                  value={formData.erpCategory}
+                  onChange={handleErpCategoryChange}
+                  input={<OutlinedInput label="Catégorie ERP *" />}
+                  renderValue={(selected) => {
+                    const category = ERP_CATEGORIES.find(cat => cat.value === selected);
+                    return category ? category.label : '';
+                  }}
+                >
+                  {ERP_CATEGORIES.map((category) => (
+                    <MenuItem key={category.value} value={category.value}>
+                      {category.label} - {category.description}
+                    </MenuItem>
+                  ))}
+                </Select>
+                {errors.erpCategory ? (
+                  <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.5 }}>
+                    {errors.erpCategory}
+                  </Typography>
+                ) : (
+                  formData.erpCategory && (
+                    <Box sx={{ mt: 0.5, ml: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Chip
+                        size="small"
+                        variant="outlined"
+                        color={formData.erpCategory <= 4 ? "primary" : "secondary"}
+                        label={formData.erpCategory <= 4 ? "1er groupe" : "2ème groupe"}
+                        sx={{ fontSize: '0.7rem', height: '20px' }}
+                      />
+                      <Typography variant="caption" color="text.secondary">
+                        {ERP_CATEGORIES.find(cat => cat.value === formData.erpCategory)?.description}
+                      </Typography>
+                    </Box>
+                  )
+                )}
+              </FormControl>
+            </Grid>
+          )}
+
+          {/* IGH Class Codes - Conditional display */}
+          {formData.typologyCodes.includes('IGH') && (
+            <Grid size={{ xs: 12 }}>
+              <Autocomplete
+                multiple
+                options={IGH_CLASS_CODES}
+                getOptionLabel={(option) => `${option.code} - ${option.description}`}
+                value={formData.ighClassCodes.map(code =>
+                  IGH_CLASS_CODES.find(option => option.code === code)
+                ).filter((option): option is typeof IGH_CLASS_CODES[0] => option !== undefined)}
+                onChange={(_, newValue) => handleFieldChange('ighClassCodes', newValue.map(item => item.code))}
+                renderValue={(value, getItemProps) =>
+                  value.map((option, index) => (
+                    <Chip
+                      variant="outlined"
+                      color="secondary"
+                      label={option.code}
+                      {...getItemProps({ index })}
+                      key={option.code}
+                    />
+                  ))
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Codes de classe IGH *"
+                    error={!!errors.ighClassCodes}
+                    helperText={errors.ighClassCodes || 'IGH = Immeuble de Grande Hauteur'}
+                    placeholder="Sélectionnez les classes IGH..."
+                  />
+                )}
+              />
+            </Grid>
+          )}
 
           {/* Authorized User IDs */}
           <Grid size={{ xs: 12 }}>
@@ -301,12 +378,12 @@ const BuildingDialog: React.FC<BuildingDialogProps> = ({
               options={[]} // TODO: Load from user service
               value={formData.authorizedUserIds}
               onChange={(_, newValue) => handleFieldChange('authorizedUserIds', newValue)}
-              renderTags={(value, getTagProps) =>
+              renderValue={(value, getItemProps) =>
                 value.map((option, index) => (
                   <Chip
                     variant="outlined"
                     label={option}
-                    {...getTagProps({ index })}
+                    {...getItemProps({ index })}
                     key={option}
                   />
                 ))
@@ -328,11 +405,13 @@ const BuildingDialog: React.FC<BuildingDialogProps> = ({
               <Typography variant="body2" color="info.contrastText">
                 <strong>Aide :</strong>
                 <br />
+                • <strong>Typologie</strong> : Définit le type de bâtiment (ERP, IGH, BUP, HAB)
+                <br />
                 • <strong>ERP</strong> : Établissement Recevant du Public (catégories 1-5)
                 <br />
                 • <strong>IGH</strong> : Immeuble de Grande Hauteur (classes GHA, GHO, GHR, etc.)
                 <br />
-                • <strong>Typologie</strong> : Niveaux et types d&apos;étages du bâtiment
+                <em>Les champs ERP et IGH s&apos;affichent selon la typologie sélectionnée</em>
               </Typography>
             </Box>
           </Grid>
