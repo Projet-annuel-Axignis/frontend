@@ -221,15 +221,6 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const getAvailablePartFloors = (buildingId: number) => {
-    return partFloors.filter(pf => {
-      const building = buildings.find(b => b.id === buildingId);
-      if (!building) return false;
-      // Check if partFloor belongs to this building
-      return pf.buildingFloorId === buildingId; // Cette relation doit être clarifiée dans l'API
-    });
-  };
-
   const handleSubmit = async () => {
     try {
       if (dialogMode === 'create') {
