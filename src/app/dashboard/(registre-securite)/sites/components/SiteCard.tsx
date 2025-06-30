@@ -14,12 +14,15 @@ import {
 import {
   Avatar,
   Box,
+  Button,
   Card,
+  CardActions,
   CardContent,
   Chip,
   IconButton,
   Menu,
   MenuItem,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import React from 'react';
@@ -50,11 +53,6 @@ const SiteCard: React.FC<SiteCardProps> = ({
 
   const handleClose = () => {
     setAnchorEl(null);
-  };
-
-  const handleView = () => {
-    onView(site);
-    handleClose();
   };
 
   const handleEdit = () => {
@@ -149,29 +147,50 @@ const SiteCard: React.FC<SiteCardProps> = ({
 
             {/* Status */}
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-              {isDeleted && (
+              {isDeleted ? (
                 <Chip
                   label="Supprimé"
                   size="small"
                   color="error"
                   variant="outlined"
                 />
+              ) : (
+                <Chip
+                  label="Actif"
+                  size="small"
+                  color="success"
+                  variant="outlined"
+                />
               )}
             </Box>
           </Box>
 
-          {/* Actions Menu */}
-          <IconButton
-            onClick={handleClick}
-            size="small"
-            sx={{ ml: 1 }}
-          >
-            <MoreVertIcon />
-          </IconButton>
+          {/* Menu secondaire pour les autres actions */}
+          <Tooltip title="Plus d'actions">
+            <IconButton
+              onClick={handleClick}
+              size="small"
+              sx={{ ml: 1 }}
+            >
+              <MoreVertIcon />
+            </IconButton>
+          </Tooltip>
         </Box>
       </CardContent>
 
-      {/* Actions Menu */}
+      {/* Actions principales */}
+      <CardActions sx={{ pt: 0 }}>
+        <Button
+          variant="contained"
+          startIcon={<ViewIcon />}
+          onClick={() => onView(site)}
+          fullWidth
+        >
+          Voir détails
+        </Button>
+      </CardActions>
+
+      {/* Menu secondaire (Modifier/Supprimer/Restaurer) */}
       <Menu
         anchorEl={anchorEl}
         open={open}
@@ -185,11 +204,6 @@ const SiteCard: React.FC<SiteCardProps> = ({
           horizontal: 'right',
         }}
       >
-        <MenuItem onClick={handleView}>
-          <ViewIcon sx={{ mr: 1 }} />
-          Voir détails
-        </MenuItem>
-
         {!isDeleted && (
           <MenuItem onClick={handleEdit}>
             <EditIcon sx={{ mr: 1 }} />
@@ -203,10 +217,12 @@ const SiteCard: React.FC<SiteCardProps> = ({
             Restaurer
           </MenuItem>
         ) : (
-          <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
-            <DeleteIcon sx={{ mr: 1 }} />
-            Supprimer
-          </MenuItem>
+          !isDeleted && (
+            <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
+              <DeleteIcon sx={{ mr: 1 }} />
+              Supprimer
+            </MenuItem>
+          )
         )}
       </Menu>
     </Card>

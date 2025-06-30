@@ -12,6 +12,7 @@ import {
 } from '@mui/icons-material';
 import {
   Box,
+  Button,
   Chip,
   IconButton,
   Menu,
@@ -23,6 +24,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import React from 'react';
@@ -56,13 +58,6 @@ const SiteTable: React.FC<SiteTableProps> = ({
   const handleClose = () => {
     setAnchorEl(null);
     setSelectedSite(null);
-  };
-
-  const handleView = () => {
-    if (selectedSite) {
-      onView(selectedSite);
-    }
-    handleClose();
   };
 
   const handleEdit = () => {
@@ -158,11 +153,18 @@ const SiteTable: React.FC<SiteTableProps> = ({
 
                 <TableCell>
                   <Box sx={{ display: 'flex', gap: 1 }}>
-                    {isDeleted && (
+                    {isDeleted ? (
                       <Chip
                         label="Supprimé"
                         size="small"
                         color="error"
+                        variant="outlined"
+                      />
+                    ) : (
+                      <Chip
+                        label="Actif"
+                        size="small"
+                        color="success"
                         variant="outlined"
                       />
                     )}
@@ -170,12 +172,28 @@ const SiteTable: React.FC<SiteTableProps> = ({
                 </TableCell>
 
                 <TableCell align="right">
-                  <IconButton
-                    onClick={(e) => handleClick(e, site)}
-                    size="small"
-                  >
-                    <MoreVertIcon />
-                  </IconButton>
+                  <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                    {/* Bouton Voir détails principal */}
+                    <Button
+                      variant="contained"
+                      size="small"
+                      startIcon={<ViewIcon />}
+                      onClick={() => onView(site)}
+                      sx={{ minWidth: 'auto' }}
+                    >
+                      Voir détails
+                    </Button>
+
+                    {/* Menu secondaire pour les autres actions */}
+                    <Tooltip title="Plus d'actions">
+                      <IconButton
+                        onClick={(e) => handleClick(e, site)}
+                        size="small"
+                      >
+                        <MoreVertIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
                 </TableCell>
               </TableRow>
             );
@@ -183,7 +201,7 @@ const SiteTable: React.FC<SiteTableProps> = ({
         </TableBody>
       </Table>
 
-      {/* Actions Menu */}
+      {/* Menu secondaire (Modifier/Supprimer/Restaurer) */}
       <Menu
         anchorEl={anchorEl}
         open={open}
@@ -197,11 +215,6 @@ const SiteTable: React.FC<SiteTableProps> = ({
           horizontal: 'right',
         }}
       >
-        <MenuItem onClick={handleView}>
-          <ViewIcon sx={{ mr: 1 }} />
-          Voir détails
-        </MenuItem>
-
         {selectedSite && !selectedSite.deletedAt && (
           <MenuItem onClick={handleEdit}>
             <EditIcon sx={{ mr: 1 }} />
@@ -215,10 +228,12 @@ const SiteTable: React.FC<SiteTableProps> = ({
             Restaurer
           </MenuItem>
         ) : (
-          <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
-            <DeleteIcon sx={{ mr: 1 }} />
-            Supprimer
-          </MenuItem>
+          selectedSite && !selectedSite.deletedAt && (
+            <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
+              <DeleteIcon sx={{ mr: 1 }} />
+              Supprimer
+            </MenuItem>
+          )
         )}
       </Menu>
     </TableContainer>
