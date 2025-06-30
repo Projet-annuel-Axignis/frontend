@@ -328,6 +328,8 @@ const BuildingCard: React.FC<BuildingCardProps> = ({
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
+  console.log(building);
+
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -383,7 +385,7 @@ const BuildingCard: React.FC<BuildingCardProps> = ({
             {/* ERP Category */}
             <Box sx={{ mb: 1 }}>
               <Chip
-                label={`ERP ${building.erpCategory}`}
+                label={`ERP catégorie ${building.erpCategory.category} / groupe ${building.erpCategory.group}`}
                 size="small"
                 color="primary"
                 variant="outlined"
@@ -391,25 +393,25 @@ const BuildingCard: React.FC<BuildingCardProps> = ({
             </Box>
 
             {/* Codes */}
-            {/* <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 1 }}>
-              {building.typologyCodes.map((code, index) => (
+            <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 1 }}>
+              {building.typologies.map((typology, index) => (
                 <Chip
                   key={index}
-                  label={code}
+                  label={typology.description}
                   size="small"
                   variant="outlined"
                 />
               ))}
-              {building.ighClassCodes.map((code, index) => (
+              {building.ighClasses.map((ighClass, index) => (
                 <Chip
                   key={`igh-${index}`}
-                  label={`IGH ${code}`}
+                  label={`IGH ${ighClass.description}`}
                   size="small"
                   color="secondary"
                   variant="outlined"
                 />
               ))}
-            </Box> */}
+            </Box>
 
             {/* Status */}
             {isDeleted && (
