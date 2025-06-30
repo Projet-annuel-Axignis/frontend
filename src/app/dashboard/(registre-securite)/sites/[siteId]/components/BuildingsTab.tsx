@@ -388,8 +388,11 @@ const BuildingCard: React.FC<BuildingCardProps> = ({
             {/* ERP Category */}
             {building.erpCategory && (
               <Box sx={{ mb: 1 }}>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  ERP :
+                </Typography>
                 <Chip
-                  label={`ERP catégorie ${building.erpCategory?.category} / groupe ${building.erpCategory?.group}`}
+                  label={`Catégorie ${building.erpCategory?.category} / Groupe ${building.erpCategory?.group}`}
                   size="small"
                   color="primary"
                   variant="outlined"
@@ -398,24 +401,46 @@ const BuildingCard: React.FC<BuildingCardProps> = ({
             )}
 
             {/* Codes */}
-            <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 1 }}>
-              {building.typologies.length > 0 && building.typologies.map((typology, index) => (
-                <Chip
-                  key={index}
-                  label={typology.description}
-                  size="small"
-                  variant="outlined"
-                />
-              ))}
-              {building.ighClasses.length > 0 && building.ighClasses.map((ighClass, index) => (
-                <Chip
-                  key={`igh-${index}`}
-                  label={`IGH ${ighClass.description}`}
-                  size="small"
-                  color="secondary"
-                  variant="outlined"
-                />
-              ))}
+            <Box sx={{ mb: 1 }}>
+              {/* Typologies */}
+              {building.typologies.length > 0 && (
+                <Box sx={{ mb: 1 }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                    Typologies :
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                    {building.typologies.map((typology, index) => (
+                      <Chip
+                        key={index}
+                        label={typology.code}
+                        size="small"
+                        variant="outlined"
+                        color="default"
+                      />
+                    ))}
+                  </Box>
+                </Box>
+              )}
+
+              {/* IGH Classes */}
+              {building.ighClasses.length > 0 && (
+                <Box sx={{ mb: 1 }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                    IGH :
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                    {building.ighClasses.map((ighClass, index) => (
+                      <Chip
+                        key={`igh-${index}`}
+                        label={ighClass.code}
+                        size="small"
+                        color="secondary"
+                        variant="outlined"
+                      />
+                    ))}
+                  </Box>
+                </Box>
+              )}
             </Box>
 
             {/* Status */}
