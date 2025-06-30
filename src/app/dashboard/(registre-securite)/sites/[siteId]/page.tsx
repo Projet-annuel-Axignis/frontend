@@ -27,7 +27,7 @@ import {
   Tabs,
   Typography,
 } from '@mui/material';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import BuildingsTab from './components/BuildingsTab';
 import FloorsTab from './components/FloorsTab';
@@ -57,9 +57,28 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
+// Mapping entre les onglets et les segments d'URL
+const TAB_ROUTES = [
+  'batiments',
+  'etages',
+  'etages-parties',
+  'parties',
+  'lots'
+];
+
+// Mapping inverse pour retrouver l'index depuis l'URL
+const ROUTE_TO_TAB_INDEX: Record<string, number> = {
+  'batiments': 0,
+  'etages': 1,
+  'etages-parties': 2,
+  'parties': 3,
+  'lots': 4,
+};
+
 const SiteDetailPage = () => {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { isLoading: loading, withLoading } = useLoading();
 
   const siteId = parseInt(params.siteId as string);
@@ -79,6 +98,22 @@ const SiteDetailPage = () => {
     message: '',
     severity: 'success',
   });
+
+  // Déterminer l'onglet actuel depuis l'URL
+  useEffect(() => {
+    const currentTab = searchParams.get('tab');
+    if (currentTab && ROUTE_TO_TAB_INDEX.hasOwnProperty(currentTab)) {
+      setTabValue(ROUTE_TO_TAB_INDEX[currentTab]);
+    } else {
+      // Si pas d'onglet spécifié ou onglet invalide, aller sur bâtiments et mettre à jour l'URL
+      setTabValue(0);
+      if (!currentTab) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', TAB_ROUTES[0]);
+        router.replace(url.pathname + url.search, { scroll: false });
+      }
+    }
+  }, [searchParams, router]);
 
   // Load site data
   useEffect(() => {
@@ -110,6 +145,12 @@ const SiteDetailPage = () => {
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
+
+    // Mettre à jour l'URL avec le nouvel onglet
+    const tabRoute = TAB_ROUTES[newValue];
+    const url = new URL(window.location.href);
+    url.searchParams.set('tab', tabRoute);
+    router.push(url.pathname + url.search, { scroll: false });
   };
 
   const handleBack = () => {
