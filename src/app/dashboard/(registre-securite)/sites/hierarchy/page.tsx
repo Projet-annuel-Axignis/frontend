@@ -13,26 +13,24 @@ import {
   Breadcrumbs,
   Button,
   Card,
+  FormControlLabel,
   Grid,
   Link,
+  Switch,
   Typography,
 } from '@mui/material';
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import { useToast } from '@/app/_providers/ToastProvider';
-import companyService from '@/services/companyService';
-import { siteService } from '@/services/siteService';
 import { Company } from '@/types/company';
-import { Building, BuildingFloor, Lot, Part, PartFloor, Site, SiteWithBuildings } from '@/types/site';
+import { Building, BuildingFloor, Lot, Part, PartFloor, Site } from '@/types/site';
 import HierarchyTree from '../components/HierarchyTree';
 
 const HierarchyPage: React.FC = () => {
   const router = useRouter();
   const { showToast } = useToast();
-  const [loading, setLoading] = useState(true);
-  const [companies, setCompanies] = useState<Company[]>([]);
-  const [sites, setSites] = useState<SiteWithBuildings[]>([]);
+  const [includeDeleted, setIncludeDeleted] = useState(false);
 
   // Selection states
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
@@ -41,32 +39,6 @@ const HierarchyPage: React.FC = () => {
   const [selectedPart, setSelectedPart] = useState<Part | null>(null);
   const [selectedFloor, setSelectedFloor] = useState<BuildingFloor | PartFloor | null>(null);
   const [selectedLot, setSelectedLot] = useState<Lot | null>(null);
-
-  // Load data
-  useEffect(() => {
-    loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const loadData = async () => {
-    try {
-      setLoading(true);
-
-      // Load companies
-      const companiesResponse = await companyService.getCompanies();
-      setCompanies(companiesResponse.companies);
-
-      // Load sites
-      const sitesResponse = await siteService.getSites();
-      setSites(sitesResponse.sites);
-
-    } catch (error) {
-      console.error('Erreur lors du chargement des données:', error);
-      showToast('Erreur lors du chargement des données', 'error');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Selection handlers
   const handleSelectCompany = (company: Company | null) => {
@@ -205,22 +177,28 @@ const HierarchyPage: React.FC = () => {
     return breadcrumbs;
   };
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-        <Typography>Chargement...</Typography>
-      </Box>
-    );
-  }
-
   return (
     <Box sx={{ p: 3 }}>
       {/* Header */}
       <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <BusinessIcon />
-          Navigation Hiérarchique
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+          <Typography variant="h4" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <BusinessIcon />
+            Navigation Hiérarchique
+          </Typography>
+
+          <FormControlLabel
+            control={
+              <Switch
+                checked={includeDeleted}
+                onChange={(e) => setIncludeDeleted(e.target.checked)}
+                color="secondary"
+              />
+            }
+            label="Inclure les éléments supprimés"
+          />
+        </Box>
+
         <Typography variant="body1" color="text.secondary">
           Explorez et gérez la hiérarchie complète : Entreprises → Sites → Bâtiments → Parties & Étages
         </Typography>
@@ -257,8 +235,6 @@ const HierarchyPage: React.FC = () => {
         {/* Navigation Tree */}
         <Grid size={{ xs: 12, md: 6 }}>
           <HierarchyTree
-            companies={companies}
-            sites={sites}
             onSelectCompany={handleSelectCompany}
             onSelectSite={handleSelectSite}
             onSelectBuilding={handleSelectBuilding}
@@ -268,6 +244,7 @@ const HierarchyPage: React.FC = () => {
             onAddEntity={handleAddEntity}
             onEditEntity={handleEditEntity}
             onDeleteEntity={handleDeleteEntity}
+            includeDeleted={includeDeleted}
           />
         </Grid>
 
