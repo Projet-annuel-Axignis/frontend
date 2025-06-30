@@ -124,9 +124,14 @@ const SiteTable: React.FC<SiteTableProps> = ({
                 <TableCell>
                   <Typography
                     variant="body2"
+                    onClick={() => onView(site)}
                     sx={{
-                      fontWeight: 'medium',
+                      fontWeight: 'bold',
                       textDecoration: isDeleted ? 'line-through' : 'none',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        textDecoration: 'underline',
+                      },
                     }}
                   >
                     {site.name}
