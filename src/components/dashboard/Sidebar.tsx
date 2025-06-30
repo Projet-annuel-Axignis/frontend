@@ -1,6 +1,7 @@
 import { useUser } from '@/app/_providers/Providers';
 import { UserRoleType } from '@/types/auth';
 import { AdminPanelSettings } from '@mui/icons-material';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import AppsIcon from '@mui/icons-material/Apps';
 import BusinessIcon from '@mui/icons-material/Business';
 import CableIcon from '@mui/icons-material/Cable';
@@ -452,6 +453,25 @@ export default function Sidebar() {
 
           {/* Navigation Menu Registre de sécurité */}
           <List dense sx={{ gap: 0.5, width: '100%' }}>
+            <ListItem disablePadding sx={{ width: '100%' }}>
+              <Tooltip title="Navigation hiérarchique complète" placement="right" arrow>
+                <Box sx={{ width: '100%' }}>
+                  <Link href="/dashboard/sites/hierarchy" style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <StyledListItemButton isActive={isActive('/dashboard/sites/hierarchy')}>
+                      <AccountTreeIcon sx={{ mr: 1.5, color: 'var(--color-axignis-primary)' }} />
+                      <ListItemText
+                        primary={
+                          <Typography variant="body2" fontWeight="medium">
+                            Navigation Hiérarchique
+                          </Typography>
+                        }
+                      />
+                    </StyledListItemButton>
+                  </Link>
+                </Box>
+              </Tooltip>
+            </ListItem>
+
             <ListItem disablePadding sx={{ width: '100%' }}>
               <Tooltip title="Gérer les sites de l'entreprise" placement="right" arrow>
                 <Box sx={{ width: '100%' }}>
