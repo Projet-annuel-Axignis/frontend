@@ -76,6 +76,7 @@ const BuildingsTab: React.FC<BuildingsTabProps> = ({
         search,
         includeDeleted,
       });
+
       setBuildings(result.buildings);
     } catch (error) {
       console.error('Error loading buildings:', error);

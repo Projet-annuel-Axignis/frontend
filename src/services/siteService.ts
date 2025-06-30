@@ -96,15 +96,21 @@ export const buildingService = {
   } = {}): Promise<{ buildings: Building[]; total: number }> {
     const searchParams = new URLSearchParams();
     searchParams.append('limit', '1000');
+    searchParams.append('offset', '0');
+    searchParams.append('sortOrder', 'desc');
+    searchParams.append('sortField', 'name');
 
     if (params.siteId) {
-      searchParams.append('siteId', params.siteId.toString());
+      searchParams.append('filterField', 'site.id');
+      searchParams.append('filterOp', 'equals');
+      searchParams.append('filter', params.siteId.toString());
     }
     if (params.includeDeleted) {
       searchParams.append('includeDeleted', 'true');
     }
 
-    const response = await api.get<BuildingsResponse>(`/buildings?${searchParams}`);
+    const url = `/buildings?${searchParams}`;
+    const response = await api.get<BuildingsResponse>(url);
     let buildings = response.data.results;
 
     // Client-side filtering
@@ -151,9 +157,14 @@ export const buildingFloorService = {
   } = {}): Promise<{ buildingFloors: BuildingFloor[]; total: number }> {
     const searchParams = new URLSearchParams();
     searchParams.append('limit', '1000');
+    searchParams.append('offset', '0');
+    searchParams.append('sortOrder', 'desc');
+    searchParams.append('sortField', 'name');
 
     if (params.buildingId) {
-      searchParams.append('buildingId', params.buildingId.toString());
+      searchParams.append('filterField', 'building.id');
+      searchParams.append('filterOp', 'equals');
+      searchParams.append('filter', params.buildingId.toString());
     }
     if (params.includeDeleted) {
       searchParams.append('includeDeleted', 'true');
@@ -206,9 +217,14 @@ export const partService = {
   } = {}): Promise<{ parts: Part[]; total: number }> {
     const searchParams = new URLSearchParams();
     searchParams.append('limit', '1000');
+    searchParams.append('offset', '0');
+    searchParams.append('sortOrder', 'desc');
+    searchParams.append('sortField', 'name');
 
     if (params.buildingId) {
-      searchParams.append('buildingId', params.buildingId.toString());
+      searchParams.append('filterField', 'building.id');
+      searchParams.append('filterOp', 'equals');
+      searchParams.append('filter', params.buildingId.toString());
     }
     if (params.includeDeleted) {
       searchParams.append('includeDeleted', 'true');
@@ -262,9 +278,14 @@ export const partFloorService = {
   } = {}): Promise<{ partFloors: PartFloor[]; total: number }> {
     const searchParams = new URLSearchParams();
     searchParams.append('limit', '1000');
+    searchParams.append('offset', '0');
+    searchParams.append('sortOrder', 'desc');
+    searchParams.append('sortField', 'name');
 
     if (params.buildingFloorId) {
-      searchParams.append('buildingFloorId', params.buildingFloorId.toString());
+      searchParams.append('filterField', 'buildingFloor.id');
+      searchParams.append('filterOp', 'equals');
+      searchParams.append('filter', params.buildingFloorId.toString());
     }
     if (params.includeDeleted) {
       searchParams.append('includeDeleted', 'true');
@@ -311,15 +332,25 @@ export const partFloorService = {
 
 export const lotService = {
   async getLots(params: {
+    siteId?: number;
     buildingId?: number;
     includeDeleted?: boolean;
     search?: string;
   } = {}): Promise<{ lots: Lot[]; total: number }> {
     const searchParams = new URLSearchParams();
     searchParams.append('limit', '1000');
+    searchParams.append('offset', '0');
+    searchParams.append('sortOrder', 'desc');
+    searchParams.append('sortField', 'name');
 
-    if (params.buildingId) {
-      searchParams.append('buildingId', params.buildingId.toString());
+    if (params.siteId) {
+      searchParams.append('filterField', 'site.id');
+      searchParams.append('filterOp', 'equals');
+      searchParams.append('filter', params.siteId.toString());
+    } else if (params.buildingId) {
+      searchParams.append('filterField', 'building.id');
+      searchParams.append('filterOp', 'equals');
+      searchParams.append('filter', params.buildingId.toString());
     }
     if (params.includeDeleted) {
       searchParams.append('includeDeleted', 'true');
