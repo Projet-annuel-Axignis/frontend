@@ -250,11 +250,6 @@ const FloorsTab: React.FC<FloorsTabProps> = ({ siteId, onNotification, disabled 
     }
   };
 
-  const getBuildingName = (buildingId: number): string => {
-    const building = buildings.find(b => b.id === buildingId);
-    return building ? building.name : `Bâtiment ${buildingId}`;
-  };
-
   const clearSearch = () => {
     setFilters(prev => ({ ...prev, search: '' }));
   };
@@ -418,7 +413,7 @@ const FloorsTab: React.FC<FloorsTabProps> = ({ siteId, onNotification, disabled 
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <BuildingIcon fontSize="small" color="action" />
                           <Typography variant="body2">
-                            {getBuildingName(floor.buildingId)}
+                            {floor.building.name}
                           </Typography>
                         </Box>
                       </TableCell>
