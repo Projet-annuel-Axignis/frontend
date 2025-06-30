@@ -41,10 +41,26 @@ export interface Building {
   deletedAt?: string;
   name: string;
   siteId: number;
-  typologyCodes: string[];
-  ighClassCodes: string[];
-  erpCategory: number;
+  typologies: Typologies[];
+  ighClasses: IghClass[];
+  erpCategory: ErpCategory;
   authorizedUserIds: string[];
+}
+
+export interface ErpCategory {
+  description: string;
+  category: string;
+  group: string;
+}
+
+export interface Typologies {
+  description: string;
+  code: string;
+}
+
+export interface IghClass {
+  description: string;
+  code: string;
 }
 
 export interface CreateBuildingDto {
