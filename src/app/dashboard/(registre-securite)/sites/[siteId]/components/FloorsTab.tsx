@@ -96,11 +96,11 @@ const FloorsTab: React.FC<FloorsTabProps> = ({ siteId, onNotification, disabled 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [siteId, filters.includeDeleted]);
 
-  // Filter floors when search or building filter changes
+  // Filter floors when search, building filter, or includeDeleted changes
   useEffect(() => {
     filterFloors();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [floors, filters.search, filters.buildingId]);
+  }, [floors, filters.search, filters.buildingId, filters.includeDeleted]);
 
   const loadData = async () => {
     try {
@@ -137,6 +137,11 @@ const FloorsTab: React.FC<FloorsTabProps> = ({ siteId, onNotification, disabled 
 
   const filterFloors = () => {
     let filtered = [...floors];
+
+    // Filter by deleted status
+    if (!filters.includeDeleted) {
+      filtered = filtered.filter(floor => !floor.deletedAt);
+    }
 
     // Filter by search term
     if (filters.search) {
