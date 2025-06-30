@@ -36,7 +36,7 @@ interface FormData {
   name: string;
   typologyCodes: string[];
   ighClassCodes: string[];
-  erpCategory: number | '';
+  erpCategory: number;
   authorizedUserIds: string[];
 }
 
@@ -99,7 +99,7 @@ const BuildingDialog: React.FC<BuildingDialogProps> = ({
     name: '',
     typologyCodes: [],
     ighClassCodes: [],
-    erpCategory: '',
+    erpCategory: 0,
     authorizedUserIds: [],
   });
 
@@ -115,9 +115,9 @@ const BuildingDialog: React.FC<BuildingDialogProps> = ({
         // Edit mode
         setFormData({
           name: building.name,
-          typologyCodes: building.typologyCodes || [],
-          ighClassCodes: building.ighClassCodes || [],
-          erpCategory: building.erpCategory,
+          typologyCodes: building.typologies.map(typology => typology.code),
+          ighClassCodes: building.ighClasses.map(ighClass => ighClass.code),
+          erpCategory: building.erpCategory?.category || 0,
           authorizedUserIds: building.authorizedUserIds || [],
         });
       } else {
@@ -126,7 +126,7 @@ const BuildingDialog: React.FC<BuildingDialogProps> = ({
           name: '',
           typologyCodes: [],
           ighClassCodes: [],
-          erpCategory: '',
+          erpCategory: 0,
           authorizedUserIds: [],
         });
       }
@@ -148,7 +148,7 @@ const BuildingDialog: React.FC<BuildingDialogProps> = ({
 
     // ERP category is required only if ERP is selected in typologies
     if (formData.typologyCodes.includes('ERP')) {
-      if (formData.erpCategory === '' || formData.erpCategory < 1 || formData.erpCategory > 5) {
+      if (formData.erpCategory === 0 || formData.erpCategory < 1 || formData.erpCategory > 5) {
         newErrors.erpCategory = 'La catégorie ERP est requise (1-5)';
       }
     }
@@ -198,8 +198,8 @@ const BuildingDialog: React.FC<BuildingDialogProps> = ({
       const newTypologies = value as string[];
 
       // Clear ERP category if ERP is not selected
-      if (!newTypologies.includes('ERP') && formData.erpCategory !== '') {
-        newFormData = { ...newFormData, erpCategory: '' };
+      if (!newTypologies.includes('ERP') && formData.erpCategory !== 0) {
+        newFormData = { ...newFormData, erpCategory: 0 };
         setErrors(prev => ({ ...prev, erpCategory: undefined }));
       }
 
