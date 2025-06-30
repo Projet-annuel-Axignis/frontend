@@ -87,7 +87,7 @@ export interface BuildingFloor {
   updatedAt: string;
   deletedAt?: string;
   name: string;
-  buildingId: number;
+  building: Building;
 }
 
 export interface CreateBuildingFloorDto {
