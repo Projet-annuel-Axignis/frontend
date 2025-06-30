@@ -352,12 +352,15 @@ const BuildingCard: React.FC<BuildingCardProps> = ({
   return (
     <Card
       sx={{
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
         opacity: isDeleted ? 0.6 : 1,
         border: isDeleted ? '1px solid' : 'none',
         borderColor: isDeleted ? 'error.main' : 'transparent',
       }}
     >
-      <CardContent>
+      <CardContent sx={{ flexGrow: 1 }}>
         <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
           <Avatar
             sx={{
@@ -383,18 +386,20 @@ const BuildingCard: React.FC<BuildingCardProps> = ({
             </Typography>
 
             {/* ERP Category */}
-            <Box sx={{ mb: 1 }}>
-              <Chip
-                label={`ERP catégorie ${building.erpCategory.category} / groupe ${building.erpCategory.group}`}
-                size="small"
-                color="primary"
-                variant="outlined"
-              />
-            </Box>
+            {building.erpCategory && (
+              <Box sx={{ mb: 1 }}>
+                <Chip
+                  label={`ERP catégorie ${building.erpCategory?.category} / groupe ${building.erpCategory?.group}`}
+                  size="small"
+                  color="primary"
+                  variant="outlined"
+                />
+              </Box>
+            )}
 
             {/* Codes */}
             <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 1 }}>
-              {building.typologies.map((typology, index) => (
+              {building.typologies.length > 0 && building.typologies.map((typology, index) => (
                 <Chip
                   key={index}
                   label={typology.description}
@@ -402,7 +407,7 @@ const BuildingCard: React.FC<BuildingCardProps> = ({
                   variant="outlined"
                 />
               ))}
-              {building.ighClasses.map((ighClass, index) => (
+              {building.ighClasses.length > 0 && building.ighClasses.map((ighClass, index) => (
                 <Chip
                   key={`igh-${index}`}
                   label={`IGH ${ighClass.description}`}

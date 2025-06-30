@@ -43,13 +43,13 @@ export interface Building {
   siteId: number;
   typologies: Typologies[];
   ighClasses: IghClass[];
-  erpCategory: ErpCategory;
+  erpCategory: ErpCategory | null;
   authorizedUserIds: string[];
 }
 
 export interface ErpCategory {
   description: string;
-  category: string;
+  category: number;
   group: string;
 }
 
