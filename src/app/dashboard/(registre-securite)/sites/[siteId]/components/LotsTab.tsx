@@ -31,7 +31,7 @@ import {
   Layers as LayersIcon,
   Refresh as RefreshIcon,
   Search as SearchIcon,
-  ViewModule as ViewModuleIcon,
+  ViewModule as ViewModuleIcon
 } from '@mui/icons-material';
 import {
   Accordion,
@@ -64,7 +64,9 @@ import {
   TableRow,
   TextField,
   Tooltip,
-  Typography
+  Typography,
+  useMediaQuery,
+  useTheme
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 
@@ -74,27 +76,18 @@ interface LotsTabProps {
   disabled?: boolean;
 }
 
+interface Filters {
+  search: string;
+  buildingId: number | '';
+  includeDeleted: boolean;
+  showAdvanced: boolean;
+}
+
 interface LotFormData {
   name: string;
   buildingId: number;
   buildingFloorId: number;
   partFloorId: number;
-}
-
-interface LotFilters {
-  search: string;
-  buildingId: number | '';
-  includeDeleted: boolean;
-}
-
-// Type temporaire pour la cohérence avec notre structure simplifiée
-interface BuildingPart {
-  id: number;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt?: string;
-  name: string;
-  buildingId: number;
 }
 
 interface HierarchyData {
@@ -105,6 +98,9 @@ interface HierarchyData {
 }
 
 const LotsTab: React.FC<LotsTabProps> = ({ siteId, onNotification, disabled = false }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
   // Data states
   const [lots, setLots] = useState<Lot[]>([]);
   const [hierarchy, setHierarchy] = useState<HierarchyData>({
@@ -118,7 +114,8 @@ const LotsTab: React.FC<LotsTabProps> = ({ siteId, onNotification, disabled = fa
 
   // Dialog states
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingLot, setEditingLot] = useState<Lot | null>(null);
+  const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create');
+  const [selectedLot, setSelectedLot] = useState<Lot | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [lotToDelete, setLotToDelete] = useState<Lot | null>(null);
 
@@ -132,10 +129,11 @@ const LotsTab: React.FC<LotsTabProps> = ({ siteId, onNotification, disabled = fa
   const [formErrors, setFormErrors] = useState<Partial<LotFormData>>({});
 
   // Filters state
-  const [filters, setFilters] = useState<LotFilters>({
+  const [filters, setFilters] = useState<Filters>({
     search: '',
     buildingId: '',
     includeDeleted: false,
+    showAdvanced: false,
   });
 
   // Filtered form options based on selections
@@ -284,8 +282,23 @@ const LotsTab: React.FC<LotsTabProps> = ({ siteId, onNotification, disabled = fa
     setFilteredLots(filtered);
   };
 
+  const handleFilterChange = (field: keyof Filters, value: any) => {
+    setFilters(prev => ({ ...prev, [field]: value }));
+  };
+
+  const resetFilters = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setFilters({
+      search: '',
+      buildingId: '',
+      includeDeleted: false,
+      showAdvanced: false,
+    });
+  };
+
   const openCreateDialog = () => {
-    setEditingLot(null);
+    setDialogMode('create');
+    setSelectedLot(null);
     setFormData({
       name: '',
       buildingId: hierarchy.buildings.length > 0 ? hierarchy.buildings[0].id : 0,
@@ -297,12 +310,13 @@ const LotsTab: React.FC<LotsTabProps> = ({ siteId, onNotification, disabled = fa
   };
 
   const openEditDialog = (lot: Lot) => {
-    setEditingLot(lot);
+    setDialogMode('edit');
+    setSelectedLot(lot);
     setFormData({
       name: lot.name,
       buildingId: lot.buildingId,
       buildingFloorId: lot.buildingFloorId,
-      partFloorId: lot.partFloorId,
+      partFloorId: lot.partFloorId || 0,
     });
     setFormErrors({});
     setDialogOpen(true);
@@ -310,7 +324,7 @@ const LotsTab: React.FC<LotsTabProps> = ({ siteId, onNotification, disabled = fa
 
   const closeDialog = () => {
     setDialogOpen(false);
-    setEditingLot(null);
+    setSelectedLot(null);
     setFormData({ name: '', buildingId: 0, buildingFloorId: 0, partFloorId: 0 });
     setFormErrors({});
   };
@@ -338,19 +352,11 @@ const LotsTab: React.FC<LotsTabProps> = ({ siteId, onNotification, disabled = fa
     return Object.keys(errors).length === 0;
   };
 
-  const handleSave = async () => {
+  const handleSubmit = async () => {
     if (!validateForm()) return;
 
     try {
-      if (editingLot) {
-        // Update
-        const updateData: UpdateLotDto = {
-          name: formData.name.trim(),
-        };
-        await lotService.updateLot(editingLot.id, updateData);
-        onNotification('Lot modifié avec succès', 'success');
-      } else {
-        // Create
+      if (dialogMode === 'create') {
         const createData: CreateLotDto = {
           name: formData.name.trim(),
           buildingId: formData.buildingId,
@@ -359,6 +365,12 @@ const LotsTab: React.FC<LotsTabProps> = ({ siteId, onNotification, disabled = fa
         };
         await lotService.createLot(createData);
         onNotification('Lot créé avec succès', 'success');
+      } else if (selectedLot) {
+        const updateData: UpdateLotDto = {
+          name: formData.name.trim(),
+        };
+        await lotService.updateLot(selectedLot.id, updateData);
+        onNotification('Lot modifié avec succès', 'success');
       }
 
       closeDialog();
@@ -650,7 +662,7 @@ const LotsTab: React.FC<LotsTabProps> = ({ siteId, onNotification, disabled = fa
       {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onClose={closeDialog} maxWidth="md" fullWidth>
         <DialogTitle>
-          {editingLot ? 'Modifier le lot' : 'Créer un nouveau lot'}
+          {selectedLot ? 'Modifier le lot' : 'Créer un nouveau lot'}
         </DialogTitle>
         <DialogContent>
           <Stack spacing={3} sx={{ pt: 2 }}>
@@ -681,7 +693,7 @@ const LotsTab: React.FC<LotsTabProps> = ({ siteId, onNotification, disabled = fa
                         partFloorId: 0,
                       }))}
                       label="Bâtiment *"
-                      disabled={!!editingLot} // Can't change hierarchy when editing
+                      disabled={!!selectedLot} // Can't change hierarchy when editing
                     >
                       {hierarchy.buildings.map((building) => (
                         <MenuItem key={building.id} value={building.id}>
@@ -706,7 +718,7 @@ const LotsTab: React.FC<LotsTabProps> = ({ siteId, onNotification, disabled = fa
                         partFloorId: 0,
                       }))}
                       label="Étage de Bâtiment *"
-                      disabled={!!editingLot || !formData.buildingId}
+                      disabled={!!selectedLot || !formData.buildingId}
                     >
                       {availableBuildingFloors.map((floor) => (
                         <MenuItem key={floor.id} value={floor.id}>
@@ -730,7 +742,7 @@ const LotsTab: React.FC<LotsTabProps> = ({ siteId, onNotification, disabled = fa
                         partFloorId: Number(e.target.value),
                       }))}
                       label="Étage de Partie *"
-                      disabled={!!editingLot || !formData.buildingFloorId}
+                      disabled={!!selectedLot || !formData.buildingFloorId}
                     >
                       {availablePartFloors.map((partFloor) => (
                         <MenuItem key={partFloor.id} value={partFloor.id}>
@@ -766,8 +778,8 @@ const LotsTab: React.FC<LotsTabProps> = ({ siteId, onNotification, disabled = fa
         </DialogContent>
         <DialogActions>
           <Button onClick={closeDialog}>Annuler</Button>
-          <Button onClick={handleSave} variant="contained">
-            {editingLot ? 'Modifier' : 'Créer'}
+          <Button onClick={handleSubmit} variant="contained">
+            {selectedLot ? 'Modifier' : 'Créer'}
           </Button>
         </DialogActions>
       </Dialog>

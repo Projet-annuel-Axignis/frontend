@@ -13,6 +13,7 @@ import {
   Inventory as InventoryIcon,
   Layers as LayersIcon,
   LocationOn as LocationIcon,
+  Stairs as StairsIcon,
   ViewModule as ViewModuleIcon,
 } from '@mui/icons-material';
 import {
@@ -31,6 +32,7 @@ import React, { useEffect, useState } from 'react';
 import BuildingsTab from './components/BuildingsTab';
 import FloorsTab from './components/FloorsTab';
 import LotsTab from './components/LotsTab';
+import PartFloorsTab from './components/PartFloorsTab';
 import PartsTab from './components/PartsTab';
 
 interface TabPanelProps {
@@ -240,16 +242,22 @@ const SiteDetailPage = () => {
             aria-controls="site-tabpanel-1"
           />
           <Tab
-            icon={<ViewModuleIcon />}
-            label="Parties"
+            icon={<StairsIcon />}
+            label="Étages de Partie"
             id="site-tab-2"
             aria-controls="site-tabpanel-2"
           />
           <Tab
-            icon={<InventoryIcon />}
-            label="Lots"
+            icon={<ViewModuleIcon />}
+            label="Parties"
             id="site-tab-3"
             aria-controls="site-tabpanel-3"
+          />
+          <Tab
+            icon={<InventoryIcon />}
+            label="Lots"
+            id="site-tab-4"
+            aria-controls="site-tabpanel-4"
           />
         </Tabs>
       </Paper>
@@ -272,7 +280,7 @@ const SiteDetailPage = () => {
       </TabPanel>
 
       <TabPanel value={tabValue} index={2}>
-        <PartsTab
+        <PartFloorsTab
           siteId={siteId}
           onNotification={showNotification}
           disabled={isDeleted}
@@ -280,6 +288,14 @@ const SiteDetailPage = () => {
       </TabPanel>
 
       <TabPanel value={tabValue} index={3}>
+        <PartsTab
+          siteId={siteId}
+          onNotification={showNotification}
+          disabled={isDeleted}
+        />
+      </TabPanel>
+
+      <TabPanel value={tabValue} index={4}>
         <LotsTab
           siteId={siteId}
           onNotification={showNotification}
