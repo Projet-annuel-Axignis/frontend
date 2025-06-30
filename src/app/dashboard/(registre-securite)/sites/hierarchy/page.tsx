@@ -88,29 +88,29 @@ const HierarchyPage: React.FC = () => {
         break;
       case 'site':
         if (parent) {
-          router.push(`/dashboard/(registre-securite)/sites?companyId=${parent.id}`);
+          router.push(`/dashboard/sites?companyId=${parent.id}`);
         } else {
-          router.push('/dashboard/(registre-securite)/sites');
+          router.push('/dashboard/sites');
         }
         break;
       case 'building':
         if (parent && parent.id) {
-          router.push(`/dashboard/(registre-securite)/sites/${parent.id}?tab=buildings`);
+          router.push(`/dashboard/sites/${parent.id}?tab=buildings`);
         }
         break;
       case 'part':
         if (selectedSite) {
-          router.push(`/dashboard/(registre-securite)/sites/${selectedSite.id}?tab=parts`);
+          router.push(`/dashboard/sites/${selectedSite.id}?tab=parts`);
         }
         break;
       case 'building-floor':
         if (selectedSite) {
-          router.push(`/dashboard/(registre-securite)/sites/${selectedSite.id}?tab=floors`);
+          router.push(`/dashboard/sites/${selectedSite.id}?tab=floors`);
         }
         break;
       case 'lot':
         if (selectedSite) {
-          router.push(`/dashboard/(registre-securite)/sites/${selectedSite.id}?tab=lots`);
+          router.push(`/dashboard/sites/${selectedSite.id}?tab=lots`);
         }
         break;
       default:
@@ -124,11 +124,11 @@ const HierarchyPage: React.FC = () => {
         router.push('/dashboard/administration/entreprises');
         break;
       case 'site':
-        router.push('/dashboard/(registre-securite)/sites');
+        router.push('/dashboard/sites');
         break;
       case 'building':
         if (selectedSite) {
-          router.push(`/dashboard/(registre-securite)/sites/${selectedSite.id}?tab=buildings`);
+          router.push(`/dashboard/sites/${selectedSite.id}?tab=buildings`);
         }
         break;
       default:
@@ -161,7 +161,7 @@ const HierarchyPage: React.FC = () => {
     if (selectedSite) {
       breadcrumbs.push({
         label: selectedSite.name,
-        href: `/dashboard/(registre-securite)/sites/${selectedSite.id}`,
+        href: `/dashboard/sites/${selectedSite.id}`,
         icon: <LocationIcon fontSize="small" />
       });
     }
@@ -169,7 +169,7 @@ const HierarchyPage: React.FC = () => {
     if (selectedBuilding) {
       breadcrumbs.push({
         label: selectedBuilding.name,
-        href: `/dashboard/(registre-securite)/sites/${selectedSite?.id}?tab=buildings`,
+        href: `/dashboard/sites/${selectedSite?.id}?tab=buildings`,
         icon: <BuildingIcon fontSize="small" />
       });
     }
@@ -319,7 +319,7 @@ const HierarchyPage: React.FC = () => {
                 </Alert>
                 <Button
                   variant="contained"
-                  onClick={() => selectedSite && router.push(`/dashboard/(registre-securite)/sites/${selectedSite.id}?tab=parts`)}
+                  onClick={() => selectedSite && router.push(`/dashboard/sites/${selectedSite.id}?tab=parts`)}
                 >
                   Gérer cette partie
                 </Button>
@@ -337,7 +337,7 @@ const HierarchyPage: React.FC = () => {
                 </Alert>
                 <Button
                   variant="contained"
-                  onClick={() => selectedSite && router.push(`/dashboard/(registre-securite)/sites/${selectedSite.id}?tab=buildings`)}
+                  onClick={() => selectedSite && router.push(`/dashboard/sites/${selectedSite.id}?tab=buildings`)}
                 >
                   Gérer ce bâtiment
                 </Button>
@@ -356,7 +356,7 @@ const HierarchyPage: React.FC = () => {
                 </Alert>
                 <Button
                   variant="contained"
-                  onClick={() => router.push(`/dashboard/(registre-securite)/sites/${selectedSite.id}`)}
+                  onClick={() => router.push(`/dashboard/sites/${selectedSite.id}`)}
                 >
                   Gérer ce site
                 </Button>
