@@ -94,6 +94,7 @@ const HierarchyTree: React.FC<HierarchyTreeProps> = ({
   // Load hierarchy data
   useEffect(() => {
     loadHierarchyData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [includeDeleted]);
 
   // Filter data when search term changes
@@ -111,6 +112,7 @@ const HierarchyTree: React.FC<HierarchyTreeProps> = ({
     const nodes = buildHierarchyNodes();
     setHierarchyNodes(nodes);
     setStats(hierarchyService.getHierarchyStats(filteredHierarchy));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredHierarchy]);
 
   const loadHierarchyData = async () => {
