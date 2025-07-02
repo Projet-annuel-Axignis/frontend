@@ -13,8 +13,7 @@ import {
   Inventory as InventoryIcon,
   Layers as LayersIcon,
   LocationOn as LocationIcon,
-  Stairs as StairsIcon,
-  ViewModule as ViewModuleIcon,
+  ViewModule as ViewModuleIcon
 } from '@mui/icons-material';
 import {
   Alert,
@@ -32,7 +31,7 @@ import React, { useEffect, useState } from 'react';
 import BuildingsTab from './components/BuildingsTab';
 import FloorsTab from './components/FloorsTab';
 import LotsTab from './components/LotsTab';
-import PartFloorsTab from './components/PartFloorsTab';
+
 import PartsTab from './components/PartsTab';
 
 interface TabPanelProps {
@@ -61,7 +60,6 @@ function TabPanel(props: TabPanelProps) {
 const TAB_ROUTES = [
   'batiments',
   'etages',
-  'etages-parties',
   'parties',
   'lots'
 ];
@@ -70,9 +68,8 @@ const TAB_ROUTES = [
 const ROUTE_TO_TAB_INDEX: Record<string, number> = {
   'batiments': 0,
   'etages': 1,
-  'etages-parties': 2,
-  'parties': 3,
-  'lots': 4,
+  'parties': 2,
+  'lots': 3,
 };
 
 const SiteDetailPage = () => {
@@ -283,22 +280,16 @@ const SiteDetailPage = () => {
             aria-controls="site-tabpanel-1"
           />
           <Tab
-            icon={<StairsIcon />}
-            label="Étages de Partie"
+            icon={<ViewModuleIcon />}
+            label="Parties"
             id="site-tab-2"
             aria-controls="site-tabpanel-2"
           />
           <Tab
-            icon={<ViewModuleIcon />}
-            label="Parties"
-            id="site-tab-3"
-            aria-controls="site-tabpanel-3"
-          />
-          <Tab
             icon={<InventoryIcon />}
             label="Lots"
-            id="site-tab-4"
-            aria-controls="site-tabpanel-4"
+            id="site-tab-3"
+            aria-controls="site-tabpanel-3"
           />
         </Tabs>
       </Paper>
@@ -321,14 +312,6 @@ const SiteDetailPage = () => {
       </TabPanel>
 
       <TabPanel value={tabValue} index={2}>
-        <PartFloorsTab
-          siteId={siteId}
-          onNotification={showNotification}
-          disabled={isDeleted}
-        />
-      </TabPanel>
-
-      <TabPanel value={tabValue} index={3}>
         <PartsTab
           siteId={siteId}
           onNotification={showNotification}
@@ -336,7 +319,7 @@ const SiteDetailPage = () => {
         />
       </TabPanel>
 
-      <TabPanel value={tabValue} index={4}>
+      <TabPanel value={tabValue} index={3}>
         <LotsTab
           siteId={siteId}
           onNotification={showNotification}
