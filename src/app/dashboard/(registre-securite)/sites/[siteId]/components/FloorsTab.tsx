@@ -94,7 +94,7 @@ const FloorsTab: React.FC<FloorsTabProps> = ({ siteId, onNotification, disabled 
   useEffect(() => {
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [siteId, filters.includeDeleted]);
+  }, [siteId]);
 
   // Filter floors when search, building filter, or includeDeleted changes
   useEffect(() => {
@@ -106,19 +106,19 @@ const FloorsTab: React.FC<FloorsTabProps> = ({ siteId, onNotification, disabled 
     try {
       setLoading(true);
 
-      // Load buildings for this site
+      // Load buildings for this site (including deleted ones to have complete data)
       const buildingsResponse = await buildingService.getBuildings({
         siteId,
-        includeDeleted: filters.includeDeleted,
+        includeDeleted: true,
       });
       setBuildings(buildingsResponse.buildings);
 
-      // Load all building floors for buildings in this site
+      // Load all building floors for buildings in this site (including deleted ones)
       if (buildingsResponse.buildings.length > 0) {
         const floorsPromises = buildingsResponse.buildings.map(building =>
           buildingFloorService.getBuildingFloors({
             buildingId: building.id,
-            includeDeleted: filters.includeDeleted,
+            includeDeleted: true,
           })
         );
         const floorsResponses = await Promise.all(floorsPromises);
@@ -161,9 +161,10 @@ const FloorsTab: React.FC<FloorsTabProps> = ({ siteId, onNotification, disabled 
 
   const openCreateDialog = () => {
     setEditingFloor(null);
+    const availableBuildings = buildings.filter(building => !building.deletedAt);
     setFormData({
       name: '',
-      buildingId: buildings.length > 0 ? buildings[0].id : 0,
+      buildingId: availableBuildings.length > 0 ? availableBuildings[0].id : 0,
     });
     setFormErrors({});
     setDialogOpen(true);
@@ -284,16 +285,16 @@ const FloorsTab: React.FC<FloorsTabProps> = ({ siteId, onNotification, disabled 
             variant="contained"
             startIcon={<AddIcon />}
             onClick={openCreateDialog}
-            disabled={disabled || buildings.length === 0}
+            disabled={disabled || buildings.filter(b => !b.deletedAt).length === 0}
           >
             Nouvel Étage
           </Button>
         </Box>
       </Box>
 
-      {buildings.length === 0 ? (
+      {buildings.filter(b => !b.deletedAt).length === 0 ? (
         <Alert severity="info" sx={{ mb: 3 }}>
-          Aucun bâtiment trouvé sur ce site. Vous devez d&apos;abord créer des bâtiments pour pouvoir ajouter des étages.
+          Aucun bâtiment actif trouvé sur ce site. Vous devez d&apos;abord créer des bâtiments pour pouvoir ajouter des étages.
         </Alert>
       ) : (
         <>
@@ -342,11 +343,13 @@ const FloorsTab: React.FC<FloorsTabProps> = ({ siteId, onNotification, disabled 
                   label="Bâtiment"
                 >
                   <MenuItem value="">Tous les bâtiments</MenuItem>
-                  {buildings.map((building) => (
-                    <MenuItem key={building.id} value={building.id}>
-                      {building.name}
-                    </MenuItem>
-                  ))}
+                  {buildings
+                    .filter(building => filters.includeDeleted || !building.deletedAt)
+                    .map((building) => (
+                      <MenuItem key={building.id} value={building.id}>
+                        {building.name}
+                      </MenuItem>
+                    ))}
                 </Select>
               </FormControl>
 
@@ -487,11 +490,13 @@ const FloorsTab: React.FC<FloorsTabProps> = ({ siteId, onNotification, disabled 
                 label="Bâtiment *"
                 disabled={!!editingFloor} // Can't change building when editing
               >
-                {buildings.map((building) => (
-                  <MenuItem key={building.id} value={building.id}>
-                    {building.name}
-                  </MenuItem>
-                ))}
+                {buildings
+                  .filter(building => filters.includeDeleted || !building.deletedAt)
+                  .map((building) => (
+                    <MenuItem key={building.id} value={building.id}>
+                      {building.name}
+                    </MenuItem>
+                  ))}
               </Select>
               {formErrors.buildingId && (
                 <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.5 }}>
