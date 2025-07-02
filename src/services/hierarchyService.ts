@@ -131,7 +131,7 @@ export const hierarchyService = {
       const buildingsWithFloors: BuildingWithFloors[] = buildings.map(building => ({
         ...building,
         buildingFloors: buildingFloors.filter(floor => floor.building.id === building.id),
-        parts: parts.filter(part => part.buildingId === building.id),
+        parts: parts.filter(part => part.building?.id === building.id),
       }));
 
       return {
@@ -165,14 +165,14 @@ export const hierarchyService = {
             ...site,
             buildings: siteBuildings.map(building => {
               const buildingFloors = data.buildingFloors.filter(floor => floor.building.id === building.id);
-              const buildingParts = data.parts.filter(part => part.buildingId === building.id);
+              const buildingParts = data.parts.filter(part => part.building?.id === building.id);
               const buildingLots = data.lots.filter(lot => lot.buildingId === building.id);
 
               return {
                 ...building,
                 floors: buildingFloors,
                 parts: buildingParts.map(part => {
-                  const partFloors = data.partFloors.filter(partFloor => part.partFloorId === partFloor.id);
+                  const partFloors = part.partFloors || [];
                   return {
                     ...part,
                     floors: partFloors,

@@ -124,8 +124,8 @@ export interface Part {
   name: string;
   isIcpe: boolean;
   type: PartType;
-  buildingId?: number;
-  partFloorId?: number;
+  building: Building;
+  partFloors?: PartFloor[];
   habFamilyName?: HabFamilyName;
   erpTypeCodes?: ErpTypeCode;
 }
@@ -135,7 +135,7 @@ export interface CreatePartDto {
   isIcpe?: boolean;
   type: PartType;
   buildingId: number;
-  partFloorId: number;
+  levelCount: number;
   habFamilyName?: HabFamilyName;
   erpTypeCodes: ErpTypeCode;
 }
@@ -144,8 +144,16 @@ export interface UpdatePartDto {
   name?: string;
   isIcpe?: boolean;
   type?: PartType;
+  levelCount?: number;
   habFamilyName?: HabFamilyName;
   erpTypeCodes?: ErpTypeCode;
+}
+
+// Level assignment for parts
+export interface LevelAssignment {
+  levelNumber: number;
+  buildingFloorId: number | null;
+  partFloorData?: Omit<CreatePartFloorDto, 'buildingFloorId'>;
 }
 
 // Part Floor types
@@ -160,7 +168,7 @@ export interface PartFloor {
   exploitationSurface: number;
   glaSurface: number;
   publicAccessSurface: number;
-  buildingFloorId?: number;
+  buildingFloor: BuildingFloor;
 }
 
 export interface CreatePartFloorDto {

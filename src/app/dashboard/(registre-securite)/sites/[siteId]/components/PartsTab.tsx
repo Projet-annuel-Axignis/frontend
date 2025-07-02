@@ -3,7 +3,7 @@
 'use client';
 
 import { buildingService, partFloorService, partService } from '@/services/siteService';
-import { Building, CreatePartDto, Part, PartFloor, UpdatePartDto } from '@/types/site';
+import { Building, CreatePartDto, Part, UpdatePartDto } from '@/types/site';
 import {
   Add as AddIcon,
   Delete as DeleteIcon,
@@ -70,7 +70,7 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
   // Data states
   const [parts, setParts] = useState<Part[]>([]);
   const [buildings, setBuildings] = useState<Building[]>([]);
-  const [partFloors, setPartFloors] = useState<PartFloor[]>([]);
+  const [buildingFloors, setBuildingFloors] = useState<BuildingFloor[]>([]);
   const [filteredParts, setFilteredParts] = useState<Part[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -91,11 +91,14 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
   const [formData, setFormData] = useState<CreatePartDto>({
     name: '',
     buildingId: 0,
-    partFloorId: 0,
+    levelCount: 1,
     type: 'PRIVATE',
     isIcpe: false,
     erpTypeCodes: 'J',
   });
+
+  // Level assignment states
+  const [levelAssignments, setLevelAssignments] = useState<LevelAssignment[]>([]);
 
   // Load data
   useEffect(() => {
@@ -112,32 +115,35 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
   const loadData = async () => {
     setLoading(true);
     try {
-      // Load buildings for the site
+      // Load buildings for the site (including deleted for complete data)
       const buildingsData = await buildingService.getBuildings({
         siteId,
-        includeDeleted: filters.includeDeleted,
+        includeDeleted: true,
       });
       setBuildings(buildingsData.buildings);
 
-      // Load part floors
-      const partFloorsData = await partFloorService.getPartFloors({
-        includeDeleted: filters.includeDeleted,
-      });
-      setPartFloors(partFloorsData.partFloors);
+      // Load building floors for all buildings in this site
+      if (buildingsData.buildings.length > 0) {
+        const floorsPromises = buildingsData.buildings.map(building =>
+          buildingFloorService.getBuildingFloors({
+            buildingId: building.id,
+            includeDeleted: true,
+          })
+        );
+        const floorsResponses = await Promise.all(floorsPromises);
+        const allBuildingFloors = floorsResponses.flatMap(response => response.buildingFloors);
+        setBuildingFloors(allBuildingFloors);
+      } else {
+        setBuildingFloors([]);
+      }
 
-      // Load parts
+      // Load parts for buildings in this site
       const partsData = await partService.getParts({
+        filterField: 'buildingId',
+        filter: buildingsData.buildings.map(b => b.id).join(','),
         includeDeleted: filters.includeDeleted,
       });
-      // Filter parts to only show those belonging to buildings in this site
-      const sitePartFloorIds = partFloorsData.partFloors
-        .filter(pf => buildingsData.buildings.some(b => b.id === pf.buildingFloorId))
-        .map(pf => pf.id);
-
-      const siteParts = partsData.parts.filter(part =>
-        part.partFloorId && sitePartFloorIds.includes(part.partFloorId)
-      );
-      setParts(siteParts);
+      setParts(partsData.parts);
     } catch (error) {
       console.error('Error loading data:', error);
       onNotification('Erreur lors du chargement des données', 'error');
@@ -147,6 +153,11 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
 
   const filterParts = () => {
     let filtered = [...parts];
+
+    // Filter by deleted status
+    if (!filters.includeDeleted) {
+      filtered = filtered.filter(part => !part.deletedAt);
+    }
 
     // Filter by search
     if (filters.search) {
@@ -159,12 +170,7 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
 
     // Filter by building
     if (filters.buildingId) {
-      const buildingPartFloorIds = partFloors
-        .filter(pf => pf.buildingFloorId === filters.buildingId)
-        .map(pf => pf.id);
-      filtered = filtered.filter(part =>
-        part.partFloorId && buildingPartFloorIds.includes(part.partFloorId)
-      );
+      filtered = filtered.filter(part => part.building?.id === filters.buildingId);
     }
 
     setFilteredParts(filtered);
@@ -184,17 +190,57 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
     });
   };
 
+  // Initialize level assignments based on levelCount
+  const initializeLevelAssignments = (levelCount: number, existingPart?: Part) => {
+    const assignments: LevelAssignment[] = [];
+    for (let i = 1; i <= levelCount; i++) {
+      assignments.push({
+        levelNumber: i,
+        buildingFloorId: null,
+        partFloorData: {
+          name: `Niveau ${i}`,
+          publicCount: 0,
+          staffCount: 0,
+          exploitationSurface: 0,
+          glaSurface: 0,
+          publicAccessSurface: 0,
+        }
+      });
+    }
+
+    // If editing, try to populate with existing data
+    if (existingPart?.partFloors) {
+      existingPart.partFloors.forEach((partFloor, index) => {
+        if (assignments[index]) {
+          assignments[index].buildingFloorId = partFloor.buildingFloor?.id || null;
+          assignments[index].partFloorData = {
+            name: partFloor.name,
+            publicCount: partFloor.publicCount,
+            staffCount: partFloor.staffCount,
+            exploitationSurface: partFloor.exploitationSurface,
+            glaSurface: partFloor.glaSurface,
+            publicAccessSurface: partFloor.publicAccessSurface,
+          };
+        }
+      });
+    }
+
+    setLevelAssignments(assignments);
+  };
+
   const openCreateDialog = () => {
     setDialogMode('create');
     setSelectedPart(null);
+    const availableBuildings = buildings.filter(b => !b.deletedAt);
     setFormData({
       name: '',
-      buildingId: buildings.length > 0 ? buildings[0].id : 0,
-      partFloorId: 0,
+      buildingId: availableBuildings.length > 0 ? availableBuildings[0].id : 0,
+      levelCount: 1,
       type: 'PRIVATE',
       isIcpe: false,
       erpTypeCodes: 'J',
     });
+    initializeLevelAssignments(1);
     setDialogOpen(true);
   };
 
@@ -203,37 +249,94 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
     setSelectedPart(part);
     setFormData({
       name: part.name,
-      buildingId: part.buildingId || 0,
-      partFloorId: part.partFloorId || 0,
+      buildingId: part.building?.id || 0,
+      levelCount: part.partFloors?.length || 1,
       type: part.type,
       isIcpe: part.isIcpe,
       erpTypeCodes: part.erpTypeCodes || 'J',
     });
+    initializeLevelAssignments(part.partFloors?.length || 1, part);
     setDialogOpen(true);
   };
 
   const closeDialog = () => {
     setDialogOpen(false);
     setSelectedPart(null);
+    setLevelAssignments([]);
   };
 
   const handleFormChange = (field: keyof CreatePartDto, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+
+    // If levelCount changes, reinitialize level assignments
+    if (field === 'levelCount') {
+      initializeLevelAssignments(value, selectedPart || undefined);
+    }
+  };
+
+  const updateLevelAssignment = (levelNumber: number, field: keyof LevelAssignment, value: any) => {
+    setLevelAssignments(prev =>
+      prev.map(assignment =>
+        assignment.levelNumber === levelNumber
+          ? { ...assignment, [field]: value }
+          : assignment
+      )
+    );
+  };
+
+  const updatePartFloorData = (levelNumber: number, field: string, value: any) => {
+    setLevelAssignments(prev =>
+      prev.map(assignment =>
+        assignment.levelNumber === levelNumber
+          ? {
+            ...assignment,
+            partFloorData: {
+              ...assignment.partFloorData!,
+              [field]: value
+            }
+          }
+          : assignment
+      )
+    );
+  };
+
+  const getAvailableBuildingFloors = (selectedBuildingId: number) => {
+    return buildingFloors
+      .filter(floor => floor.building.id === selectedBuildingId)
+      .filter(floor => filters.includeDeleted || !floor.deletedAt);
   };
 
   const handleSubmit = async () => {
     try {
       if (dialogMode === 'create') {
+        // Create the part first
         await partService.createPart(formData);
+
+        // Create part floors for each level assignment
+        for (const assignment of levelAssignments) {
+          if (assignment.buildingFloorId && assignment.partFloorData) {
+            await partFloorService.createPartFloor({
+              ...assignment.partFloorData,
+              buildingFloorId: assignment.buildingFloorId,
+            });
+          }
+        }
+
         onNotification('Partie créée avec succès', 'success');
       } else if (selectedPart) {
+        // Update the part
         const updateData: UpdatePartDto = {
           name: formData.name,
           type: formData.type,
+          levelCount: formData.levelCount,
           isIcpe: formData.isIcpe,
           erpTypeCodes: formData.erpTypeCodes,
         };
         await partService.updatePart(selectedPart.id, updateData);
+
+        // TODO: Handle updating part floors - this requires more complex logic
+        // to determine which ones to create, update, or delete
+
         onNotification('Partie modifiée avec succès', 'success');
       }
 
@@ -258,16 +361,9 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
     }
   };
 
-  const getBuildingName = (buildingId?: number) => {
-    if (!buildingId) return 'Non défini';
-    const building = buildings.find(b => b.id === buildingId);
-    return building ? building.name : `ID: ${buildingId}`;
-  };
-
-  const getPartFloorName = (partFloorId?: number) => {
-    if (!partFloorId) return 'Non défini';
-    const partFloor = partFloors.find(pf => pf.id === partFloorId);
-    return partFloor ? partFloor.name : `ID: ${partFloorId}`;
+  const getBuildingName = (building?: Building) => {
+    if (!building) return 'Non défini';
+    return building.name;
   };
 
   const isDeleted = (part: Part) => !!part.deletedAt;
@@ -300,13 +396,13 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
 
           <Grid xs={12}>
             <Typography variant="body2" color="text.secondary">
-              <strong>Bâtiment :</strong> {getBuildingName(part.buildingId)}
+              <strong>Bâtiment :</strong> {getBuildingName(part.building)}
             </Typography>
           </Grid>
 
           <Grid xs={12}>
             <Typography variant="body2" color="text.secondary">
-              <strong>Étage de partie :</strong> {getPartFloorName(part.partFloorId)}
+              <strong>Niveaux :</strong> {part.partFloors?.length || 0} niveau(s)
             </Typography>
           </Grid>
 
@@ -468,7 +564,7 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
                     <TableCell>Nom</TableCell>
                     <TableCell>Type</TableCell>
                     <TableCell>Bâtiment</TableCell>
-                    <TableCell>Étage de partie</TableCell>
+                    <TableCell>Niveaux</TableCell>
                     <TableCell>ICPE</TableCell>
                     <TableCell>Code ERP</TableCell>
                     <TableCell align="center">Actions</TableCell>
@@ -495,8 +591,8 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
                         </Box>
                       </TableCell>
                       <TableCell>{part.type === 'PRIVATE' ? 'Privée' : 'Commune'}</TableCell>
-                      <TableCell>{getBuildingName(part.buildingId)}</TableCell>
-                      <TableCell>{getPartFloorName(part.partFloorId)}</TableCell>
+                      <TableCell>{getBuildingName(part.building)}</TableCell>
+                      <TableCell>{part.partFloors?.length || 0} niveau(s)</TableCell>
                       <TableCell>{part.isIcpe ? 'Oui' : 'Non'}</TableCell>
                       <TableCell>{part.erpTypeCodes || '-'}</TableCell>
                       <TableCell>
@@ -535,85 +631,87 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
       )}
 
       {/* Create/Edit Dialog */}
-      <Dialog open={dialogOpen} onClose={closeDialog} maxWidth="md" fullWidth>
+      <Dialog open={dialogOpen} onClose={closeDialog} maxWidth="lg" fullWidth>
         <DialogTitle>
           {dialogMode === 'create' ? 'Créer une partie' : 'Modifier la partie'}
         </DialogTitle>
         <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-            <TextField
-              label="Nom de la partie"
-              value={formData.name}
-              onChange={(e) => handleFormChange('name', e.target.value)}
-              required
-              fullWidth
-            />
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 1 }}>
+            {/* Basic Information */}
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+              <TextField
+                label="Nom de la partie"
+                value={formData.name}
+                onChange={(e) => handleFormChange('name', e.target.value)}
+                required
+                fullWidth
+              />
 
-            <FormControl required fullWidth>
-              <InputLabel>Bâtiment</InputLabel>
-              <Select
-                value={formData.buildingId}
-                onChange={(e) => handleFormChange('buildingId', Number(e.target.value))}
-                label="Bâtiment"
-              >
-                {buildings.map((building) => (
-                  <MenuItem key={building.id} value={building.id}>
-                    {building.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+              <FormControl required fullWidth>
+                <InputLabel>Bâtiment</InputLabel>
+                <Select
+                  value={formData.buildingId}
+                  onChange={(e) => handleFormChange('buildingId', Number(e.target.value))}
+                  label="Bâtiment"
+                >
+                  {buildings
+                    .filter(building => filters.includeDeleted || !building.deletedAt)
+                    .map((building) => (
+                      <MenuItem key={building.id} value={building.id}>
+                        {building.name}
+                      </MenuItem>
+                    ))}
+                </Select>
+              </FormControl>
+            </Box>
 
-            <FormControl required fullWidth>
-              <InputLabel>Étage de partie</InputLabel>
-              <Select
-                value={formData.partFloorId}
-                onChange={(e) => handleFormChange('partFloorId', Number(e.target.value))}
-                label="Étage de partie"
-              >
-                {partFloors.map((partFloor) => (
-                  <MenuItem key={partFloor.id} value={partFloor.id}>
-                    {partFloor.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' }, gap: 2 }}>
+              <TextField
+                label="Nombre de niveaux"
+                type="number"
+                value={formData.levelCount}
+                onChange={(e) => handleFormChange('levelCount', Math.max(1, parseInt(e.target.value) || 1))}
+                inputProps={{ min: 1, max: 20 }}
+                required
+                fullWidth
+              />
 
-            <FormControl required fullWidth>
-              <InputLabel>Type</InputLabel>
-              <Select
-                value={formData.type}
-                onChange={(e) => handleFormChange('type', e.target.value)}
-                label="Type"
-              >
-                <MenuItem value="PRIVATE">Privée</MenuItem>
-                <MenuItem value="COMMUNAL">Commune</MenuItem>
-              </Select>
-            </FormControl>
+              <FormControl required fullWidth>
+                <InputLabel>Type</InputLabel>
+                <Select
+                  value={formData.type}
+                  onChange={(e) => handleFormChange('type', e.target.value)}
+                  label="Type"
+                >
+                  <MenuItem value="PRIVATE">Privée</MenuItem>
+                  <MenuItem value="COMMUNAL">Commune</MenuItem>
+                </Select>
+              </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel>Code ERP</InputLabel>
-              <Select
-                value={formData.erpTypeCodes}
-                onChange={(e) => handleFormChange('erpTypeCodes', e.target.value)}
-                label="Code ERP"
-              >
-                <MenuItem value="J">J - Structures d&apos;accueil pour personnes âgées</MenuItem>
-                <MenuItem value="L">L - Salles de spectacles</MenuItem>
-                <MenuItem value="M">M - Magasins de vente</MenuItem>
-                <MenuItem value="N">N - Restaurants et débits de boissons</MenuItem>
-                <MenuItem value="O">O - Hôtels et pensions de famille</MenuItem>
-                <MenuItem value="P">P - Salles de danse et salles de jeux</MenuItem>
-                <MenuItem value="R">R - Établissements de soins</MenuItem>
-                <MenuItem value="S">S - Bibliothèques, centres de documentation</MenuItem>
-                <MenuItem value="T">T - Salles d&apos;exposition</MenuItem>
-                <MenuItem value="U">U - Établissements de soins avec hébergement</MenuItem>
-                <MenuItem value="V">V - Établissements de culte</MenuItem>
-                <MenuItem value="W">W - Administrations, banques, bureaux</MenuItem>
-                <MenuItem value="X">X - Établissements sportifs couverts</MenuItem>
-                <MenuItem value="Y">Y - Musées</MenuItem>
-              </Select>
-            </FormControl>
+              <FormControl fullWidth>
+                <InputLabel>Code ERP</InputLabel>
+                <Select
+                  value={formData.erpTypeCodes}
+                  onChange={(e) => handleFormChange('erpTypeCodes', e.target.value)}
+                  label="Code ERP"
+                >
+                  <MenuItem value="J">J - Structures d&apos;accueil pour personnes âgées</MenuItem>
+                  <MenuItem value="L">L - Salles de spectacles</MenuItem>
+                  <MenuItem value="M">M - Magasins de vente</MenuItem>
+                  <MenuItem value="N">N - Restaurants et débits de boissons</MenuItem>
+                  <MenuItem value="O">O - Hôtels et pensions de famille</MenuItem>
+                  <MenuItem value="P">P - Salles de danse et salles de jeux</MenuItem>
+                  <MenuItem value="R">R - Établissements de soins</MenuItem>
+                  <MenuItem value="S">S - Bibliothèques, centres de documentation</MenuItem>
+                  <MenuItem value="T">T - Salles d&apos;exposition</MenuItem>
+                  <MenuItem value="U">U - Établissements de soins avec hébergement</MenuItem>
+                  <MenuItem value="V">V - Établissements de culte</MenuItem>
+                  <MenuItem value="W">W - Administrations, banques, bureaux</MenuItem>
+                  <MenuItem value="X">X - Établissements sportifs couverts</MenuItem>
+                  <MenuItem value="Y">Y - Musées</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
 
             <FormControlLabel
               control={
@@ -624,6 +722,114 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
               }
               label="Installation Classée pour la Protection de l'Environnement (ICPE)"
             />
+
+            {/* Level Assignments */}
+            {levelAssignments.length > 0 && (
+              <Box>
+                <Typography variant="h6" sx={{ mb: 2 }}>
+                  Affectation des niveaux aux étages de bâtiment
+                </Typography>
+                <TableContainer component={Paper} variant="outlined">
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Niveau</TableCell>
+                        <TableCell>Étage de bâtiment</TableCell>
+                        <TableCell>Nom de l&apos;étage de partie</TableCell>
+                        <TableCell>Public</TableCell>
+                        <TableCell>Personnel</TableCell>
+                        <TableCell>Surface exploitation</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {levelAssignments.map((assignment) => (
+                        <TableRow key={assignment.levelNumber}>
+                          <TableCell>
+                            <Typography fontWeight="medium">
+                              Niveau {assignment.levelNumber}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <FormControl size="small" fullWidth>
+                              <Select
+                                value={assignment.buildingFloorId || ''}
+                                onChange={(e) => updateLevelAssignment(
+                                  assignment.levelNumber,
+                                  'buildingFloorId',
+                                  e.target.value === '' ? null : Number(e.target.value)
+                                )}
+                                displayEmpty
+                              >
+                                <MenuItem value="">Non affecté</MenuItem>
+                                {getAvailableBuildingFloors(formData.buildingId).map((floor) => (
+                                  <MenuItem key={floor.id} value={floor.id}>
+                                    {floor.name}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                          </TableCell>
+                          <TableCell>
+                            <TextField
+                              size="small"
+                              value={assignment.partFloorData?.name || ''}
+                              onChange={(e) => updatePartFloorData(
+                                assignment.levelNumber,
+                                'name',
+                                e.target.value
+                              )}
+                              placeholder={`Niveau ${assignment.levelNumber}`}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <TextField
+                              size="small"
+                              type="number"
+                              value={assignment.partFloorData?.publicCount || 0}
+                              onChange={(e) => updatePartFloorData(
+                                assignment.levelNumber,
+                                'publicCount',
+                                parseInt(e.target.value) || 0
+                              )}
+                              inputProps={{ min: 0 }}
+                              sx={{ width: 80 }}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <TextField
+                              size="small"
+                              type="number"
+                              value={assignment.partFloorData?.staffCount || 0}
+                              onChange={(e) => updatePartFloorData(
+                                assignment.levelNumber,
+                                'staffCount',
+                                parseInt(e.target.value) || 0
+                              )}
+                              inputProps={{ min: 0 }}
+                              sx={{ width: 80 }}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <TextField
+                              size="small"
+                              type="number"
+                              value={assignment.partFloorData?.exploitationSurface || 0}
+                              onChange={(e) => updatePartFloorData(
+                                assignment.levelNumber,
+                                'exploitationSurface',
+                                parseFloat(e.target.value) || 0
+                              )}
+                              inputProps={{ min: 0, step: 0.1 }}
+                              sx={{ width: 100 }}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Box>
+            )}
           </Box>
         </DialogContent>
         <DialogActions>
