@@ -153,7 +153,7 @@ const FloorsTab: React.FC<FloorsTabProps> = ({ siteId, onNotification, disabled 
 
     // Filter by building
     if (filters.buildingId !== '') {
-      filtered = filtered.filter(floor => floor.buildingId === Number(filters.buildingId));
+      filtered = filtered.filter(floor => floor.building.id === Number(filters.buildingId));
     }
 
     setFilteredFloors(filtered);
@@ -173,7 +173,7 @@ const FloorsTab: React.FC<FloorsTabProps> = ({ siteId, onNotification, disabled 
     setEditingFloor(floor);
     setFormData({
       name: floor.name,
-      buildingId: floor.buildingId,
+      buildingId: floor.building.id,
     });
     setFormErrors({});
     setDialogOpen(true);
