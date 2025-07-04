@@ -124,7 +124,7 @@ export const hierarchyService = {
       // Structurer les sites avec leurs bâtiments
       const sitesWithBuildings: SiteWithBuildings[] = sites.map(site => ({
         ...site,
-        buildings: buildings.filter(building => building.siteId === site.id),
+        buildings: buildings.filter(building => building.site?.id === site.id),
       }));
 
       // Structurer les bâtiments avec leurs relations
@@ -159,7 +159,7 @@ export const hierarchyService = {
       return {
         ...company,
         sites: companySites.map(site => {
-          const siteBuildings = data.buildings.filter(building => building.siteId === site.id);
+          const siteBuildings = data.buildings.filter(building => building.site?.id === site.id);
 
           return {
             ...site,
