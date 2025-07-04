@@ -27,6 +27,7 @@ import {
   FormControlLabel,
   Grid,
   IconButton,
+  InputAdornment,
   InputLabel,
   MenuItem,
   Paper,
@@ -186,6 +187,7 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
           exploitationSurface: 0,
           glaSurface: 0,
           publicAccessSurface: 0,
+          levelNumber: i,
         }
       });
     }
@@ -202,6 +204,7 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
             exploitationSurface: partFloor.exploitationSurface,
             glaSurface: partFloor.glaSurface,
             publicAccessSurface: partFloor.publicAccessSurface,
+            levelNumber: partFloor.levelNumber,
           };
         }
       });
@@ -291,8 +294,8 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
   const handleSubmit = async () => {
     try {
       if (dialogMode === 'create') {
-        // Create the part first
-        await partService.createPart(formData);
+        // Create the part first and get the created part with its ID
+        const createdPart = await partService.createPart(formData);
 
         // Create part floors for each level assignment
         for (const assignment of levelAssignments) {
@@ -300,6 +303,7 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
             await partFloorService.createPartFloor({
               ...assignment.partFloorData,
               buildingFloorId: assignment.buildingFloorId,
+              partId: createdPart.id, // Use the ID from the created part
             });
           }
         }
@@ -310,7 +314,6 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
         const updateData: UpdatePartDto = {
           name: formData.name,
           type: formData.type,
-          levelCount: formData.levelCount,
           isIcpe: formData.isIcpe,
           erpTypeCodes: formData.erpTypeCodes,
         };
@@ -688,9 +691,12 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
                         <TableCell>Niveau</TableCell>
                         <TableCell>Étage de bâtiment</TableCell>
                         <TableCell>Nom de l&apos;étage de partie</TableCell>
+                        <TableCell>Niveau de partie</TableCell>
                         <TableCell>Public</TableCell>
                         <TableCell>Personnel</TableCell>
                         <TableCell>Surface exploitation</TableCell>
+                        <TableCell>Surface GLA</TableCell>
+                        <TableCell>Surface accès public</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -704,6 +710,7 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
                           <TableCell>
                             <FormControl size="small" fullWidth>
                               <Select
+                                label="Étage de bâtiment"
                                 value={assignment.buildingFloorId || ''}
                                 onChange={(e) => updateLevelAssignment(
                                   assignment.levelNumber,
@@ -723,6 +730,7 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
                           </TableCell>
                           <TableCell>
                             <TextField
+                              label="Nom de l'étage de partie"
                               size="small"
                               value={assignment.partFloorData?.name || ''}
                               onChange={(e) => updatePartFloorData(
@@ -735,7 +743,22 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
                           </TableCell>
                           <TableCell>
                             <TextField
+                              label="Niveau de partie"
                               size="small"
+                              type="number"
+                              value={assignment.partFloorData?.levelNumber || assignment.levelNumber}
+                              onChange={(e) => updatePartFloorData(
+                                assignment.levelNumber,
+                                'levelNumber',
+                                parseInt(e.target.value) || assignment.levelNumber
+                              )}
+                              inputProps={{ min: 0 }}
+                              sx={{ width: 80 }}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <TextField
+                              label="Public"
                               type="number"
                               value={assignment.partFloorData?.publicCount || 0}
                               onChange={(e) => updatePartFloorData(
@@ -749,6 +772,7 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
                           </TableCell>
                           <TableCell>
                             <TextField
+                              label="Personnel"
                               size="small"
                               type="number"
                               value={assignment.partFloorData?.staffCount || 0}
@@ -763,6 +787,7 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
                           </TableCell>
                           <TableCell>
                             <TextField
+                              label="Surface exploitation"
                               size="small"
                               type="number"
                               value={assignment.partFloorData?.exploitationSurface || 0}
@@ -773,6 +798,51 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
                               )}
                               inputProps={{ min: 0, step: 0.1 }}
                               sx={{ width: 100 }}
+                              slotProps={{
+                                input: {
+                                  endAdornment: <InputAdornment position="end">m²</InputAdornment>
+                                }
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <TextField
+                              label="Surface GLA"
+                              size="small"
+                              type="number"
+                              value={assignment.partFloorData?.glaSurface || 0}
+                              onChange={(e) => updatePartFloorData(
+                                assignment.levelNumber,
+                                'glaSurface',
+                                parseFloat(e.target.value) || 0
+                              )}
+                              inputProps={{ min: 0, step: 0.1 }}
+                              sx={{ width: 100 }}
+                              slotProps={{
+                                input: {
+                                  endAdornment: <InputAdornment position="end">m²</InputAdornment>
+                                }
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <TextField
+                              label="Surface accès public"
+                              size="small"
+                              type="number"
+                              value={assignment.partFloorData?.publicAccessSurface || 0}
+                              onChange={(e) => updatePartFloorData(
+                                assignment.levelNumber,
+                                'publicAccessSurface',
+                                parseFloat(e.target.value) || 0
+                              )}
+                              inputProps={{ min: 0, step: 0.1 }}
+                              sx={{ width: 100 }}
+                              slotProps={{
+                                input: {
+                                  endAdornment: <InputAdornment position="end">m²</InputAdornment>
+                                }
+                              }}
                             />
                           </TableCell>
                         </TableRow>
