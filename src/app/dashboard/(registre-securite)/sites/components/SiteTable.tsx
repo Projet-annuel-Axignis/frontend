@@ -184,7 +184,13 @@ const SiteTable: React.FC<SiteTableProps> = ({
                       size="small"
                       startIcon={<ViewIcon />}
                       onClick={() => onView(site)}
-                      sx={{ minWidth: 'auto' }}
+                      sx={{
+                        minWidth: 'auto',
+                        background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+                        '&:hover': {
+                          background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                        },
+                      }}
                     >
                       Voir détails
                     </Button>
