@@ -238,7 +238,9 @@ export const partService = {
       const searchLower = params.search.toLowerCase();
       parts = parts.filter(part =>
         part.name.toLowerCase().includes(searchLower) ||
-        part.type.toLowerCase().includes(searchLower)
+        part.type?.toLowerCase().includes(searchLower) ||
+        part.habFamily?.toLowerCase().includes(searchLower) ||
+        part.erpTypes?.some(erpType => erpType.toLowerCase().includes(searchLower))
       );
     }
 

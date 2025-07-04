@@ -2,8 +2,8 @@
 // @ts-nocheck
 'use client';
 
-import { buildingService, partFloorService, partService } from '@/services/siteService';
-import { Building, CreatePartDto, Part, UpdatePartDto } from '@/types/site';
+import { buildingFloorService, buildingService, partFloorService, partService } from '@/services/siteService';
+import { Building, BuildingFloor, CreatePartDto, LevelAssignment, Part, UpdatePartDto } from '@/types/site';
 import {
   Add as AddIcon,
   Delete as DeleteIcon,
@@ -63,6 +63,10 @@ interface Filters {
   showAdvanced: boolean;
 }
 
+interface PartFormData extends CreatePartDto {
+  levelCount: number;
+}
+
 const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = false }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -88,13 +92,13 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
   const [selectedPart, setSelectedPart] = useState<Part | null>(null);
 
   // Form states
-  const [formData, setFormData] = useState<CreatePartDto>({
+  const [formData, setFormData] = useState<PartFormData>({
     name: '',
     buildingId: 0,
     levelCount: 1,
     type: 'PRIVATE',
     isIcpe: false,
-    erpTypeCodes: 'J',
+    erpTypeCodes: ['J'],
   });
 
   // Level assignment states
@@ -238,7 +242,7 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
       levelCount: 1,
       type: 'PRIVATE',
       isIcpe: false,
-      erpTypeCodes: 'J',
+      erpTypeCodes: ['J'],
     });
     initializeLevelAssignments(1);
     setDialogOpen(true);
@@ -251,9 +255,9 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
       name: part.name,
       buildingId: part.building?.id || 0,
       levelCount: part.partFloors?.length || 1,
-      type: part.type,
+      type: part.type || 'PRIVATE',
       isIcpe: part.isIcpe,
-      erpTypeCodes: part.erpTypeCodes || 'J',
+      erpTypeCodes: part.erpTypes || ['J'],
     });
     initializeLevelAssignments(part.partFloors?.length || 1, part);
     setDialogOpen(true);
@@ -265,7 +269,7 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
     setLevelAssignments([]);
   };
 
-  const handleFormChange = (field: keyof CreatePartDto, value: any) => {
+  const handleFormChange = (field: keyof PartFormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
 
     // If levelCount changes, reinitialize level assignments

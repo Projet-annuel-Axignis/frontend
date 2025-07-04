@@ -1,5 +1,8 @@
 // Base types for site management
 
+import { User } from "./auth";
+import { Company } from "./company";
+
 export interface Site {
   id: number;
   createdAt: string;
@@ -12,6 +15,7 @@ export interface Site {
   city: string;
   reference?: string;
   companyId: number;
+  company?: Company;
 }
 
 export interface CreateSiteDto {
@@ -40,11 +44,12 @@ export interface Building {
   updatedAt: string;
   deletedAt?: string;
   name: string;
-  siteId: number;
+  site?: Site;
   typologies: Typologies[];
   ighClasses: IghClass[];
   erpCategory: ErpCategory | null;
   authorizedUserIds: string[];
+  users?: User[];
 }
 
 export interface ErpCategory {
@@ -102,7 +107,7 @@ export interface UpdateBuildingFloorDto {
 // Part types
 export type PartType = 'PRIVATE' | 'COMMUNAL';
 
-export type HabFamilyName =
+export type HabFamily =
   | 'FIRST_FAMILY_SINGLE'
   | 'SECOND_FAMILY_SINGLE'
   | 'SECOND_FAMILY_COMMUNITY'
@@ -112,7 +117,7 @@ export type HabFamilyName =
   | 'ELDERLY_ACCOMMODATION'
   | 'RESIDENTIAL_COVERED_CAR_PARK';
 
-export type ErpTypeCode =
+export type ErpType =
   | 'J' | 'L' | 'M' | 'N' | 'O' | 'P' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y'
   | 'PA' | 'CTS' | 'SG' | 'PS' | 'GA' | 'OA' | 'EF' | 'REF';
 
@@ -123,11 +128,11 @@ export interface Part {
   deletedAt?: string;
   name: string;
   isIcpe: boolean;
-  type: PartType;
-  building: Building;
+  type?: PartType;
+  building?: Building;
   partFloors?: PartFloor[];
-  habFamilyName?: HabFamilyName;
-  erpTypeCodes?: ErpTypeCode;
+  habFamily?: HabFamily;
+  erpTypes?: ErpType[];
 }
 
 export interface CreatePartDto {
@@ -135,18 +140,16 @@ export interface CreatePartDto {
   isIcpe?: boolean;
   type: PartType;
   buildingId: number;
-  levelCount: number;
-  habFamilyName?: HabFamilyName;
-  erpTypeCodes: ErpTypeCode;
+  habFamilyName?: HabFamily;
+  erpTypeCodes: ErpType[];
 }
 
 export interface UpdatePartDto {
   name?: string;
   isIcpe?: boolean;
   type?: PartType;
-  levelCount?: number;
-  habFamilyName?: HabFamilyName;
-  erpTypeCodes?: ErpTypeCode;
+  habFamilyName?: HabFamily;
+  erpTypeCodes?: ErpType[];
 }
 
 // Level assignment for parts
