@@ -58,10 +58,12 @@ export const hierarchyService = {
     companyId?: number;
     siteId?: number;
     includeDeleted?: boolean;
-  } = {}): Promise<HierarchicalData> {
+  } = {}): Promise<{ data: HierarchicalData; includeDeleted: boolean }> {
     try {
       // Charger les entreprises
-      const companiesResponse = await companyService.getCompanies();
+      const companiesResponse = await companyService.getCompanies({
+        includeDeleted: params.includeDeleted,
+      });
       const companies = companiesResponse.companies;
 
       // Charger les sites
@@ -135,13 +137,16 @@ export const hierarchyService = {
       }));
 
       return {
-        companies,
-        sites: sitesWithBuildings,
-        buildings: buildingsWithFloors,
-        buildingFloors,
-        parts,
-        partFloors,
-        lots,
+        data: {
+          companies,
+          sites: sitesWithBuildings,
+          buildings: buildingsWithFloors,
+          buildingFloors,
+          parts,
+          partFloors,
+          lots,
+        },
+        includeDeleted: params.includeDeleted || false,
       };
     } catch (error) {
       console.error('Erreur lors du chargement des données hiérarchiques:', error);
@@ -150,41 +155,64 @@ export const hierarchyService = {
   },
 
   /**
-   * Structure les données en hiérarchie complète avec toutes les relations
-   */
-  buildCompleteHierarchy(data: HierarchicalData): CompanyHierarchy[] {
-    return data.companies.map(company => {
-      const companySites = data.sites.filter(site => site.companyId === company.id);
+ * Structure les données en hiérarchie complète avec toutes les relations
+ */
+  buildCompleteHierarchy(data: HierarchicalData, includeDeleted = false): CompanyHierarchy[] {
+    // Fonction helper pour vérifier si un élément est supprimé
+    const isDeleted = (entity: any) => {
+      return entity && entity.deletedAt !== null && entity.deletedAt !== undefined;
+    };
 
-      return {
-        ...company,
-        sites: companySites.map(site => {
-          const siteBuildings = data.buildings.filter(building => building.site?.id === site.id);
+    return data.companies
+      .filter(company => includeDeleted || !isDeleted(company))
+      .map(company => {
+        const companySites = data.sites
+          .filter(site => site.companyId === company.id)
+          .filter(site => includeDeleted || !isDeleted(site));
 
-          return {
-            ...site,
-            buildings: siteBuildings.map(building => {
-              const buildingFloors = data.buildingFloors.filter(floor => floor.building.id === building.id);
-              const buildingParts = data.parts.filter(part => part.building?.id === building.id);
-              const buildingLots = data.lots.filter(lot => lot.buildingId === building.id);
+        return {
+          ...company,
+          sites: companySites.map(site => {
+            const siteBuildings = data.buildings
+              .filter(building => building.site?.id === site.id)
+              .filter(building => includeDeleted || !isDeleted(building));
 
-              return {
-                ...building,
-                floors: buildingFloors,
-                parts: buildingParts.map(part => {
-                  const partFloors = part.partFloors || [];
-                  return {
-                    ...part,
-                    floors: partFloors,
-                  };
-                }),
-                lots: buildingLots,
-              };
-            }),
-          };
-        }),
-      };
-    });
+            return {
+              ...site,
+              buildings: siteBuildings.map(building => {
+                const buildingFloors = data.buildingFloors
+                  .filter(floor => floor.building.id === building.id)
+                  .filter(floor => includeDeleted || !isDeleted(floor));
+
+                const buildingParts = data.parts
+                  .filter(part => part.building?.id === building.id)
+                  .filter(part => includeDeleted || !isDeleted(part));
+
+                const buildingLots = data.lots
+                  .filter(lot => lot.buildingId === building.id)
+                  .filter(lot => includeDeleted || !isDeleted(lot));
+
+                return {
+                  ...building,
+                  floors: buildingFloors,
+                  parts: buildingParts.map(part => {
+                    // Associer les partFloors à cette part via la relation buildingFloor
+                    const partFloors = data.partFloors
+                      .filter(pf => buildingFloors.some(bf => bf.id === pf.buildingFloor.id))
+                      .filter(pf => includeDeleted || !isDeleted(pf));
+
+                    return {
+                      ...part,
+                      floors: partFloors,
+                    };
+                  }),
+                  lots: buildingLots,
+                };
+              }),
+            };
+          }),
+        };
+      });
   },
 
   /**
@@ -192,8 +220,8 @@ export const hierarchyService = {
    */
   async loadCompanyHierarchy(companyId: number, includeDeleted = false): Promise<CompanyHierarchy | null> {
     try {
-      const data = await this.loadHierarchicalData({ companyId, includeDeleted });
-      const hierarchy = this.buildCompleteHierarchy(data);
+      const result = await this.loadHierarchicalData({ companyId, includeDeleted });
+      const hierarchy = this.buildCompleteHierarchy(result.data, result.includeDeleted);
       return hierarchy.find(company => company.id === companyId) || null;
     } catch (error) {
       console.error(`Erreur lors du chargement de la hiérarchie pour l'entreprise ${companyId}:`, error);
@@ -206,8 +234,8 @@ export const hierarchyService = {
    */
   async loadSiteHierarchy(siteId: number, includeDeleted = false): Promise<SiteHierarchy | null> {
     try {
-      const data = await this.loadHierarchicalData({ siteId, includeDeleted });
-      const hierarchy = this.buildCompleteHierarchy(data);
+      const result = await this.loadHierarchicalData({ siteId, includeDeleted });
+      const hierarchy = this.buildCompleteHierarchy(result.data, result.includeDeleted);
 
       for (const company of hierarchy) {
         const site = company.sites.find(s => s.id === siteId);
