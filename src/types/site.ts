@@ -156,7 +156,7 @@ export interface UpdatePartDto {
 export interface LevelAssignment {
   levelNumber: number;
   buildingFloorId: number | null;
-  partFloorData?: Omit<CreatePartFloorDto, 'buildingFloorId'>;
+  partFloorData?: Omit<CreatePartFloorDto, 'buildingFloorId' | 'partId'>;
 }
 
 // Part Floor types
@@ -171,6 +171,7 @@ export interface PartFloor {
   exploitationSurface: number;
   glaSurface: number;
   publicAccessSurface: number;
+  levelNumber: number;
   buildingFloor: BuildingFloor;
 }
 
@@ -182,6 +183,8 @@ export interface CreatePartFloorDto {
   glaSurface: number;
   publicAccessSurface: number;
   buildingFloorId: number;
+  levelNumber: number;
+  partId: number;
 }
 
 export interface UpdatePartFloorDto {
@@ -192,6 +195,7 @@ export interface UpdatePartFloorDto {
   glaSurface?: number;
   publicAccessSurface?: number;
   buildingFloorId?: number;
+  levelNumber?: number;
 }
 
 // Lot types
