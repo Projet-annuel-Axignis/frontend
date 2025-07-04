@@ -118,8 +118,8 @@ const HierarchyTree: React.FC<HierarchyTreeProps> = ({
   const loadHierarchyData = async () => {
     try {
       setLoading(true);
-      const data = await hierarchyService.loadHierarchicalData({ includeDeleted });
-      const hierarchy = hierarchyService.buildCompleteHierarchy(data);
+      const result = await hierarchyService.loadHierarchicalData({ includeDeleted });
+      const hierarchy = hierarchyService.buildCompleteHierarchy(result.data, result.includeDeleted);
       setHierarchyData(hierarchy);
     } catch (error) {
       console.error('Erreur lors du chargement de la hiérarchie:', error);
@@ -262,6 +262,11 @@ const HierarchyTree: React.FC<HierarchyTreeProps> = ({
     setSearchTerm('');
   };
 
+  // Fonction helper pour vérifier si un élément est supprimé
+  const isDeleted = (entity: any) => {
+    return entity && entity.deletedAt !== null && entity.deletedAt !== undefined;
+  };
+
   const getNodeIcon = (type: string) => {
     switch (type) {
       case 'company': return <BusinessIcon />;
@@ -316,6 +321,7 @@ const HierarchyTree: React.FC<HierarchyTreeProps> = ({
     const isExpanded = expandedNodes.has(node.id);
     const hasChildren = node.children.length > 0;
     const nodeColor = getNodeColor(node.type);
+    const nodeIsDeleted = isDeleted(node.data);
 
     return (
       <Box key={node.id} sx={{ mb: 0.5 }}>
@@ -327,9 +333,11 @@ const HierarchyTree: React.FC<HierarchyTreeProps> = ({
             alignItems: 'center',
             gap: 1,
             cursor: 'pointer',
-            borderLeft: `4px solid ${nodeColor}`,
+            borderLeft: `4px solid ${nodeIsDeleted ? theme.palette.warning.main : nodeColor}`,
+            backgroundColor: nodeIsDeleted ? alpha(theme.palette.warning.main, 0.05) : 'inherit',
+            opacity: nodeIsDeleted ? 0.7 : 1,
             '&:hover': {
-              backgroundColor: alpha(nodeColor, 0.1),
+              backgroundColor: alpha(nodeIsDeleted ? theme.palette.warning.main : nodeColor, 0.1),
             },
           }}
           onClick={() => handleNodeClick(node)}
@@ -351,13 +359,18 @@ const HierarchyTree: React.FC<HierarchyTreeProps> = ({
           )}
 
           {/* Node Icon */}
-          <Box sx={{ color: nodeColor, display: 'flex', alignItems: 'center' }}>
+          <Box sx={{ color: nodeIsDeleted ? theme.palette.warning.main : nodeColor, display: 'flex', alignItems: 'center' }}>
             {getNodeIcon(node.type)}
           </Box>
 
           {/* Node Name */}
           <Typography variant="body2" sx={{ flexGrow: 1, fontWeight: 500 }}>
             {node.name}
+            {nodeIsDeleted && (
+              <Typography component="span" variant="caption" color="warning.main" sx={{ ml: 1 }}>
+                (Supprimé)
+              </Typography>
+            )}
           </Typography>
 
           {/* Node Type Chip */}
@@ -365,8 +378,8 @@ const HierarchyTree: React.FC<HierarchyTreeProps> = ({
             size="small"
             label={node.type.replace('-', ' ')}
             sx={{
-              backgroundColor: alpha(nodeColor, 0.1),
-              color: nodeColor,
+              backgroundColor: alpha(nodeIsDeleted ? theme.palette.warning.main : nodeColor, 0.1),
+              color: nodeIsDeleted ? theme.palette.warning.main : nodeColor,
               fontSize: '0.7rem',
               height: '20px',
             }}
@@ -377,6 +390,7 @@ const HierarchyTree: React.FC<HierarchyTreeProps> = ({
             <Tooltip title="Ajouter">
               <IconButton
                 size="small"
+                disabled={nodeIsDeleted}
                 onClick={(e) => {
                   e.stopPropagation();
                   onAddEntity(node.type, node.data);
@@ -389,6 +403,7 @@ const HierarchyTree: React.FC<HierarchyTreeProps> = ({
             <Tooltip title="Modifier">
               <IconButton
                 size="small"
+                disabled={nodeIsDeleted}
                 onClick={(e) => {
                   e.stopPropagation();
                   onEditEntity(node.type, node.data);
@@ -401,6 +416,7 @@ const HierarchyTree: React.FC<HierarchyTreeProps> = ({
             <Tooltip title="Supprimer">
               <IconButton
                 size="small"
+                disabled={nodeIsDeleted}
                 onClick={(e) => {
                   e.stopPropagation();
                   onDeleteEntity(node.type, node.data);
