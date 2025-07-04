@@ -27,12 +27,13 @@ import { Company } from '@/types/company';
 import { Building, BuildingFloor, Lot, Part, PartFloor, Site } from '@/types/site';
 import HierarchyTree from '../components/HierarchyTree';
 
-const HierarchyPage: React.FC = () => {
+const HierarchyPage = () => {
   const router = useRouter();
   const { showToast } = useToast();
+  // Par défaut, n'afficher que les éléments non supprimés
   const [includeDeleted, setIncludeDeleted] = useState(false);
 
-  // Selection states
+  // Selection states - filtrer les éléments supprimés
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [selectedSite, setSelectedSite] = useState<Site | null>(null);
   const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(null);
@@ -40,8 +41,17 @@ const HierarchyPage: React.FC = () => {
   const [selectedFloor, setSelectedFloor] = useState<BuildingFloor | PartFloor | null>(null);
   const [selectedLot, setSelectedLot] = useState<Lot | null>(null);
 
-  // Selection handlers
+  // Fonction helper pour vérifier si un élément est supprimé
+  const isDeleted = (entity: any) => {
+    return entity && entity.deletedAt !== null && entity.deletedAt !== undefined;
+  };
+
+  // Selection handlers avec filtrage des éléments supprimés
   const handleSelectCompany = (company: Company | null) => {
+    // Ne sélectionner que si l'entreprise n'est pas supprimée ou si on inclut les supprimés
+    if (company && isDeleted(company) && !includeDeleted) {
+      return;
+    }
     setSelectedCompany(company);
     setSelectedSite(null);
     setSelectedBuilding(null);
@@ -51,6 +61,10 @@ const HierarchyPage: React.FC = () => {
   };
 
   const handleSelectSite = (site: Site | null) => {
+    // Ne sélectionner que si le site n'est pas supprimé ou si on inclut les supprimés
+    if (site && isDeleted(site) && !includeDeleted) {
+      return;
+    }
     setSelectedSite(site);
     setSelectedBuilding(null);
     setSelectedPart(null);
@@ -59,6 +73,10 @@ const HierarchyPage: React.FC = () => {
   };
 
   const handleSelectBuilding = (building: Building | null) => {
+    // Ne sélectionner que si le bâtiment n'est pas supprimé ou si on inclut les supprimés
+    if (building && isDeleted(building) && !includeDeleted) {
+      return;
+    }
     setSelectedBuilding(building);
     setSelectedPart(null);
     setSelectedFloor(null);
@@ -66,18 +84,58 @@ const HierarchyPage: React.FC = () => {
   };
 
   const handleSelectPart = (part: Part | null) => {
+    // Ne sélectionner que si la partie n'est pas supprimée ou si on inclut les supprimés
+    if (part && isDeleted(part) && !includeDeleted) {
+      return;
+    }
     setSelectedPart(part);
     setSelectedFloor(null);
     setSelectedLot(null);
   };
 
   const handleSelectFloor = (floor: BuildingFloor | PartFloor | null) => {
+    // Ne sélectionner que si l'étage n'est pas supprimé ou si on inclut les supprimés
+    if (floor && isDeleted(floor) && !includeDeleted) {
+      return;
+    }
     setSelectedFloor(floor);
     setSelectedLot(null);
   };
 
   const handleSelectLot = (lot: Lot | null) => {
+    // Ne sélectionner que si le lot n'est pas supprimé ou si on inclut les supprimés
+    if (lot && isDeleted(lot) && !includeDeleted) {
+      return;
+    }
     setSelectedLot(lot);
+  };
+
+  // Gestionnaire pour le changement du switch "Inclure les supprimés"
+  const handleIncludeDeletedChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newIncludeDeleted = event.target.checked;
+    setIncludeDeleted(newIncludeDeleted);
+
+    // Si on désactive l'inclusion des supprimés, vérifier les sélections actuelles
+    if (!newIncludeDeleted) {
+      if (selectedLot && isDeleted(selectedLot)) {
+        setSelectedLot(null);
+      }
+      if (selectedFloor && isDeleted(selectedFloor)) {
+        setSelectedFloor(null);
+      }
+      if (selectedPart && isDeleted(selectedPart)) {
+        setSelectedPart(null);
+      }
+      if (selectedBuilding && isDeleted(selectedBuilding)) {
+        setSelectedBuilding(null);
+      }
+      if (selectedSite && isDeleted(selectedSite)) {
+        setSelectedSite(null);
+      }
+      if (selectedCompany && isDeleted(selectedCompany)) {
+        setSelectedCompany(null);
+      }
+    }
   };
 
   // Entity management handlers
@@ -191,7 +249,7 @@ const HierarchyPage: React.FC = () => {
             control={
               <Switch
                 checked={includeDeleted}
-                onChange={(e) => setIncludeDeleted(e.target.checked)}
+                onChange={handleIncludeDeletedChange}
                 color="secondary"
               />
             }
@@ -199,8 +257,13 @@ const HierarchyPage: React.FC = () => {
           />
         </Box>
 
-        <Typography variant="body1" color="text.secondary">
+        <Typography component="div" variant="body1" color="text.secondary">
           Explorez et gérez la hiérarchie complète : Entreprises → Sites → Bâtiments → Parties & Étages
+          {!includeDeleted && (
+            <Typography component="p" variant="body2" color="warning.main" sx={{ mt: 1 }}>
+              ⚠️ Seuls les éléments actifs (non supprimés) sont affichés
+            </Typography>
+          )}
         </Typography>
       </Box>
 
@@ -233,7 +296,7 @@ const HierarchyPage: React.FC = () => {
 
       <Grid container spacing={3}>
         {/* Navigation Tree */}
-        <Grid size={{ xs: 12, md: 6 }}>
+        <Grid size={{ xs: 12, xl: 6 }}>
           <HierarchyTree
             onSelectCompany={handleSelectCompany}
             onSelectSite={handleSelectSite}
@@ -277,12 +340,23 @@ const HierarchyPage: React.FC = () => {
                 <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                   <BusinessIcon />
                   Lot Sélectionné
+                  {isDeleted(selectedLot) && (
+                    <Typography variant="caption" color="error" sx={{ ml: 1 }}>
+                      (Supprimé)
+                    </Typography>
+                  )}
                 </Typography>
-                <Alert severity="info" sx={{ mb: 2 }}>
+                <Alert severity={isDeleted(selectedLot) ? "warning" : "info"} sx={{ mb: 2 }}>
                   Lot : {selectedLot.name}
+                  {isDeleted(selectedLot) && (
+                    <Typography variant="body2" sx={{ mt: 1 }}>
+                      Cet élément a été supprimé le {new Date(selectedLot.deletedAt!).toLocaleDateString('fr-FR')}
+                    </Typography>
+                  )}
                 </Alert>
                 <Button
                   variant="contained"
+                  disabled={isDeleted(selectedLot)}
                   onClick={() => showToast('Gestion des lots en cours de développement', 'info')}
                 >
                   Gérer ce lot
@@ -295,12 +369,23 @@ const HierarchyPage: React.FC = () => {
                 <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                   <BusinessIcon />
                   Étage Sélectionné
+                  {isDeleted(selectedFloor) && (
+                    <Typography variant="caption" color="error" sx={{ ml: 1 }}>
+                      (Supprimé)
+                    </Typography>
+                  )}
                 </Typography>
-                <Alert severity="info" sx={{ mb: 2 }}>
+                <Alert severity={isDeleted(selectedFloor) ? "warning" : "info"} sx={{ mb: 2 }}>
                   Étage : {selectedFloor.name}
+                  {isDeleted(selectedFloor) && (
+                    <Typography variant="body2" sx={{ mt: 1 }}>
+                      Cet élément a été supprimé le {new Date(selectedFloor.deletedAt!).toLocaleDateString('fr-FR')}
+                    </Typography>
+                  )}
                 </Alert>
                 <Button
                   variant="contained"
+                  disabled={isDeleted(selectedFloor)}
                   onClick={() => showToast('Gestion des étages en cours de développement', 'info')}
                 >
                   Gérer cet étage
@@ -313,12 +398,23 @@ const HierarchyPage: React.FC = () => {
                 <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                   <BusinessIcon />
                   Partie Sélectionnée
+                  {isDeleted(selectedPart) && (
+                    <Typography variant="caption" color="error" sx={{ ml: 1 }}>
+                      (Supprimé)
+                    </Typography>
+                  )}
                 </Typography>
-                <Alert severity="info" sx={{ mb: 2 }}>
+                <Alert severity={isDeleted(selectedPart) ? "warning" : "info"} sx={{ mb: 2 }}>
                   Partie : {selectedPart.name}
+                  {isDeleted(selectedPart) && (
+                    <Typography variant="body2" sx={{ mt: 1 }}>
+                      Cet élément a été supprimé le {new Date(selectedPart.deletedAt!).toLocaleDateString('fr-FR')}
+                    </Typography>
+                  )}
                 </Alert>
                 <Button
                   variant="contained"
+                  disabled={isDeleted(selectedPart)}
                   onClick={() => selectedSite && router.push(`/dashboard/sites/${selectedSite.id}?tab=parts`)}
                 >
                   Gérer cette partie
@@ -331,12 +427,23 @@ const HierarchyPage: React.FC = () => {
                 <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                   <BuildingIcon />
                   Bâtiment Sélectionné
+                  {isDeleted(selectedBuilding) && (
+                    <Typography variant="caption" color="error" sx={{ ml: 1 }}>
+                      (Supprimé)
+                    </Typography>
+                  )}
                 </Typography>
-                <Alert severity="info" sx={{ mb: 2 }}>
+                <Alert severity={isDeleted(selectedBuilding) ? "warning" : "info"} sx={{ mb: 2 }}>
                   Bâtiment : {selectedBuilding.name}
+                  {isDeleted(selectedBuilding) && (
+                    <Typography variant="body2" sx={{ mt: 1 }}>
+                      Cet élément a été supprimé le {new Date(selectedBuilding.deletedAt!).toLocaleDateString('fr-FR')}
+                    </Typography>
+                  )}
                 </Alert>
                 <Button
                   variant="contained"
+                  disabled={isDeleted(selectedBuilding)}
                   onClick={() => selectedSite && router.push(`/dashboard/sites/${selectedSite.id}?tab=buildings`)}
                 >
                   Gérer ce bâtiment
@@ -349,13 +456,24 @@ const HierarchyPage: React.FC = () => {
                 <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                   <LocationIcon />
                   Site Sélectionné
+                  {isDeleted(selectedSite) && (
+                    <Typography variant="caption" color="error" sx={{ ml: 1 }}>
+                      (Supprimé)
+                    </Typography>
+                  )}
                 </Typography>
-                <Alert severity="info" sx={{ mb: 2 }}>
+                <Alert severity={isDeleted(selectedSite) ? "warning" : "info"} sx={{ mb: 2 }}>
                   Site : {selectedSite.name}<br />
                   Adresse : {selectedSite.streetNumber} {selectedSite.street}, {selectedSite.postalCode} {selectedSite.city}
+                  {isDeleted(selectedSite) && (
+                    <Typography variant="body2" sx={{ mt: 1 }}>
+                      Cet élément a été supprimé le {new Date(selectedSite.deletedAt!).toLocaleDateString('fr-FR')}
+                    </Typography>
+                  )}
                 </Alert>
                 <Button
                   variant="contained"
+                  disabled={isDeleted(selectedSite)}
                   onClick={() => router.push(`/dashboard/sites/${selectedSite.id}`)}
                 >
                   Gérer ce site
@@ -368,13 +486,24 @@ const HierarchyPage: React.FC = () => {
                 <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                   <BusinessIcon />
                   Entreprise Sélectionnée
+                  {isDeleted(selectedCompany) && (
+                    <Typography variant="caption" color="error" sx={{ ml: 1 }}>
+                      (Supprimé)
+                    </Typography>
+                  )}
                 </Typography>
-                <Alert severity="info" sx={{ mb: 2 }}>
+                <Alert severity={isDeleted(selectedCompany) ? "warning" : "info"} sx={{ mb: 2 }}>
                   Entreprise : {selectedCompany.name}<br />
                   SIRET : {selectedCompany.siretNumber}
+                  {isDeleted(selectedCompany) && (
+                    <Typography variant="body2" sx={{ mt: 1 }}>
+                      Cet élément a été supprimé le {new Date(selectedCompany.deletedAt!).toLocaleDateString('fr-FR')}
+                    </Typography>
+                  )}
                 </Alert>
                 <Button
                   variant="contained"
+                  disabled={isDeleted(selectedCompany)}
                   onClick={() => router.push('/dashboard/administration/entreprises')}
                 >
                   Gérer cette entreprise
