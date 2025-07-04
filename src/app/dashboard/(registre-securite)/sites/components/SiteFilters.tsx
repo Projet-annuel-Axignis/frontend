@@ -1,17 +1,24 @@
 'use client';
 
 import { Company } from '@/types/company';
-import { Clear as ClearIcon } from '@mui/icons-material';
+import {
+  Clear as ClearIcon,
+  FilterList as FilterIcon,
+  Search as SearchIcon
+} from '@mui/icons-material';
 import {
   Autocomplete,
   Box,
+  Button,
   Chip,
   FormControlLabel,
-  IconButton,
+  Grid,
+  InputAdornment,
+  Paper,
   Switch,
   TextField
 } from '@mui/material';
-import React from 'react';
+import React, { useState } from 'react';
 
 interface SiteFiltersProps {
   search: string;
@@ -34,111 +41,134 @@ const SiteFilters: React.FC<SiteFiltersProps> = ({
   companies,
   onReset,
 }) => {
-  const handleReset = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const [showAdvanced, setShowAdvanced] = useState(false);
+
+  const handleReset = () => {
     onReset();
+    // Fermer les filtres avancés après réinitialisation
+    setShowAdvanced(false);
+  };
+
+  const getActiveFiltersCount = () => {
+    let count = 0;
+    if (search.trim()) count++;
+    if (selectedCompany) count++;
+    if (includeDeleted === true) count++;
+    return count;
+  };
+
+  const hasActiveFilters = () => {
+    return search.trim() !== '' || selectedCompany !== null || includeDeleted !== false;
   };
 
   return (
-    <Box sx={{
-      display: 'flex',
-      gap: 2,
-      mb: 3,
-      flexWrap: 'wrap',
-      alignItems: 'center'
-    }}>
-      {/* Company Selector */}
-      <Autocomplete
-        options={companies}
-        getOptionLabel={(option) => option.name}
-        value={selectedCompany}
-        onChange={(_, newValue) => onCompanyChange(newValue)}
-        sx={{ minWidth: 250 }}
-        renderInput={(params) => (
+    <Paper sx={{ p: 3, mb: 3 }}>
+      <Grid container spacing={2} alignItems="center">
+        {/* Recherche */}
+        <Grid size={{ xs: 12, md: 4 }}>
           <TextField
-            {...params}
-            label="Entreprise"
-            variant="outlined"
-            size="small"
+            fullWidth
+            placeholder="Rechercher par nom, adresse, référence..."
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
+            name="search"
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon color="action" />
+                  </InputAdornment>
+                ),
+              }
+            }}
           />
-        )}
-        renderOption={(props, option) => (
-          <Box component="li" {...props}>
-            <Box>
-              <Box sx={{ fontWeight: 'medium' }}>{option.name}</Box>
-              <Box sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
-                SIRET: {option.siretNumber}
+        </Grid>
+
+        {/* Bouton filtres avancés */}
+        <Grid size={{ xs: 12, md: 4 }}>
+          <Button
+            variant="outlined"
+            startIcon={<FilterIcon />}
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            sx={{ mr: 1 }}
+          >
+            Filtres avancés
+            {getActiveFiltersCount() > 0 && (
+              <Chip
+                label={getActiveFiltersCount()}
+                size="small"
+                color="primary"
+                sx={{ ml: 1, height: 20, fontSize: '0.75rem' }}
+              />
+            )}
+          </Button>
+
+          {hasActiveFilters() && (
+            <Button
+              variant="text"
+              startIcon={<ClearIcon />}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleReset();
+              }}
+              size="small"
+            >
+              Réinitialiser
+            </Button>
+          )}
+        </Grid>
+      </Grid>
+
+      {/* Filtres avancés */}
+      {showAdvanced && (
+        <Box sx={{ mt: 3, pt: 3, borderTop: 1, borderColor: 'divider' }}>
+          <Grid container spacing={2}>
+            {/* Filtre par entreprise */}
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+              <Autocomplete
+                options={companies}
+                getOptionLabel={(option) => option.name}
+                value={selectedCompany}
+                onChange={(_, newValue) => onCompanyChange(newValue)}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Entreprise"
+                    variant="outlined"
+                  />
+                )}
+                renderOption={(props, option) => (
+                  <Box component="li" {...props}>
+                    <Box>
+                      <Box sx={{ fontWeight: 'medium' }}>{option.name}</Box>
+                      <Box sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+                        SIRET: {option.siretNumber}
+                      </Box>
+                    </Box>
+                  </Box>
+                )}
+              />
+            </Grid>
+
+            {/* Inclure les supprimés */}
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', height: '100%' }}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={includeDeleted}
+                      onChange={(e) => onIncludeDeletedChange(e.target.checked)}
+                    />
+                  }
+                  label="Inclure les supprimés"
+                />
               </Box>
-            </Box>
-          </Box>
-        )}
-      />
-
-      {/* Search */}
-      <TextField
-        label="Rechercher"
-        placeholder="Nom, adresse, référence..."
-        value={search}
-        onChange={(e) => onSearchChange(e.target.value)}
-        variant="outlined"
-        size="small"
-        sx={{ minWidth: 300 }}
-      />
-
-      {/* Include Deleted */}
-      <FormControlLabel
-        control={
-          <Switch
-            checked={includeDeleted}
-            onChange={(e) => onIncludeDeletedChange(e.target.checked)}
-            size="small"
-          />
-        }
-        label="Inclure supprimés"
-      />
-
-      {/* Reset Button */}
-      <IconButton
-        onClick={handleReset}
-        size="small"
-        sx={{
-          bgcolor: 'grey.100',
-          '&:hover': { bgcolor: 'grey.200' }
-        }}
-        title="Réinitialiser les filtres"
-      >
-        <ClearIcon />
-      </IconButton>
-
-      {/* Active Filters Display */}
-      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-        {selectedCompany && (
-          <Chip
-            label={`Entreprise: ${selectedCompany.name}`}
-            onDelete={() => onCompanyChange(null)}
-            size="small"
-            variant="outlined"
-          />
-        )}
-        {search && (
-          <Chip
-            label={`Recherche: "${search}"`}
-            onDelete={() => onSearchChange('')}
-            size="small"
-            variant="outlined"
-          />
-        )}
-        {includeDeleted && (
-          <Chip
-            label="Inclure supprimés"
-            onDelete={() => onIncludeDeletedChange(false)}
-            size="small"
-            variant="outlined"
-          />
-        )}
-      </Box>
-    </Box>
+            </Grid>
+          </Grid>
+        </Box>
+      )}
+    </Paper>
   );
 };
 

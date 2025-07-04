@@ -6,18 +6,21 @@ import companyService from '@/services/companyService';
 import { siteService } from '@/services/siteService';
 import { Company } from '@/types/company';
 import { CreateSiteDto, Site, UpdateSiteDto } from '@/types/site';
-import { Add as AddIcon, Business as BusinessIcon } from '@mui/icons-material';
+import { Add as AddIcon, Business as BusinessIcon, Refresh as RefreshIcon } from '@mui/icons-material';
 import {
   Alert,
   Box,
   Button,
+  Card,
+  CardContent,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Divider,
   Snackbar,
-  Typography,
+  Typography
 } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -215,77 +218,137 @@ const SitesPage = () => {
         title="Sites"
         icon={<BusinessIcon />}
       >
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleCreateSite}
-          disabled={loading}
-        >
-          Nouveau site
-        </Button>
       </DashBoardHeader>
+      <Card>
+        <CardContent>
+          {/* Header */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+            <BusinessIcon color="primary" sx={{ fontSize: '2rem' }} />
+            <Box sx={{ flexGrow: 1 }}>
+              <Typography variant="h5" component="h2" fontWeight="600">
+                Gestion des Sites
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {filteredSites.length} site{filteredSites.length > 1 ? 's' : ''} trouvé{filteredSites.length > 1 ? 's' : ''}
+                {selectedCompany && ` pour ${selectedCompany.name}`}
+                {filteredSites.length !== sites.length && ` sur ${sites.length} au total`}
+              </Typography>
+            </Box>
 
-      {/* Filters */}
-      <SiteFilters
-        search={search}
-        onSearchChange={setSearch}
-        includeDeleted={includeDeleted}
-        onIncludeDeletedChange={setIncludeDeleted}
-        selectedCompany={selectedCompany}
-        onCompanyChange={setSelectedCompany}
-        companies={companies}
-        onReset={handleResetFilters}
-      />
+            {/* Boutons - Version Desktop */}
+            <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 1 }}>
+              <Button
+                variant="outlined"
+                startIcon={<RefreshIcon />}
+                onClick={loadData}
+                disabled={loading}
+                size="small"
+              >
+                Actualiser
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={handleCreateSite}
+                disabled={loading}
+                sx={{
+                  background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                  },
+                }}
+              >
+                Nouveau site
+              </Button>
+            </Box>
 
-      {/* Results Summary */}
-      <Box sx={{ mb: 2 }}>
-        <Typography variant="body2" color="text.secondary">
-          {filteredSites.length} site{filteredSites.length !== 1 ? 's' : ''} trouvé{filteredSites.length !== 1 ? 's' : ''}
-          {selectedCompany && ` pour ${selectedCompany.name}`}
-        </Typography>
-      </Box>
-
-      {/* Desktop Table View */}
-      <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-        <SiteTable
-          sites={filteredSites}
-          companyNames={companyNames}
-          onView={handleViewSite}
-          onEdit={handleEditSite}
-          onDelete={handleDeleteSite}
-          onRestore={handleRestoreSite}
-        />
-      </Box>
-
-      {/* Mobile Card View */}
-      <Box sx={{ display: { xs: 'block', md: 'none' } }}>
-        {filteredSites.map((site) => (
-          <SiteCard
-            key={site.id}
-            site={site}
-            companyName={companyNames[site.companyId]}
-            onView={handleViewSite}
-            onEdit={handleEditSite}
-            onDelete={handleDeleteSite}
-            onRestore={handleRestoreSite}
-          />
-        ))}
-
-        {filteredSites.length === 0 && (
-          <Box sx={{ textAlign: 'center', py: 8 }}>
-            <BusinessIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
-            <Typography variant="h6" color="text.secondary" gutterBottom>
-              Aucun site trouvé
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {search || selectedCompany
-                ? 'Aucun site ne correspond à vos critères de recherche.'
-                : 'Commencez par créer votre premier site.'
-              }
-            </Typography>
+            {/* Boutons - Version Mobile (icônes seulement) */}
+            <Box sx={{ display: { xs: 'flex', sm: 'none' }, gap: 1 }}>
+              <Button
+                variant="outlined"
+                onClick={loadData}
+                disabled={loading}
+                size="small"
+                sx={{ minWidth: 'auto', px: 1 }}
+              >
+                <RefreshIcon fontSize="small" />
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleCreateSite}
+                disabled={loading}
+                size="small"
+                sx={{
+                  minWidth: 'auto',
+                  px: 1,
+                  background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                  },
+                }}
+              >
+                <AddIcon fontSize="small" />
+              </Button>
+            </Box>
           </Box>
-        )}
-      </Box>
+
+          <Divider sx={{ mb: 3 }} />
+
+          {/* Filtres */}
+          <SiteFilters
+            search={search}
+            onSearchChange={setSearch}
+            includeDeleted={includeDeleted}
+            onIncludeDeletedChange={setIncludeDeleted}
+            selectedCompany={selectedCompany}
+            onCompanyChange={setSelectedCompany}
+            companies={companies}
+            onReset={handleResetFilters}
+          />
+
+          {/* Desktop Table View */}
+          <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+            <SiteTable
+              sites={filteredSites}
+              companyNames={companyNames}
+              onView={handleViewSite}
+              onEdit={handleEditSite}
+              onDelete={handleDeleteSite}
+              onRestore={handleRestoreSite}
+            />
+          </Box>
+
+          {/* Mobile Card View */}
+          <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+            {filteredSites.map((site) => (
+              <SiteCard
+                key={site.id}
+                site={site}
+                companyName={companyNames[site.companyId]}
+                onView={handleViewSite}
+                onEdit={handleEditSite}
+                onDelete={handleDeleteSite}
+                onRestore={handleRestoreSite}
+              />
+            ))}
+
+            {filteredSites.length === 0 && (
+              <Box sx={{ textAlign: 'center', py: 8 }}>
+                <BusinessIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+                <Typography variant="h6" color="text.secondary" gutterBottom>
+                  Aucun site trouvé
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {search || selectedCompany
+                    ? 'Aucun site ne correspond à vos critères de recherche.'
+                    : 'Commencez par créer votre premier site.'
+                  }
+                </Typography>
+              </Box>
+            )}
+          </Box>
+        </CardContent>
+      </Card>
 
       {/* Site Dialog */}
       <SiteDialog
