@@ -366,6 +366,12 @@ const HierarchyTree: React.FC<HierarchyTreeProps> = ({
           {/* Node Name */}
           <Typography variant="body2" sx={{ flexGrow: 1, fontWeight: 500 }}>
             {node.name}
+            {/* Afficher le nom de l'étage du bâtiment si c'est un étage de partie */}
+            {node.type === 'part-floor' &&
+              <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                {` - ${(node.data as PartFloor).buildingFloor.name}`}
+              </Typography>
+            }
             {nodeIsDeleted && (
               <Typography component="span" variant="caption" color="warning.main" sx={{ ml: 1 }}>
                 (Supprimé)
@@ -388,43 +394,49 @@ const HierarchyTree: React.FC<HierarchyTreeProps> = ({
           {/* Action Buttons */}
           <Box sx={{ display: 'flex', gap: 0.5 }}>
             <Tooltip title="Ajouter">
-              <IconButton
-                size="small"
-                disabled={nodeIsDeleted}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onAddEntity(node.type, node.data);
-                }}
-                sx={{ p: 0.25 }}
-              >
-                <AddIcon fontSize="small" />
-              </IconButton>
+              <span>
+                <IconButton
+                  size="small"
+                  disabled={nodeIsDeleted}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAddEntity(node.type, node.data);
+                  }}
+                  sx={{ p: 0.25 }}
+                >
+                  <AddIcon fontSize="small" />
+                </IconButton>
+              </span>
             </Tooltip>
             <Tooltip title="Modifier">
-              <IconButton
-                size="small"
-                disabled={nodeIsDeleted}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEditEntity(node.type, node.data);
-                }}
-                sx={{ p: 0.25 }}
-              >
-                <EditIcon fontSize="small" />
-              </IconButton>
+              <span>
+                <IconButton
+                  size="small"
+                  disabled={nodeIsDeleted}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEditEntity(node.type, node.data);
+                  }}
+                  sx={{ p: 0.25 }}
+                >
+                  <EditIcon fontSize="small" />
+                </IconButton>
+              </span>
             </Tooltip>
             <Tooltip title="Supprimer">
-              <IconButton
-                size="small"
-                disabled={nodeIsDeleted}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDeleteEntity(node.type, node.data);
-                }}
-                sx={{ p: 0.25 }}
-              >
-                <DeleteIcon fontSize="small" />
-              </IconButton>
+              <span>
+                <IconButton
+                  size="small"
+                  disabled={nodeIsDeleted}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDeleteEntity(node.type, node.data);
+                  }}
+                  sx={{ p: 0.25 }}
+                >
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+              </span>
             </Tooltip>
           </Box>
         </Card>
