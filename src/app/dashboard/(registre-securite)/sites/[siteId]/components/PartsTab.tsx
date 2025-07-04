@@ -428,6 +428,14 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
     </Card>
   );
 
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4 }}>
+        <Typography>Chargement des parties...</Typography>
+      </Box>
+    );
+  }
+
   return (
     <Box>
       {/* Header */}
