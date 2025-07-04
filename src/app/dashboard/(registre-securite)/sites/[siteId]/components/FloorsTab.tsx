@@ -2,17 +2,16 @@
 // @ts-nocheck
 'use client';
 
+import SearchFilters from '@/components/dashboard/SearchFilters';
 import { buildingFloorService, buildingService } from '@/services/siteService';
 import { Building, BuildingFloor, CreateBuildingFloorDto, UpdateBuildingFloorDto } from '@/types/site';
 import {
   Add as AddIcon,
   Apartment as BuildingIcon,
-  Clear as ClearIcon,
   Delete as DeleteIcon,
   Edit as EditIcon,
   Layers as LayersIcon,
-  Refresh as RefreshIcon,
-  Search as SearchIcon,
+  Refresh as RefreshIcon
 } from '@mui/icons-material';
 import {
   Alert,
@@ -27,16 +26,13 @@ import {
   DialogContent,
   DialogTitle,
   FormControl,
-  FormControlLabel,
   Grid,
   IconButton,
-  InputAdornment,
   InputLabel,
   MenuItem,
   Paper,
   Select,
   Stack,
-  Switch,
   Table,
   TableBody,
   TableCell,
@@ -254,10 +250,6 @@ const FloorsTab: React.FC<FloorsTabProps> = ({ siteId, onNotification, disabled 
     }
   };
 
-  const clearSearch = () => {
-    setFilters(prev => ({ ...prev, search: '' }));
-  };
-
   // Render mobile card view
   const renderCard = (floor: BuildingFloor) => (
     <Card key={floor.id} sx={{ mb: 2, opacity: floor.deletedAt ? 0.6 : 1 }}>
@@ -363,76 +355,28 @@ const FloorsTab: React.FC<FloorsTabProps> = ({ siteId, onNotification, disabled 
       ) : (
         <>
           {/* Filters */}
-          <Card sx={{ p: 2, mb: 3 }}>
-            <Box sx={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: 2,
-              alignItems: 'center',
-              '& > *': { minWidth: { xs: '100%', sm: 'auto' } }
-            }}>
-              <TextField
-                size="small"
-                placeholder="Rechercher un étage..."
-                value={filters.search}
-                onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-                sx={{ flex: { xs: '1 1 100%', sm: '1 1 300px' } }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon />
-                    </InputAdornment>
-                  ),
-                  endAdornment: filters.search && (
-                    <InputAdornment position="end">
-                      <IconButton size="small" onClick={clearSearch}>
-                        <ClearIcon />
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-
-              <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 200 } }}>
-                <InputLabel>Bâtiment</InputLabel>
-                <Select
-                  value={filters.buildingId}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setFilters(prev => ({
-                      ...prev,
-                      buildingId: value === '' ? '' : Number(value)
-                    }));
-                  }}
-                  label="Bâtiment"
-                >
-                  <MenuItem value="">Tous les bâtiments</MenuItem>
-                  {buildings
-                    .filter(building => filters.includeDeleted || !building.deletedAt)
-                    .map((building) => (
-                      <MenuItem key={building.id} value={building.id}>
-                        {building.name}
-                      </MenuItem>
-                    ))}
-                </Select>
-              </FormControl>
-
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={filters.includeDeleted}
-                    onChange={(e) => setFilters(prev => ({ ...prev, includeDeleted: e.target.checked }))}
-                    size="small"
-                  />
-                }
-                label="Inclure supprimés"
-              />
-
-              <Typography variant="body2" color="text.secondary" sx={{ ml: 'auto' }}>
-                {filteredFloors.length} étage(s)
-              </Typography>
-            </Box>
-          </Card>
+          <SearchFilters
+            searchValue={filters.search}
+            onSearchChange={(value) => setFilters(prev => ({ ...prev, search: value }))}
+            searchPlaceholder="Rechercher un étage..."
+            selectValue={filters.buildingId}
+            onSelectChange={(value) => setFilters(prev => ({
+              ...prev,
+              buildingId: value === '' ? '' : Number(value)
+            }))}
+            selectLabel="Bâtiment"
+            selectOptions={buildings
+              .filter(building => filters.includeDeleted || !building.deletedAt)
+              .map(building => ({
+                value: building.id,
+                label: building.name
+              }))}
+            selectAllLabel="Tous les bâtiments"
+            includeDeleted={filters.includeDeleted}
+            onIncludeDeletedChange={(value) => setFilters(prev => ({ ...prev, includeDeleted: value }))}
+            resultsCount={filteredFloors.length}
+            resultsLabel="étage(s)"
+          />
 
           {/* Content */}
           {filteredFloors.length === 0 ? (
