@@ -184,6 +184,57 @@ const HierarchyTree: React.FC<HierarchyTreeProps> = ({
                 parent: floorsGroupNode,
                 level: 4,
               };
+
+              // Trouver les parties qui ont des part floors sur cet étage
+              const partsOnThisFloor = building.parts.filter(part =>
+                part.floors.some(partFloor => partFloor.buildingFloor.id === floor.id)
+              );
+
+              if (partsOnThisFloor.length > 0) {
+                // Créer un nœud de regroupement pour les parties sur cet étage
+                const floorPartsGroupNode: HierarchyNode = {
+                  id: `floor-parts-group-${floor.id}`,
+                  type: 'parts-group',
+                  name: `Parties sur cet étage (${partsOnThisFloor.length})`,
+                  data: null,
+                  children: [],
+                  parent: floorNode,
+                  level: 5,
+                };
+
+                // Ajouter les parties qui ont des part floors sur cet étage
+                partsOnThisFloor.forEach(part => {
+                  const partOnFloorNode: HierarchyNode = {
+                    id: `part-on-floor-${part.id}-${floor.id}`,
+                    type: 'part',
+                    name: part.name,
+                    data: part,
+                    children: [],
+                    parent: floorPartsGroupNode,
+                    level: 6,
+                  };
+
+                  // Ajouter uniquement les part floors qui sont sur cet étage
+                  const partFloorsOnThisFloor = part.floors.filter(pf => pf.buildingFloor.id === floor.id);
+                  partFloorsOnThisFloor.forEach(partFloor => {
+                    const partFloorNode: HierarchyNode = {
+                      id: `part-floor-on-building-floor-${partFloor.id}`,
+                      type: 'part-floor',
+                      name: partFloor.name,
+                      data: partFloor,
+                      children: [],
+                      parent: partOnFloorNode,
+                      level: 7,
+                    };
+                    partOnFloorNode.children.push(partFloorNode);
+                  });
+
+                  floorPartsGroupNode.children.push(partOnFloorNode);
+                });
+
+                floorNode.children.push(floorPartsGroupNode);
+              }
+
               floorsGroupNode.children.push(floorNode);
             });
 
@@ -405,12 +456,20 @@ const HierarchyTree: React.FC<HierarchyTreeProps> = ({
           {/* Node Name */}
           <Typography variant="body2" sx={{ flexGrow: 1, fontWeight: 500 }}>
             {node.name}
+
             {/* Afficher le nom de l'étage du bâtiment si c'est un étage de partie */}
             {node.type === 'part-floor' &&
               <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 1 }}>
-                {` - ${(node.data as PartFloor).buildingFloor.name}`}
+                {` - ${(node.data as PartFloor).buildingFloor.name} de ${(node.data as PartFloor).buildingFloor.building.name}`}
               </Typography>
             }
+
+            {node.type === 'building' &&
+              <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                {` - ${(node.data as Building).site?.name}`}
+              </Typography>
+            }
+
             {nodeIsDeleted && (
               <Typography component="span" variant="caption" color="warning.main" sx={{ ml: 1 }}>
                 (Supprimé)
