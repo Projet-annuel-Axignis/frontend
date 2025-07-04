@@ -2,15 +2,14 @@
 // @ts-nocheck
 'use client';
 
+import SearchFilters from '@/components/dashboard/SearchFilters';
 import { buildingFloorService, buildingService, partFloorService, partService } from '@/services/siteService';
 import { Building, BuildingFloor, CreatePartDto, LevelAssignment, Part, UpdatePartDto } from '@/types/site';
 import {
   Add as AddIcon,
-  Clear as ClearIcon,
   Delete as DeleteIcon,
   Edit as EditIcon,
   Refresh as RefreshIcon,
-  Search as SearchIcon,
   ViewModule as ViewModuleIcon
 } from '@mui/icons-material';
 import {
@@ -28,12 +27,10 @@ import {
   FormControlLabel,
   Grid,
   IconButton,
-  InputAdornment,
   InputLabel,
   MenuItem,
   Paper,
   Select,
-  Switch,
   Table,
   TableBody,
   TableCell,
@@ -462,70 +459,25 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
       </Box>
 
       {/* Filters */}
-      <Card sx={{ p: 2, mb: 3 }}>
-        <Box sx={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 2,
-          alignItems: 'center',
-          '& > *': { minWidth: { xs: '100%', sm: 'auto' } }
-        }}>
-          <TextField
-            size="small"
-            placeholder="Rechercher une partie..."
-            value={filters.search}
-            onChange={(e) => handleFilterChange('search', e.target.value)}
-            sx={{ flex: { xs: '1 1 100%', sm: '1 1 300px' } }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-              endAdornment: filters.search && (
-                <InputAdornment position="end">
-                  <IconButton size="small" onClick={() => handleFilterChange('search', '')}>
-                    <ClearIcon />
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
-
-          <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 200 } }}>
-            <InputLabel>Bâtiment</InputLabel>
-            <Select
-              value={filters.buildingId}
-              onChange={(e) => handleFilterChange('buildingId', e.target.value)}
-              label="Bâtiment"
-            >
-              <MenuItem value="">Tous les bâtiments</MenuItem>
-              {buildings
-                .filter(building => filters.includeDeleted || !building.deletedAt)
-                .map((building) => (
-                  <MenuItem key={building.id} value={building.id}>
-                    {building.name}
-                  </MenuItem>
-                ))}
-            </Select>
-          </FormControl>
-
-          <FormControlLabel
-            control={
-              <Switch
-                checked={filters.includeDeleted}
-                onChange={(e) => handleFilterChange('includeDeleted', e.target.checked)}
-                size="small"
-              />
-            }
-            label="Inclure supprimés"
-          />
-
-          <Typography variant="body2" color="text.secondary" sx={{ ml: 'auto' }}>
-            {filteredParts.length} partie(s)
-          </Typography>
-        </Box>
-      </Card>
+      <SearchFilters
+        searchValue={filters.search}
+        onSearchChange={(value) => handleFilterChange('search', value)}
+        searchPlaceholder="Rechercher une partie..."
+        selectValue={filters.buildingId}
+        onSelectChange={(value) => handleFilterChange('buildingId', value)}
+        selectLabel="Bâtiment"
+        selectOptions={buildings
+          .filter(building => filters.includeDeleted || !building.deletedAt)
+          .map(building => ({
+            value: building.id,
+            label: building.name
+          }))}
+        selectAllLabel="Tous les bâtiments"
+        includeDeleted={filters.includeDeleted}
+        onIncludeDeletedChange={(value) => handleFilterChange('includeDeleted', value)}
+        resultsCount={filteredParts.length}
+        resultsLabel="partie(s)"
+      />
 
       {/* Content */}
       {loading ? (
