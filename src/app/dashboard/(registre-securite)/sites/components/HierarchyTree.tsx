@@ -42,9 +42,9 @@ import React, { useEffect, useState } from 'react';
 
 interface HierarchyNode {
   id: string;
-  type: 'company' | 'site' | 'building' | 'part' | 'building-floor' | 'part-floor' | 'lot';
+  type: 'company' | 'site' | 'building' | 'part' | 'building-floor' | 'part-floor' | 'lot' | 'floors-group' | 'parts-group';
   name: string;
-  data: CompanyHierarchy | SiteHierarchy | BuildingHierarchy | PartHierarchy | BuildingFloor | PartFloor | Lot;
+  data: CompanyHierarchy | SiteHierarchy | BuildingHierarchy | PartHierarchy | BuildingFloor | PartFloor | Lot | null;
   children: HierarchyNode[];
   parent?: HierarchyNode;
   level: number;
@@ -161,50 +161,80 @@ const HierarchyTree: React.FC<HierarchyTreeProps> = ({
             level: 2,
           };
 
-          // Add building floors
-          building.floors.forEach(floor => {
-            const floorNode: HierarchyNode = {
-              id: `building-floor-${floor.id}`,
-              type: 'building-floor',
-              name: floor.name,
-              data: floor,
-              children: [],
-              parent: buildingNode,
-              level: 3,
-            };
-            buildingNode.children.push(floorNode);
-          });
-
-          // Add parts
-          building.parts.forEach(part => {
-            const partNode: HierarchyNode = {
-              id: `part-${part.id}`,
-              type: 'part',
-              name: part.name,
-              data: part,
+          // Créer le nœud de regroupement "Étages" s'il y a des étages
+          if (building.floors.length > 0) {
+            const floorsGroupNode: HierarchyNode = {
+              id: `floors-group-${building.id}`,
+              type: 'floors-group',
+              name: `Étages (${building.floors.length})`,
+              data: null,
               children: [],
               parent: buildingNode,
               level: 3,
             };
 
-            // Add part floors
-            part.floors.forEach(partFloor => {
-              const partFloorNode: HierarchyNode = {
-                id: `part-floor-${partFloor.id}`,
-                type: 'part-floor',
-                name: partFloor.name,
-                data: partFloor,
+            // Ajouter les étages de bâtiment
+            building.floors.forEach(floor => {
+              const floorNode: HierarchyNode = {
+                id: `building-floor-${floor.id}`,
+                type: 'building-floor',
+                name: floor.name,
+                data: floor,
                 children: [],
-                parent: partNode,
+                parent: floorsGroupNode,
                 level: 4,
               };
-              partNode.children.push(partFloorNode);
+              floorsGroupNode.children.push(floorNode);
             });
 
-            buildingNode.children.push(partNode);
-          });
+            buildingNode.children.push(floorsGroupNode);
+          }
 
-          // Add lots
+          // Créer le nœud de regroupement "Parties" s'il y a des parties
+          if (building.parts.length > 0) {
+            const partsGroupNode: HierarchyNode = {
+              id: `parts-group-${building.id}`,
+              type: 'parts-group',
+              name: `Parties (${building.parts.length})`,
+              data: null,
+              children: [],
+              parent: buildingNode,
+              level: 3,
+            };
+
+            // Ajouter les parties
+            building.parts.forEach(part => {
+              const partNode: HierarchyNode = {
+                id: `part-${part.id}`,
+                type: 'part',
+                name: part.name,
+                data: part,
+                children: [],
+                parent: partsGroupNode,
+                level: 4,
+              };
+
+              // Ajouter les étages de partie
+              part.floors.forEach(partFloor => {
+                const partFloorNode: HierarchyNode = {
+                  id: `part-floor-${partFloor.id}`,
+                  type: 'part-floor',
+                  name: partFloor.name,
+                  data: partFloor,
+                  children: [],
+                  parent: partNode,
+                  level: 5,
+                };
+                partNode.children.push(partFloorNode);
+              });
+
+              partsGroupNode.children.push(partNode);
+            });
+
+            buildingNode.children.push(partsGroupNode);
+          }
+
+          // Ajouter les lots directement sous le bâtiment
           building.lots.forEach(lot => {
             const lotNode: HierarchyNode = {
               id: `lot-${lot.id}`,
@@ -276,6 +306,8 @@ const HierarchyTree: React.FC<HierarchyTreeProps> = ({
       case 'building-floor': return <FloorIcon />;
       case 'part-floor': return <FloorIcon />;
       case 'lot': return <LotIcon />;
+      case 'floors-group': return <FloorIcon />;
+      case 'parts-group': return <PartIcon />;
       default: return <BusinessIcon />;
     }
   };
@@ -289,6 +321,8 @@ const HierarchyTree: React.FC<HierarchyTreeProps> = ({
       case 'building-floor': return theme.palette.success.main;
       case 'part-floor': return theme.palette.success.dark;
       case 'lot': return theme.palette.error.main;
+      case 'floors-group': return theme.palette.success.light;
+      case 'parts-group': return theme.palette.warning.light;
       default: return theme.palette.grey[500];
     }
   };
@@ -314,6 +348,11 @@ const HierarchyTree: React.FC<HierarchyTreeProps> = ({
       case 'lot':
         onSelectLot(node.data as Lot);
         break;
+      case 'floors-group':
+      case 'parts-group':
+        // Les nœuds de regroupement ne déclenchent pas de sélection
+        // Ils servent uniquement à l'organisation visuelle
+        break;
     }
   };
 
@@ -321,7 +360,7 @@ const HierarchyTree: React.FC<HierarchyTreeProps> = ({
     const isExpanded = expandedNodes.has(node.id);
     const hasChildren = node.children.length > 0;
     const nodeColor = getNodeColor(node.type);
-    const nodeIsDeleted = isDeleted(node.data);
+    const nodeIsDeleted = node.data ? isDeleted(node.data) : false;
 
     return (
       <Box key={node.id} sx={{ mb: 0.5 }}>
@@ -391,54 +430,56 @@ const HierarchyTree: React.FC<HierarchyTreeProps> = ({
             }}
           />
 
-          {/* Action Buttons */}
-          <Box sx={{ display: 'flex', gap: 0.5 }}>
-            <Tooltip title="Ajouter">
-              <span>
-                <IconButton
-                  size="small"
-                  disabled={nodeIsDeleted}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onAddEntity(node.type, node.data);
-                  }}
-                  sx={{ p: 0.25 }}
-                >
-                  <AddIcon fontSize="small" />
-                </IconButton>
-              </span>
-            </Tooltip>
-            <Tooltip title="Modifier">
-              <span>
-                <IconButton
-                  size="small"
-                  disabled={nodeIsDeleted}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEditEntity(node.type, node.data);
-                  }}
-                  sx={{ p: 0.25 }}
-                >
-                  <EditIcon fontSize="small" />
-                </IconButton>
-              </span>
-            </Tooltip>
-            <Tooltip title="Supprimer">
-              <span>
-                <IconButton
-                  size="small"
-                  disabled={nodeIsDeleted}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDeleteEntity(node.type, node.data);
-                  }}
-                  sx={{ p: 0.25 }}
-                >
-                  <DeleteIcon fontSize="small" />
-                </IconButton>
-              </span>
-            </Tooltip>
-          </Box>
+          {/* Action Buttons - Pas de boutons pour les nœuds de regroupement */}
+          {node.type !== 'floors-group' && node.type !== 'parts-group' && (
+            <Box sx={{ display: 'flex', gap: 0.5 }}>
+              <Tooltip title="Ajouter">
+                <span>
+                  <IconButton
+                    size="small"
+                    disabled={nodeIsDeleted}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onAddEntity(node.type, node.data);
+                    }}
+                    sx={{ p: 0.25 }}
+                  >
+                    <AddIcon fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+              <Tooltip title="Modifier">
+                <span>
+                  <IconButton
+                    size="small"
+                    disabled={nodeIsDeleted}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEditEntity(node.type, node.data);
+                    }}
+                    sx={{ p: 0.25 }}
+                  >
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+              <Tooltip title="Supprimer">
+                <span>
+                  <IconButton
+                    size="small"
+                    disabled={nodeIsDeleted}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDeleteEntity(node.type, node.data);
+                    }}
+                    sx={{ p: 0.25 }}
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            </Box>
+          )}
         </Card>
 
         {/* Children */}
