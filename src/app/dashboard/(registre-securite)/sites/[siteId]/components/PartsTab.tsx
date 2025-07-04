@@ -238,32 +238,32 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
         </Box>
 
         <Grid container spacing={2}>
-          <Grid xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Typography variant="body2" color="text.secondary">
               <strong>Type :</strong> {part.type === 'PRIVATE' ? 'Privée' : 'Commune'}
             </Typography>
           </Grid>
 
-          <Grid xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Typography variant="body2" color="text.secondary">
               <strong>Bâtiment :</strong> {getBuildingName(part.building)}
             </Typography>
           </Grid>
 
-          <Grid xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Typography variant="body2" color="text.secondary">
               <strong>Niveaux :</strong> {part.partFloors?.length || 0} niveau(s)
             </Typography>
           </Grid>
 
-          <Grid xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Typography variant="body2" color="text.secondary">
               <strong>ICPE :</strong> {part.isIcpe ? 'Oui' : 'Non'}
             </Typography>
           </Grid>
 
           {part.erpTypeCodes && (
-            <Grid xs={12}>
+            <Grid size={{ xs: 12 }}>
               <Typography variant="body2" color="text.secondary">
                 <strong>Code ERP :</strong> {part.erpTypeCodes}
               </Typography>

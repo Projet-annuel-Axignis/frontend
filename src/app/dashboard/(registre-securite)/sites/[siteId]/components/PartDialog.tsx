@@ -56,11 +56,23 @@ const PartDialog: React.FC<PartDialogProps> = ({
     type: 'PRIVATE',
     isIcpe: false,
     erpTypeCodes: ['J'],
+    habFamilyName: undefined,
   });
 
   // Level assignment states
   const [levelAssignments, setLevelAssignments] = useState<LevelAssignment[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // Helper function to get selected building
+  const getSelectedBuilding = () => {
+    return buildings.find(b => b.id === formData.buildingId);
+  };
+
+  // Helper function to check if building has specific typology
+  const hasTypology = (typologyCode: string) => {
+    const building = getSelectedBuilding();
+    return building?.typologies?.some(t => t.code === typologyCode) || false;
+  };
 
   // Initialize form data when dialog opens or part changes
   useEffect(() => {
@@ -73,6 +85,7 @@ const PartDialog: React.FC<PartDialogProps> = ({
           type: 'PRIVATE',
           isIcpe: false,
           erpTypeCodes: ['J'],
+          habFamilyName: undefined,
         });
         // Start with one level by default
         initializeLevelAssignments(1);
@@ -83,6 +96,7 @@ const PartDialog: React.FC<PartDialogProps> = ({
           type: part.type || 'PRIVATE',
           isIcpe: part.isIcpe,
           erpTypeCodes: part.erpTypes || ['J'],
+          habFamilyName: part.habFamily,
         });
         initializeLevelAssignments(part.partFloors?.length || 1, part);
       }
@@ -253,7 +267,7 @@ const PartDialog: React.FC<PartDialogProps> = ({
             </FormControl>
           </Box>
 
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <FormControl required fullWidth disabled={loading}>
               <InputLabel>Type</InputLabel>
               <Select
@@ -266,29 +280,54 @@ const PartDialog: React.FC<PartDialogProps> = ({
               </Select>
             </FormControl>
 
-            <FormControl fullWidth disabled={loading}>
-              <InputLabel>Code ERP</InputLabel>
-              <Select
-                value={formData.erpTypeCodes}
-                onChange={(e) => handleFormChange('erpTypeCodes', e.target.value)}
-                label="Code ERP"
-              >
-                <MenuItem value="J">J - Structures d&apos;accueil pour personnes âgées</MenuItem>
-                <MenuItem value="L">L - Salles de spectacles</MenuItem>
-                <MenuItem value="M">M - Magasins de vente</MenuItem>
-                <MenuItem value="N">N - Restaurants et débits de boissons</MenuItem>
-                <MenuItem value="O">O - Hôtels et pensions de famille</MenuItem>
-                <MenuItem value="P">P - Salles de danse et salles de jeux</MenuItem>
-                <MenuItem value="R">R - Établissements de soins</MenuItem>
-                <MenuItem value="S">S - Bibliothèques, centres de documentation</MenuItem>
-                <MenuItem value="T">T - Salles d&apos;exposition</MenuItem>
-                <MenuItem value="U">U - Établissements de soins avec hébergement</MenuItem>
-                <MenuItem value="V">V - Établissements de culte</MenuItem>
-                <MenuItem value="W">W - Administrations, banques, bureaux</MenuItem>
-                <MenuItem value="X">X - Établissements sportifs couverts</MenuItem>
-                <MenuItem value="Y">Y - Musées</MenuItem>
-              </Select>
-            </FormControl>
+            {hasTypology('ERP') && (
+              <FormControl fullWidth disabled={loading}>
+                <InputLabel>Code ERP</InputLabel>
+                <Select
+                  value={formData.erpTypeCodes || ''}
+                  onChange={(e) => handleFormChange('erpTypeCodes', e.target.value)}
+                  label="Code ERP"
+                >
+                  <MenuItem value=""></MenuItem>
+                  <MenuItem value="J">J - Structures d&apos;accueil pour personnes âgées</MenuItem>
+                  <MenuItem value="L">L - Salles de spectacles</MenuItem>
+                  <MenuItem value="M">M - Magasins de vente</MenuItem>
+                  <MenuItem value="N">N - Restaurants et débits de boissons</MenuItem>
+                  <MenuItem value="O">O - Hôtels et pensions de famille</MenuItem>
+                  <MenuItem value="P">P - Salles de danse et salles de jeux</MenuItem>
+                  <MenuItem value="R">R - Établissements de soins</MenuItem>
+                  <MenuItem value="S">S - Bibliothèques, centres de documentation</MenuItem>
+                  <MenuItem value="T">T - Salles d&apos;exposition</MenuItem>
+                  <MenuItem value="U">U - Établissements de soins avec hébergement</MenuItem>
+                  <MenuItem value="V">V - Établissements de culte</MenuItem>
+                  <MenuItem value="W">W - Administrations, banques, bureaux</MenuItem>
+                  <MenuItem value="X">X - Établissements sportifs couverts</MenuItem>
+                  <MenuItem value="Y">Y - Musées</MenuItem>
+                </Select>
+              </FormControl>
+            )}
+
+            {hasTypology('HAB') && (
+              <FormControl fullWidth disabled={loading}>
+                <InputLabel>Famille d&apos;habitation</InputLabel>
+                <Select
+                  value={formData.habFamilyName || ''}
+                  onChange={(e) => handleFormChange('habFamilyName', e.target.value || undefined)}
+                  label="Famille d'habitation"
+                  displayEmpty
+                >
+                  <MenuItem value=""></MenuItem>
+                  <MenuItem value="FIRST_FAMILY_SINGLE">1ère famille - Individuelle</MenuItem>
+                  <MenuItem value="SECOND_FAMILY_SINGLE">2ème famille - Individuelle</MenuItem>
+                  <MenuItem value="SECOND_FAMILY_COMMUNITY">2ème famille - Collective</MenuItem>
+                  <MenuItem value="THIRD_FAMILY_COMMUNITY">3ème famille - Collective</MenuItem>
+                  <MenuItem value="FOURTH_FAMILY_COMMUNITY">4ème famille - Collective</MenuItem>
+                  <MenuItem value="RESIDENTIAL_ACCOMMODATION">Logement-foyer</MenuItem>
+                  <MenuItem value="ELDERLY_ACCOMMODATION">Logement-foyer personnes âgées</MenuItem>
+                  <MenuItem value="RESIDENTIAL_COVERED_CAR_PARK">Parc de stationnement couvert Habitation (PSH)</MenuItem>
+                </Select>
+              </FormControl>
+            )}
           </Box>
 
           <FormControlLabel
@@ -350,6 +389,7 @@ const PartDialog: React.FC<PartDialogProps> = ({
                           )}
                           displayEmpty
                         >
+                          <MenuItem value=""></MenuItem>
                           {getAvailableBuildingFloors(formData.buildingId).map((floor) => (
                             <MenuItem key={floor.id} value={floor.id}>
                               {floor.name}
