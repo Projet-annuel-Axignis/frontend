@@ -141,7 +141,7 @@ export interface CreatePartDto {
   type: PartType;
   buildingId: number;
   habFamilyName?: HabFamily;
-  erpTypeCodes: ErpType[];
+  erpTypeCodes?: ErpType[];
 }
 
 export interface UpdatePartDto {

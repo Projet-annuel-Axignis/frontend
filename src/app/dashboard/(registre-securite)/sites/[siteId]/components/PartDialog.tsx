@@ -350,7 +350,6 @@ const PartDialog: React.FC<PartDialogProps> = ({
                           )}
                           displayEmpty
                         >
-                          <MenuItem value="">Non affecté</MenuItem>
                           {getAvailableBuildingFloors(formData.buildingId).map((floor) => (
                             <MenuItem key={floor.id} value={floor.id}>
                               {floor.name}
