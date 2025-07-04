@@ -6,17 +6,14 @@ import { buildingFloorService, buildingService, partFloorService, partService } 
 import { Building, BuildingFloor, CreatePartDto, LevelAssignment, Part, UpdatePartDto } from '@/types/site';
 import {
   Add as AddIcon,
+  Clear as ClearIcon,
   Delete as DeleteIcon,
   Edit as EditIcon,
-  FilterList as FilterIcon,
+  Refresh as RefreshIcon,
   Search as SearchIcon,
-  ViewModule as ViewModuleIcon,
-  VisibilityOff as VisibilityOffIcon,
+  ViewModule as ViewModuleIcon
 } from '@mui/icons-material';
 import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
   Box,
   Button,
   Card,
@@ -44,9 +41,7 @@ import {
   TableHead,
   TableRow,
   TextField,
-  Typography,
-  useMediaQuery,
-  useTheme
+  Typography
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 
@@ -60,7 +55,6 @@ interface Filters {
   search: string;
   buildingId: number | '';
   includeDeleted: boolean;
-  showAdvanced: boolean;
 }
 
 interface PartFormData extends CreatePartDto {
@@ -68,9 +62,6 @@ interface PartFormData extends CreatePartDto {
 }
 
 const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = false }) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-
   // Data states
   const [parts, setParts] = useState<Part[]>([]);
   const [buildings, setBuildings] = useState<Building[]>([]);
@@ -83,7 +74,6 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
     search: '',
     buildingId: '',
     includeDeleted: false,
-    showAdvanced: false,
   });
 
   // Dialog states
@@ -182,16 +172,6 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
 
   const handleFilterChange = (field: keyof Filters, value: any) => {
     setFilters(prev => ({ ...prev, [field]: value }));
-  };
-
-  const resetFilters = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setFilters({
-      search: '',
-      buildingId: '',
-      includeDeleted: false,
-      showAdvanced: false,
-    });
   };
 
   // Initialize level assignments based on levelCount
@@ -453,92 +433,99 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
   return (
     <Box>
       {/* Header */}
-      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, mb: 3 }}>
-        <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h5" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <ViewModuleIcon />
-          Parties de Bâtiment
+          Gestion des Parties de Bâtiment
         </Typography>
 
         {!disabled && (
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={openCreateDialog}
-            sx={{ ml: { sm: 'auto' } }}
-          >
-            {isMobile ? '' : 'Nouvelle partie'}
-          </Button>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              variant="outlined"
+              startIcon={<RefreshIcon />}
+              onClick={loadData}
+              disabled={loading}
+            >
+              Actualiser
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={openCreateDialog}
+              disabled={buildings.filter(b => !b.deletedAt).length === 0}
+            >
+              Nouvelle Partie
+            </Button>
+          </Box>
         )}
       </Box>
 
       {/* Filters */}
-      <Paper sx={{ p: 2, mb: 3 }}>
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 2 }}>
+      <Card sx={{ p: 2, mb: 3 }}>
+        <Box sx={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: 2,
+          alignItems: 'center',
+          '& > *': { minWidth: { xs: '100%', sm: 'auto' } }
+        }}>
           <TextField
+            size="small"
             placeholder="Rechercher une partie..."
             value={filters.search}
             onChange={(e) => handleFilterChange('search', e.target.value)}
+            sx={{ flex: { xs: '1 1 100%', sm: '1 1 300px' } }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
                   <SearchIcon />
                 </InputAdornment>
               ),
+              endAdornment: filters.search && (
+                <InputAdornment position="end">
+                  <IconButton size="small" onClick={() => handleFilterChange('search', '')}>
+                    <ClearIcon />
+                  </IconButton>
+                </InputAdornment>
+              ),
             }}
-            sx={{ flex: 1 }}
           />
 
-          <Button
-            variant="outlined"
-            startIcon={<FilterIcon />}
-            onClick={() => handleFilterChange('showAdvanced', !filters.showAdvanced)}
-          >
-            Filtres avancés
-          </Button>
+          <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 200 } }}>
+            <InputLabel>Bâtiment</InputLabel>
+            <Select
+              value={filters.buildingId}
+              onChange={(e) => handleFilterChange('buildingId', e.target.value)}
+              label="Bâtiment"
+            >
+              <MenuItem value="">Tous les bâtiments</MenuItem>
+              {buildings
+                .filter(building => filters.includeDeleted || !building.deletedAt)
+                .map((building) => (
+                  <MenuItem key={building.id} value={building.id}>
+                    {building.name}
+                  </MenuItem>
+                ))}
+            </Select>
+          </FormControl>
+
+          <FormControlLabel
+            control={
+              <Switch
+                checked={filters.includeDeleted}
+                onChange={(e) => handleFilterChange('includeDeleted', e.target.checked)}
+                size="small"
+              />
+            }
+            label="Inclure supprimés"
+          />
+
+          <Typography variant="body2" color="text.secondary" sx={{ ml: 'auto' }}>
+            {filteredParts.length} partie(s)
+          </Typography>
         </Box>
-
-        {/* Advanced Filters */}
-        <Accordion expanded={filters.showAdvanced} onChange={() => handleFilterChange('showAdvanced', !filters.showAdvanced)}>
-          <AccordionSummary />
-          <AccordionDetails>
-            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2 }}>
-              <FormControl sx={{ minWidth: 200 }}>
-                <InputLabel>Bâtiment</InputLabel>
-                <Select
-                  value={filters.buildingId}
-                  onChange={(e) => handleFilterChange('buildingId', e.target.value)}
-                  label="Bâtiment"
-                >
-                  <MenuItem value="">Tous</MenuItem>
-                  {buildings.map((building) => (
-                    <MenuItem key={building.id} value={building.id}>
-                      {building.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Button
-                  variant="outlined"
-                  startIcon={<VisibilityOffIcon />}
-                  onClick={() => handleFilterChange('includeDeleted', !filters.includeDeleted)}
-                  color={filters.includeDeleted ? 'primary' : 'inherit'}
-                >
-                  Inclure supprimés
-                </Button>
-
-                <Button
-                  variant="outlined"
-                  onClick={resetFilters}
-                >
-                  Reset
-                </Button>
-              </Box>
-            </Box>
-          </AccordionDetails>
-        </Accordion>
-      </Paper>
+      </Card>
 
       {/* Content */}
       {loading ? (
