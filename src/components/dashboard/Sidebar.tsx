@@ -446,8 +446,8 @@ export default function Sidebar() {
             <ListItem disablePadding sx={{ width: '100%' }}>
               <Tooltip title="Navigation hiérarchique complète" placement="right" arrow>
                 <Box sx={{ width: '100%' }}>
-                  <Link href="/dashboard/sites/hierarchy" style={{ textDecoration: 'none', color: 'inherit' }}>
-                    <StyledListItemButton isActive={isActive('/dashboard/sites/hierarchy')}>
+                  <Link href="/dashboard/sites/hierarchie" style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <StyledListItemButton isActive={isActive('/dashboard/sites/hierarchie')}>
                       <AccountTreeIcon sx={{ mr: 1.5, color: 'var(--color-axignis-primary)' }} />
                       <ListItemText
                         primary={
