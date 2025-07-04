@@ -153,17 +153,17 @@ const HierarchyPage = () => {
         break;
       case 'building':
         if (parent && parent.id) {
-          router.push(`/dashboard/sites/${parent.id}?tab=buildings`);
+          router.push(`/dashboard/sites/${parent.id}?tab=batiments`);
         }
         break;
       case 'part':
         if (selectedSite) {
-          router.push(`/dashboard/sites/${selectedSite.id}?tab=parts`);
+          router.push(`/dashboard/sites/${selectedSite.id}?tab=parties`);
         }
         break;
       case 'building-floor':
         if (selectedSite) {
-          router.push(`/dashboard/sites/${selectedSite.id}?tab=floors`);
+          router.push(`/dashboard/sites/${selectedSite.id}?tab=etages`);
         }
         break;
       case 'lot':
@@ -312,7 +312,7 @@ const HierarchyPage = () => {
         </Grid>
 
         {/* Details Panel */}
-        <Grid size={{ xs: 12, md: 6 }}>
+        <Grid size={{ xs: 12, xl: 6 }}>
           <Card sx={{ p: 3, height: '100%' }}>
             {!selectedCompany && !selectedSite && !selectedBuilding && (
               <Box
