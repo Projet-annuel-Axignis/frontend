@@ -19,6 +19,8 @@ import {
   Box,
   Button,
   Card,
+  CardActions,
+  CardContent,
   Chip,
   Dialog,
   DialogActions,
@@ -26,6 +28,7 @@ import {
   DialogTitle,
   FormControl,
   FormControlLabel,
+  Grid,
   IconButton,
   InputAdornment,
   InputLabel,
@@ -42,7 +45,7 @@ import {
   TableRow,
   TextField,
   Tooltip,
-  Typography,
+  Typography
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 
@@ -255,6 +258,67 @@ const FloorsTab: React.FC<FloorsTabProps> = ({ siteId, onNotification, disabled 
     setFilters(prev => ({ ...prev, search: '' }));
   };
 
+  // Render mobile card view
+  const renderCard = (floor: BuildingFloor) => (
+    <Card key={floor.id} sx={{ mb: 2, opacity: floor.deletedAt ? 0.6 : 1 }}>
+      <CardContent>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+          <Typography
+            variant="h6"
+            sx={{
+              textDecoration: floor.deletedAt ? 'line-through' : 'none',
+              flex: 1,
+            }}
+          >
+            {floor.name}
+          </Typography>
+          <Chip
+            size="small"
+            label={floor.deletedAt ? 'Supprimé' : 'Actif'}
+            color={floor.deletedAt ? 'error' : 'success'}
+            variant="outlined"
+          />
+        </Box>
+
+        <Grid container spacing={2}>
+          <Grid xs={12}>
+            <Typography variant="body2" color="text.secondary">
+              <strong>Bâtiment :</strong> {floor.building.name}
+            </Typography>
+          </Grid>
+
+          <Grid xs={12}>
+            <Typography variant="body2" color="text.secondary">
+              <strong>Date de création :</strong> {new Date(floor.createdAt).toLocaleDateString('fr-FR')}
+            </Typography>
+          </Grid>
+        </Grid>
+      </CardContent>
+
+      {!disabled && (
+        <CardActions>
+          <Button
+            size="small"
+            startIcon={<EditIcon />}
+            onClick={() => openEditDialog(floor)}
+            disabled={!!floor.deletedAt}
+          >
+            Modifier
+          </Button>
+          <Button
+            size="small"
+            color="error"
+            startIcon={<DeleteIcon />}
+            onClick={() => handleDelete(floor)}
+            disabled={!!floor.deletedAt}
+          >
+            Supprimer
+          </Button>
+        </CardActions>
+      )}
+    </Card>
+  );
+
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4 }}>
@@ -329,7 +393,7 @@ const FloorsTab: React.FC<FloorsTabProps> = ({ siteId, onNotification, disabled 
                 }}
               />
 
-              <FormControl size="small" sx={{ minWidth: 200 }}>
+              <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 200 } }}>
                 <InputLabel>Bâtiment</InputLabel>
                 <Select
                   value={filters.buildingId}
@@ -370,98 +434,109 @@ const FloorsTab: React.FC<FloorsTabProps> = ({ siteId, onNotification, disabled 
             </Box>
           </Card>
 
-          {/* Table */}
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Nom</TableCell>
-                  <TableCell>Bâtiment</TableCell>
-                  <TableCell>Date de création</TableCell>
-                  <TableCell>Statut</TableCell>
-                  <TableCell align="right">Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredFloors.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
-                      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-                        <LayersIcon sx={{ fontSize: 48, color: 'text.secondary' }} />
-                        <Typography variant="body1" color="text.secondary">
-                          {filters.search || filters.buildingId ? 'Aucun étage trouvé' : 'Aucun étage créé'}
-                        </Typography>
-                        {!filters.search && !filters.buildingId && (
-                          <Button
-                            variant="contained"
-                            startIcon={<AddIcon />}
-                            onClick={openCreateDialog}
-                            disabled={disabled}
-                          >
-                            Créer le premier étage
-                          </Button>
-                        )}
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredFloors.map((floor) => (
-                    <TableRow key={floor.id} hover>
-                      <TableCell>
-                        <Typography variant="body2" fontWeight="medium">
-                          {floor.name}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <BuildingIcon fontSize="small" color="action" />
-                          <Typography variant="body2">
-                            {floor.building.name}
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">
-                          {new Date(floor.createdAt).toLocaleDateString('fr-FR')}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          size="small"
-                          label={floor.deletedAt ? 'Supprimé' : 'Actif'}
-                          color={floor.deletedAt ? 'error' : 'success'}
-                          variant="outlined"
-                        />
-                      </TableCell>
-                      <TableCell align="right">
-                        <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
-                          <Tooltip title="Modifier">
-                            <IconButton
+          {/* Content */}
+          {filteredFloors.length === 0 ? (
+            <Paper sx={{ p: 4, textAlign: 'center' }}>
+              <LayersIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+              <Typography variant="h6" color="text.secondary" gutterBottom>
+                {filters.search || filters.buildingId ? 'Aucun étage trouvé' : 'Aucun étage créé'}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                {filters.search || filters.buildingId
+                  ? "Aucun étage ne correspond à vos critères de recherche"
+                  : "Commencez par créer votre premier étage"}
+              </Typography>
+              {!filters.search && !filters.buildingId && (
+                <Button
+                  variant="contained"
+                  startIcon={<AddIcon />}
+                  onClick={openCreateDialog}
+                  disabled={disabled}
+                >
+                  Créer le premier étage
+                </Button>
+              )}
+            </Paper>
+          ) : (
+            <>
+              {/* Desktop Table View */}
+              <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                <TableContainer component={Paper}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Nom</TableCell>
+                        <TableCell>Bâtiment</TableCell>
+                        <TableCell>Date de création</TableCell>
+                        <TableCell>Statut</TableCell>
+                        <TableCell align="right">Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {filteredFloors.map((floor) => (
+                        <TableRow key={floor.id} hover>
+                          <TableCell>
+                            <Typography variant="body2" fontWeight="medium">
+                              {floor.name}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <BuildingIcon fontSize="small" color="action" />
+                              <Typography variant="body2">
+                                {floor.building.name}
+                              </Typography>
+                            </Box>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">
+                              {new Date(floor.createdAt).toLocaleDateString('fr-FR')}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Chip
                               size="small"
-                              onClick={() => openEditDialog(floor)}
-                              disabled={disabled || !!floor.deletedAt}
-                            >
-                              <EditIcon />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Supprimer">
-                            <IconButton
-                              size="small"
-                              onClick={() => handleDelete(floor)}
-                              disabled={disabled || !!floor.deletedAt}
-                              color="error"
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </Tooltip>
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                              label={floor.deletedAt ? 'Supprimé' : 'Actif'}
+                              color={floor.deletedAt ? 'error' : 'success'}
+                              variant="outlined"
+                            />
+                          </TableCell>
+                          <TableCell align="right">
+                            <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
+                              <Tooltip title="Modifier">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => openEditDialog(floor)}
+                                  disabled={disabled || !!floor.deletedAt}
+                                >
+                                  <EditIcon />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Supprimer">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => handleDelete(floor)}
+                                  disabled={disabled || !!floor.deletedAt}
+                                  color="error"
+                                >
+                                  <DeleteIcon />
+                                </IconButton>
+                              </Tooltip>
+                            </Box>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Box>
+
+              {/* Mobile Card View */}
+              <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+                {filteredFloors.map(renderCard)}
+              </Box>
+            </>
+          )}
         </>
       )}
 
