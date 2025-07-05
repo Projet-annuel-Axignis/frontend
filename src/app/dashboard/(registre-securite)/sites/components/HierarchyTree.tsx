@@ -574,6 +574,13 @@ const HierarchyTree: React.FC<HierarchyTreeProps> = ({
           size="small"
           startIcon={<AddIcon />}
           onClick={() => onAddEntity('company')}
+          sx={{
+            minWidth: 'auto',
+            background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+            '&:hover': {
+              background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+            },
+          }}
         >
           Nouvelle Entreprise
         </Button>

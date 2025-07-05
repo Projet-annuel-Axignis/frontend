@@ -427,6 +427,13 @@ const BuildingDialog: React.FC<BuildingDialogProps> = ({
           variant="contained"
           disabled={loading}
           startIcon={loading ? <CircularProgress size={20} /> : undefined}
+          sx={{
+            minWidth: 'auto',
+            background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+            '&:hover': {
+              background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+            },
+          }}
         >
           {isEdit ? 'Modifier' : 'Créer'}
         </Button>
