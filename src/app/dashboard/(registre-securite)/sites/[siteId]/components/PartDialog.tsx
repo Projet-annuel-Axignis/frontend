@@ -687,7 +687,15 @@ const PartDialog: React.FC<PartDialogProps> = ({
         <Button onClick={handleClose} disabled={loading}>
           Annuler
         </Button>
-        <Button onClick={handleSubmit} variant="contained" disabled={loading}>
+        <Button
+          onClick={handleSubmit}
+          variant="contained"
+          disabled={loading}
+          sx={{
+            minWidth: 'auto',
+            background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+          }}
+        >
           {loading ? 'Enregistrement...' : (mode === 'create' ? 'Créer' : 'Modifier')}
         </Button>
       </DialogActions>

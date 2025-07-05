@@ -214,7 +214,13 @@ const BuildingsTab: React.FC<BuildingsTabProps> = ({
           startIcon={<AddIcon />}
           onClick={handleCreateBuilding}
           disabled={disabled || loading}
-          sx={{ ml: 'auto' }}
+          sx={{
+            ml: 'auto',
+            background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+            '&:hover': {
+              background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+            },
+          }}
         >
           Nouveau bâtiment
         </Button>

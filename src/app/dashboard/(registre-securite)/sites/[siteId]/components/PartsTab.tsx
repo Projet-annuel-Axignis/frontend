@@ -328,6 +328,13 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
               startIcon={<AddIcon />}
               onClick={openCreateDialog}
               disabled={buildings.filter(b => !b.deletedAt).length === 0}
+              sx={{
+                minWidth: 'auto',
+                background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                },
+              }}
             >
               Nouvelle Partie
             </Button>

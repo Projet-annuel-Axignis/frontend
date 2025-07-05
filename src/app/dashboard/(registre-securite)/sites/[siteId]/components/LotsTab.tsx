@@ -456,6 +456,13 @@ const LotsTab: React.FC<LotsTabProps> = ({ siteId, onNotification, disabled = fa
             startIcon={<AddIcon />}
             onClick={openCreateDialog}
             disabled={disabled || hierarchy.buildings.length === 0}
+            sx={{
+              minWidth: 'auto',
+              background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+              '&:hover': {
+                background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+              },
+            }}
           >
             Nouveau Lot
           </Button>
