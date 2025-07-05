@@ -25,7 +25,7 @@ import React, { useState } from 'react';
 import { useToast } from '@/app/_providers/ToastProvider';
 import { Company } from '@/types/company';
 import { Building, BuildingFloor, Lot, Part, PartFloor, Site } from '@/types/site';
-import HierarchyTree from '../components/HierarchyTree';
+import HierarchyTree from './components/HierarchyTree';
 
 const HierarchyPage = () => {
   const router = useRouter();
