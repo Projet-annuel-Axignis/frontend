@@ -438,7 +438,7 @@ const HierarchyPage = () => {
                       <br />
                       ICPE ? : {selectedPart.isIcpe ? "Oui" : "Non"}
                       <br />
-                      Type d&apos;ERP : {selectedPart.erpTypes ? selectedPart.erpTypes.map((erpType: string) => erpType).join(', ') : "Non défini"}
+                      Type d&apos;ERP : {selectedPart.erpTypes ? selectedPart.erpTypes.map(erpType => erpType.code).join(', ') : "Non défini"}
 
                       {isDeleted(selectedPart) && (
                         <Typography variant="body2" sx={{ mt: 1 }}>
