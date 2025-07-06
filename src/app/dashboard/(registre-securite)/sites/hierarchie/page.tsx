@@ -5,21 +5,26 @@ import {
   AccountTree as AccountTreeIcon,
   Apartment as BuildingIcon,
   Business as BusinessIcon,
+  Inventory as InventoryIcon,
+  Layers as LayersIcon,
   LocationOn as LocationIcon,
   NavigateNext as NavigateNextIcon,
+  ViewModule as ViewModuleIcon,
 } from '@mui/icons-material';
 import {
-  Alert,
   Box,
   Breadcrumbs,
   Button,
   Card,
   CardContent,
+  Chip,
+  Divider,
   FormControlLabel,
   Grid,
   Link,
+  Paper,
   Switch,
-  Typography,
+  Typography
 } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
@@ -40,7 +45,7 @@ const HierarchyPage = () => {
   // Définir le titre personnalisé pour le breadcrumb
   useBreadcrumbTitle("hierarchie", "Navigation Hiérarchique");
 
-  // Selection states - filtrer les éléments supprimés
+  // Selection states - maintenir la hiérarchie complète
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [selectedSite, setSelectedSite] = useState<Site | null>(null);
   const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(null);
@@ -53,13 +58,18 @@ const HierarchyPage = () => {
     return entity && entity.deletedAt !== null && entity.deletedAt !== undefined;
   };
 
-  // Selection handlers avec filtrage des éléments supprimés
+  // Fonction helper pour déterminer le type d'étage
+  const isPartFloor = (floor: BuildingFloor | PartFloor): floor is PartFloor => {
+    return 'publicCount' in floor;
+  };
+
+  // Selection handlers avec maintien de la hiérarchie
   const handleSelectCompany = (company: Company | null) => {
-    // Ne sélectionner que si l'entreprise n'est pas supprimée ou si on inclut les supprimés
     if (company && isDeleted(company) && !includeDeleted) {
       return;
     }
     setSelectedCompany(company);
+    // Réinitialiser tous les niveaux inférieurs
     setSelectedSite(null);
     setSelectedBuilding(null);
     setSelectedPart(null);
@@ -68,11 +78,15 @@ const HierarchyPage = () => {
   };
 
   const handleSelectSite = (site: Site | null) => {
-    // Ne sélectionner que si le site n'est pas supprimé ou si on inclut les supprimés
     if (site && isDeleted(site) && !includeDeleted) {
       return;
     }
+    // Maintenir la sélection de l'entreprise si elle existe
+    if (site?.company) {
+      setSelectedCompany(site.company);
+    }
     setSelectedSite(site);
+    // Réinitialiser les niveaux inférieurs
     setSelectedBuilding(null);
     setSelectedPart(null);
     setSelectedFloor(null);
@@ -80,40 +94,95 @@ const HierarchyPage = () => {
   };
 
   const handleSelectBuilding = (building: Building | null) => {
-    // Ne sélectionner que si le bâtiment n'est pas supprimé ou si on inclut les supprimés
     if (building && isDeleted(building) && !includeDeleted) {
       return;
     }
+    // Maintenir la sélection du site si elle existe
+    if (building?.site) {
+      setSelectedSite(building.site);
+      if (building.site.company) {
+        setSelectedCompany(building.site.company);
+      }
+    }
     setSelectedBuilding(building);
+    // Réinitialiser les niveaux inférieurs
     setSelectedPart(null);
     setSelectedFloor(null);
     setSelectedLot(null);
   };
 
   const handleSelectPart = (part: Part | null) => {
-    // Ne sélectionner que si la partie n'est pas supprimée ou si on inclut les supprimés
     if (part && isDeleted(part) && !includeDeleted) {
       return;
     }
+    // Maintenir la sélection du bâtiment si elle existe
+    if (part?.building) {
+      setSelectedBuilding(part.building);
+      if (part.building.site) {
+        setSelectedSite(part.building.site);
+        if (part.building.site.company) {
+          setSelectedCompany(part.building.site.company);
+        }
+      }
+    }
     setSelectedPart(part);
+    // Réinitialiser les niveaux inférieurs
     setSelectedFloor(null);
     setSelectedLot(null);
   };
 
   const handleSelectFloor = (floor: BuildingFloor | PartFloor | null) => {
-    // Ne sélectionner que si l'étage n'est pas supprimé ou si on inclut les supprimés
     if (floor && isDeleted(floor) && !includeDeleted) {
       return;
     }
+
+    if (floor) {
+      // Maintenir la hiérarchie selon le type d'étage
+      if (isPartFloor(floor)) {
+        // C'est un étage de partie
+        const building = floor.buildingFloor.building;
+        setSelectedBuilding(building);
+        if (building.site) {
+          setSelectedSite(building.site);
+          if (building.site.company) {
+            setSelectedCompany(building.site.company);
+          }
+        }
+      } else {
+        // C'est un étage de bâtiment
+        const building = floor.building;
+        setSelectedBuilding(building);
+        if (building.site) {
+          setSelectedSite(building.site);
+          if (building.site.company) {
+            setSelectedCompany(building.site.company);
+          }
+        }
+      }
+    }
+
     setSelectedFloor(floor);
+    // Réinitialiser les niveaux inférieurs
     setSelectedLot(null);
   };
 
   const handleSelectLot = (lot: Lot | null) => {
-    // Ne sélectionner que si le lot n'est pas supprimé ou si on inclut les supprimés
     if (lot && isDeleted(lot) && !includeDeleted) {
       return;
     }
+
+    if (lot) {
+      // Maintenir la hiérarchie complète
+      const building = lot.building;
+      setSelectedBuilding(building);
+      if (building.site) {
+        setSelectedSite(building.site);
+        if (building.site.company) {
+          setSelectedCompany(building.site.company);
+        }
+      }
+    }
+
     setSelectedLot(lot);
   };
 
@@ -242,6 +311,19 @@ const HierarchyPage = () => {
     return breadcrumbs;
   };
 
+  // Fonction pour obtenir l'élément actuellement sélectionné (priorité au plus spécifique)
+  const getCurrentSelection = () => {
+    if (selectedLot) return { type: 'lot', data: selectedLot };
+    if (selectedFloor) return { type: 'floor', data: selectedFloor };
+    if (selectedPart) return { type: 'part', data: selectedPart };
+    if (selectedBuilding) return { type: 'building', data: selectedBuilding };
+    if (selectedSite) return { type: 'site', data: selectedSite };
+    if (selectedCompany) return { type: 'company', data: selectedCompany };
+    return null;
+  };
+
+  const currentSelection = getCurrentSelection();
+
   return (
     <Box>
       {/* Header */}
@@ -329,7 +411,7 @@ const HierarchyPage = () => {
             {/* Details Panel */}
             <Grid size={{ xs: 12, xl: 5 }}>
               <Card sx={{ p: 3, height: '100%' }}>
-                {!selectedCompany && !selectedSite && !selectedBuilding && (
+                {!currentSelection ? (
                   <Box
                     sx={{
                       display: 'flex',
@@ -348,224 +430,453 @@ const HierarchyPage = () => {
                       Cliquez sur un élément dans la navigation pour voir ses détails
                     </Typography>
                   </Box>
-                )}
-
-                {selectedLot && (
+                ) : (
                   <Box>
-                    <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <BusinessIcon />
-                      Lot Sélectionné
-                      {isDeleted(selectedLot) && (
-                        <Typography variant="caption" color="error" sx={{ ml: 1 }}>
-                          (Supprimé)
+                    {/* Lot Details */}
+                    {currentSelection.type === 'lot' && (
+                      <Box>
+                        <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <InventoryIcon />
+                          Lot Sélectionné
+                          {isDeleted(currentSelection.data) && (
+                            <Chip label="Supprimé" color="warning" size="small" />
+                          )}
                         </Typography>
-                      )}
-                    </Typography>
-                    <Alert severity={isDeleted(selectedLot) ? "warning" : "info"} sx={{ mb: 2 }}>
-                      Lot : {selectedLot.name}
-                      {isDeleted(selectedLot) && (
-                        <Typography variant="body2" sx={{ mt: 1 }}>
-                          Cet élément a été supprimé le {new Date(selectedLot.deletedAt!).toLocaleDateString('fr-FR')}
-                        </Typography>
-                      )}
-                    </Alert>
-                    <Button
-                      variant="contained"
-                      disabled={isDeleted(selectedLot)}
-                      onClick={() => showToast('Gestion des lots en cours de développement', 'info')}
-                      sx={{
-                        background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
-                        '&:hover': {
-                          background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
-                        },
-                      }}
-                    >
-                      Gérer ce lot
-                    </Button>
-                  </Box>
-                )}
 
-                {selectedFloor && !selectedLot && (
-                  <Box>
-                    <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <BusinessIcon />
-                      Étage Sélectionné
-                      {isDeleted(selectedFloor) && (
-                        <Typography variant="caption" color="error" sx={{ ml: 1 }}>
-                          (Supprimé)
-                        </Typography>
-                      )}
-                    </Typography>
-                    <Alert severity={isDeleted(selectedFloor) ? "warning" : "info"} sx={{ mb: 2 }}>
-                      Étage : {selectedFloor.name}
-                      {isDeleted(selectedFloor) && (
-                        <Typography variant="body2" sx={{ mt: 1 }}>
-                          Cet élément a été supprimé le {new Date(selectedFloor.deletedAt!).toLocaleDateString('fr-FR')}
-                        </Typography>
-                      )}
-                    </Alert>
-                    <Button
-                      variant="contained"
-                      disabled={isDeleted(selectedFloor)}
-                      onClick={() => showToast('Gestion des étages en cours de développement', 'info')}
-                      sx={{
-                        background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
-                        '&:hover': {
-                          background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
-                        },
-                      }}
-                    >
-                      Gérer cet étage
-                    </Button>
-                  </Box>
-                )}
+                        <Paper sx={{ p: 2, mb: 2 }}>
+                          <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 'bold' }}>
+                            Informations du Lot
+                          </Typography>
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>Nom :</strong> {(currentSelection.data as Lot).name}
+                          </Typography>
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>Bâtiment :</strong> {(currentSelection.data as Lot).building.name}
+                          </Typography>
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>Étage :</strong> {(currentSelection.data as Lot).buildingFloor.name}
+                          </Typography>
+                          {(currentSelection.data as Lot).partFloor && (
+                            <Typography variant="body2" sx={{ mb: 1 }}>
+                              <strong>Étage de partie :</strong> {(currentSelection.data as Lot).partFloor.name}
+                            </Typography>
+                          )}
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>Créé le :</strong> {new Date((currentSelection.data as Lot).createdAt).toLocaleDateString('fr-FR')}
+                          </Typography>
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>Modifié le :</strong> {new Date((currentSelection.data as Lot).updatedAt).toLocaleDateString('fr-FR')}
+                          </Typography>
+                          {isDeleted(currentSelection.data) && (
+                            <Typography variant="body2" color="error">
+                              <strong>Supprimé le :</strong> {new Date((currentSelection.data as Lot).deletedAt!).toLocaleDateString('fr-FR')}
+                            </Typography>
+                          )}
+                        </Paper>
 
-                {selectedPart && !selectedFloor && !selectedLot && (
-                  <Box>
-                    <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <BusinessIcon />
-                      Partie Sélectionnée
-                      {isDeleted(selectedPart) && (
-                        <Typography variant="caption" color="error" sx={{ ml: 1 }}>
-                          (Supprimé)
-                        </Typography>
-                      )}
-                    </Typography>
-                    <Alert severity={isDeleted(selectedPart) ? "warning" : "info"} sx={{ mb: 2 }}>
-                      Partie : {selectedPart.name}
-                      <br />
-                      Type : {selectedPart.type === "PRIVATE" ? "Privée" : "Commune"}
-                      <br />
-                      ICPE ? : {selectedPart.isIcpe ? "Oui" : "Non"}
-                      <br />
-                      Type d&apos;ERP : {selectedPart.erpTypes ? selectedPart.erpTypes.map(erpType => erpType.code).join(', ') : "Non défini"}
+                        <Button
+                          variant="contained"
+                          disabled={isDeleted(currentSelection.data)}
+                          onClick={() => showToast('Gestion des lots en cours de développement', 'info')}
+                          sx={{
+                            background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+                            '&:hover': {
+                              background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                            },
+                          }}
+                        >
+                          Gérer ce lot
+                        </Button>
+                      </Box>
+                    )}
 
-                      {isDeleted(selectedPart) && (
-                        <Typography variant="body2" sx={{ mt: 1 }}>
-                          Cet élément a été supprimé le {new Date(selectedPart.deletedAt!).toLocaleDateString('fr-FR')}
+                    {/* Floor Details */}
+                    {currentSelection.type === 'floor' && (
+                      <Box>
+                        <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <LayersIcon />
+                          {isPartFloor(currentSelection.data as BuildingFloor | PartFloor) ? 'Étage de Partie' : 'Étage de Bâtiment'}
+                          {isDeleted(currentSelection.data) && (
+                            <Chip label="Supprimé" color="warning" size="small" />
+                          )}
                         </Typography>
-                      )}
-                    </Alert>
-                    <Button
-                      variant="contained"
-                      disabled={isDeleted(selectedPart)}
-                      onClick={() => selectedSite && router.push(`/dashboard/sites/${selectedSite.id}?tab=parties`)}
-                      sx={{
-                        background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
-                        '&:hover': {
-                          background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
-                        },
-                      }}
-                    >
-                      Gérer cette partie
-                    </Button>
-                  </Box>
-                )}
 
-                {selectedBuilding && !selectedPart && !selectedFloor && !selectedLot && (
-                  <Box>
-                    <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <BuildingIcon />
-                      Bâtiment Sélectionné
-                      {isDeleted(selectedBuilding) && (
-                        <Typography variant="caption" color="error" sx={{ ml: 1 }}>
-                          (Supprimé)
-                        </Typography>
-                      )}
-                    </Typography>
-                    <Alert severity={isDeleted(selectedBuilding) ? "warning" : "info"} sx={{ mb: 2 }}>
-                      Bâtiment : {selectedBuilding.name}
-                      {isDeleted(selectedBuilding) && (
-                        <Typography variant="body2" sx={{ mt: 1 }}>
-                          Cet élément a été supprimé le {new Date(selectedBuilding.deletedAt!).toLocaleDateString('fr-FR')}
-                        </Typography>
-                      )}
-                    </Alert>
-                    <Button
-                      variant="contained"
-                      disabled={isDeleted(selectedBuilding)}
-                      onClick={() => selectedSite && router.push(`/dashboard/sites/${selectedSite.id}?tab=buildings`)}
-                      sx={{
-                        background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
-                        '&:hover': {
-                          background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
-                        },
-                      }}
-                    >
-                      Gérer ce bâtiment
-                    </Button>
-                  </Box>
-                )}
+                        <Paper sx={{ p: 2, mb: 2 }}>
+                          <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 'bold' }}>
+                            Informations de l&apos;Étage
+                          </Typography>
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>Nom :</strong> {(currentSelection.data as BuildingFloor | PartFloor).name}
+                          </Typography>
 
-                {selectedSite && !selectedBuilding && (
-                  <Box>
-                    <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <LocationIcon />
-                      Site Sélectionné
-                      {isDeleted(selectedSite) && (
-                        <Typography variant="caption" color="error" sx={{ ml: 1 }}>
-                          (Supprimé)
-                        </Typography>
-                      )}
-                    </Typography>
-                    <Alert severity={isDeleted(selectedSite) ? "warning" : "info"} sx={{ mb: 2 }}>
-                      Site : {selectedSite.name}<br />
-                      Adresse : {selectedSite.streetNumber} {selectedSite.street}, {selectedSite.postalCode} {selectedSite.city}
-                      {isDeleted(selectedSite) && (
-                        <Typography variant="body2" sx={{ mt: 1 }}>
-                          Cet élément a été supprimé le {new Date(selectedSite.deletedAt!).toLocaleDateString('fr-FR')}
-                        </Typography>
-                      )}
-                    </Alert>
-                    <Button
-                      variant="contained"
-                      disabled={isDeleted(selectedSite)}
-                      onClick={() => router.push(`/dashboard/sites/${selectedSite.id}`)}
-                      sx={{
-                        background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
-                        '&:hover': {
-                          background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
-                        },
-                      }}
-                    >
-                      Gérer ce site
-                    </Button>
-                  </Box>
-                )}
+                          {isPartFloor(currentSelection.data as BuildingFloor | PartFloor) ? (
+                            <>
+                              <Typography variant="body2" sx={{ mb: 1 }}>
+                                <strong>Étage de bâtiment :</strong> {(currentSelection.data as PartFloor).buildingFloor.name}
+                              </Typography>
+                              <Typography variant="body2" sx={{ mb: 1 }}>
+                                <strong>Bâtiment :</strong> {(currentSelection.data as PartFloor).buildingFloor.building.name}
+                              </Typography>
+                              <Typography variant="body2" sx={{ mb: 1 }}>
+                                <strong>Niveau :</strong> {(currentSelection.data as PartFloor).levelNumber}
+                              </Typography>
+                              <Divider sx={{ my: 1 }} />
+                              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'bold' }}>
+                                Données d&apos;occupation
+                              </Typography>
+                              <Typography variant="body2" sx={{ mb: 1 }}>
+                                <strong>Public :</strong> {(currentSelection.data as PartFloor).publicCount} personnes
+                              </Typography>
+                              <Typography variant="body2" sx={{ mb: 1 }}>
+                                <strong>Personnel :</strong> {(currentSelection.data as PartFloor).staffCount} personnes
+                              </Typography>
+                              <Divider sx={{ my: 1 }} />
+                              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'bold' }}>
+                                Surfaces
+                              </Typography>
+                              <Typography variant="body2" sx={{ mb: 1 }}>
+                                <strong>Surface d&apos;exploitation :</strong> {(currentSelection.data as PartFloor).exploitationSurface} m²
+                              </Typography>
+                              <Typography variant="body2" sx={{ mb: 1 }}>
+                                <strong>Surface GLA :</strong> {(currentSelection.data as PartFloor).glaSurface} m²
+                              </Typography>
+                              <Typography variant="body2" sx={{ mb: 1 }}>
+                                <strong>Surface d&apos;accès public :</strong> {(currentSelection.data as PartFloor).publicAccessSurface} m²
+                              </Typography>
+                            </>
+                          ) : (
+                            <Typography variant="body2" sx={{ mb: 1 }}>
+                              <strong>Bâtiment :</strong> {(currentSelection.data as BuildingFloor).building.name}
+                            </Typography>
+                          )}
 
-                {selectedCompany && !selectedSite && (
-                  <Box>
-                    <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <BusinessIcon />
-                      Entreprise Sélectionnée
-                      {isDeleted(selectedCompany) && (
-                        <Typography variant="caption" color="error" sx={{ ml: 1 }}>
-                          (Supprimé)
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>Créé le :</strong> {new Date(currentSelection.data.createdAt).toLocaleDateString('fr-FR')}
+                          </Typography>
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>Modifié le :</strong> {new Date(currentSelection.data.updatedAt).toLocaleDateString('fr-FR')}
+                          </Typography>
+                          {isDeleted(currentSelection.data) && (
+                            <Typography variant="body2" color="error">
+                              <strong>Supprimé le :</strong> {new Date(currentSelection.data.deletedAt!).toLocaleDateString('fr-FR')}
+                            </Typography>
+                          )}
+                        </Paper>
+
+                        <Button
+                          variant="contained"
+                          disabled={isDeleted(currentSelection.data)}
+                          onClick={() => showToast('Gestion des étages en cours de développement', 'info')}
+                          sx={{
+                            background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+                            '&:hover': {
+                              background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                            },
+                          }}
+                        >
+                          Gérer cet étage
+                        </Button>
+                      </Box>
+                    )}
+
+                    {/* Part Details */}
+                    {currentSelection.type === 'part' && (
+                      <Box>
+                        <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <ViewModuleIcon />
+                          Partie Sélectionnée
+                          {isDeleted(currentSelection.data) && (
+                            <Chip label="Supprimé" color="warning" size="small" />
+                          )}
                         </Typography>
-                      )}
-                    </Typography>
-                    <Alert severity={isDeleted(selectedCompany) ? "warning" : "info"} sx={{ mb: 2 }}>
-                      Entreprise : {selectedCompany.name}<br />
-                      SIRET : {selectedCompany.siretNumber}
-                      {isDeleted(selectedCompany) && (
-                        <Typography variant="body2" sx={{ mt: 1 }}>
-                          Cet élément a été supprimé le {new Date(selectedCompany.deletedAt!).toLocaleDateString('fr-FR')}
+
+                        <Paper sx={{ p: 2, mb: 2 }}>
+                          <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 'bold' }}>
+                            Informations de la Partie
+                          </Typography>
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>Nom :</strong> {(currentSelection.data as Part).name}
+                          </Typography>
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>Type :</strong> {(currentSelection.data as Part).type === "PRIVATE" ? "Privée" : "Commune"}
+                          </Typography>
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>ICPE :</strong> {(currentSelection.data as Part).isIcpe ? "Oui" : "Non"}
+                          </Typography>
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>Bâtiment :</strong> {(currentSelection.data as Part).building?.name || "Non défini"}
+                          </Typography>
+
+                          {(currentSelection.data as Part).habFamily && (
+                            <Typography variant="body2" sx={{ mb: 1 }}>
+                              <strong>Famille d&apos;habitation :</strong> {(currentSelection.data as Part).habFamily!.description}
+                            </Typography>
+                          )}
+
+                          {(currentSelection.data as Part).erpTypes && (currentSelection.data as Part).erpTypes!.length > 0 && (
+                            <Box sx={{ mb: 1 }}>
+                              <Typography variant="body2" sx={{ mb: 0.5 }}>
+                                <strong>Types ERP :</strong>
+                              </Typography>
+                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                {(currentSelection.data as Part).erpTypes!.map((erpType, index) => (
+                                  <Chip
+                                    key={index}
+                                    label={`${erpType.code} - ${erpType.description}`}
+                                    size="small"
+                                    variant="outlined"
+                                  />
+                                ))}
+                              </Box>
+                            </Box>
+                          )}
+
+                          {(currentSelection.data as Part).partFloors && (currentSelection.data as Part).partFloors!.length > 0 && (
+                            <Typography variant="body2" sx={{ mb: 1 }}>
+                              <strong>Nombre d&apos;étages :</strong> {(currentSelection.data as Part).partFloors!.length}
+                            </Typography>
+                          )}
+
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>Créé le :</strong> {new Date(currentSelection.data.createdAt).toLocaleDateString('fr-FR')}
+                          </Typography>
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>Modifié le :</strong> {new Date(currentSelection.data.updatedAt).toLocaleDateString('fr-FR')}
+                          </Typography>
+                          {isDeleted(currentSelection.data) && (
+                            <Typography variant="body2" color="error">
+                              <strong>Supprimé le :</strong> {new Date(currentSelection.data.deletedAt!).toLocaleDateString('fr-FR')}
+                            </Typography>
+                          )}
+                        </Paper>
+
+                        <Button
+                          variant="contained"
+                          disabled={isDeleted(currentSelection.data)}
+                          onClick={() => selectedSite && router.push(`/dashboard/sites/${selectedSite.id}?tab=parties`)}
+                          sx={{
+                            background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+                            '&:hover': {
+                              background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                            },
+                          }}
+                        >
+                          Gérer cette partie
+                        </Button>
+                      </Box>
+                    )}
+
+                    {/* Building Details */}
+                    {currentSelection.type === 'building' && (
+                      <Box>
+                        <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <BuildingIcon />
+                          Bâtiment Sélectionné
+                          {isDeleted(currentSelection.data) && (
+                            <Chip label="Supprimé" color="warning" size="small" />
+                          )}
                         </Typography>
-                      )}
-                    </Alert>
-                    <Button
-                      variant="contained"
-                      disabled={isDeleted(selectedCompany)}
-                      onClick={() => router.push('/dashboard/administration/entreprises')}
-                      sx={{
-                        background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
-                        '&:hover': {
-                          background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
-                        },
-                      }}
-                    >
-                      Gérer cette entreprise
-                    </Button>
+
+                        <Paper sx={{ p: 2, mb: 2 }}>
+                          <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 'bold' }}>
+                            Informations du Bâtiment
+                          </Typography>
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>Nom :</strong> {(currentSelection.data as Building).name}
+                          </Typography>
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>Site :</strong> {(currentSelection.data as Building).site?.name || "Non défini"}
+                          </Typography>
+
+                          {(currentSelection.data as Building).typologies && (currentSelection.data as Building).typologies.length > 0 && (
+                            <Box sx={{ mb: 1 }}>
+                              <Typography variant="body2" sx={{ mb: 0.5 }}>
+                                <strong>Typologies :</strong>
+                              </Typography>
+                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                {(currentSelection.data as Building).typologies.map((typo, index) => (
+                                  <Chip
+                                    key={index}
+                                    label={`${typo.code} - ${typo.description}`}
+                                    size="small"
+                                    variant="outlined"
+                                    color="primary"
+                                  />
+                                ))}
+                              </Box>
+                            </Box>
+                          )}
+
+                          {(currentSelection.data as Building).ighClasses && (currentSelection.data as Building).ighClasses.length > 0 && (
+                            <Box sx={{ mb: 1 }}>
+                              <Typography variant="body2" sx={{ mb: 0.5 }}>
+                                <strong>Classes IGH :</strong>
+                              </Typography>
+                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                {(currentSelection.data as Building).ighClasses.map((ighClass, index) => (
+                                  <Chip
+                                    key={index}
+                                    label={`${ighClass.code} - ${ighClass.description}`}
+                                    size="small"
+                                    variant="outlined"
+                                    color="secondary"
+                                  />
+                                ))}
+                              </Box>
+                            </Box>
+                          )}
+
+                          {(currentSelection.data as Building).erpCategory && (
+                            <Typography variant="body2" sx={{ mb: 1 }}>
+                              <strong>Catégorie ERP :</strong> {(currentSelection.data as Building).erpCategory!.category} - {(currentSelection.data as Building).erpCategory!.description} ({(currentSelection.data as Building).erpCategory!.group})
+                            </Typography>
+                          )}
+
+                          {(currentSelection.data as Building).users && (currentSelection.data as Building).users!.length > 0 && (
+                            <Typography variant="body2" sx={{ mb: 1 }}>
+                              <strong>Utilisateurs autorisés :</strong> {(currentSelection.data as Building).users!.length}
+                            </Typography>
+                          )}
+
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>Créé le :</strong> {new Date(currentSelection.data.createdAt).toLocaleDateString('fr-FR')}
+                          </Typography>
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>Modifié le :</strong> {new Date(currentSelection.data.updatedAt).toLocaleDateString('fr-FR')}
+                          </Typography>
+                          {isDeleted(currentSelection.data) && (
+                            <Typography variant="body2" color="error">
+                              <strong>Supprimé le :</strong> {new Date(currentSelection.data.deletedAt!).toLocaleDateString('fr-FR')}
+                            </Typography>
+                          )}
+                        </Paper>
+
+                        <Button
+                          variant="contained"
+                          disabled={isDeleted(currentSelection.data)}
+                          onClick={() => selectedSite && router.push(`/dashboard/sites/${selectedSite.id}?tab=buildings`)}
+                          sx={{
+                            background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+                            '&:hover': {
+                              background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                            },
+                          }}
+                        >
+                          Gérer ce bâtiment
+                        </Button>
+                      </Box>
+                    )}
+
+                    {/* Site Details */}
+                    {currentSelection.type === 'site' && (
+                      <Box>
+                        <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <LocationIcon />
+                          Site Sélectionné
+                          {isDeleted(currentSelection.data) && (
+                            <Chip label="Supprimé" color="warning" size="small" />
+                          )}
+                        </Typography>
+
+                        <Paper sx={{ p: 2, mb: 2 }}>
+                          <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 'bold' }}>
+                            Informations du Site
+                          </Typography>
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>Nom :</strong> {(currentSelection.data as Site).name}
+                          </Typography>
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>Adresse :</strong> {(currentSelection.data as Site).streetNumber} {(currentSelection.data as Site).street}
+                          </Typography>
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>Ville :</strong> {(currentSelection.data as Site).postalCode} {(currentSelection.data as Site).city}
+                          </Typography>
+                          {(currentSelection.data as Site).reference && (
+                            <Typography variant="body2" sx={{ mb: 1 }}>
+                              <strong>Référence :</strong> {(currentSelection.data as Site).reference}
+                            </Typography>
+                          )}
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>Entreprise :</strong> {(currentSelection.data as Site).company?.name || "Non définie"}
+                          </Typography>
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>Créé le :</strong> {new Date(currentSelection.data.createdAt).toLocaleDateString('fr-FR')}
+                          </Typography>
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>Modifié le :</strong> {new Date(currentSelection.data.updatedAt).toLocaleDateString('fr-FR')}
+                          </Typography>
+                          {isDeleted(currentSelection.data) && (
+                            <Typography variant="body2" color="error">
+                              <strong>Supprimé le :</strong> {new Date(currentSelection.data.deletedAt!).toLocaleDateString('fr-FR')}
+                            </Typography>
+                          )}
+                        </Paper>
+
+                        <Button
+                          variant="contained"
+                          disabled={isDeleted(currentSelection.data)}
+                          onClick={() => router.push(`/dashboard/sites/${currentSelection.data.id}`)}
+                          sx={{
+                            background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+                            '&:hover': {
+                              background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                            },
+                          }}
+                        >
+                          Gérer ce site
+                        </Button>
+                      </Box>
+                    )}
+
+                    {/* Company Details */}
+                    {currentSelection.type === 'company' && (
+                      <Box>
+                        <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <BusinessIcon />
+                          Entreprise Sélectionnée
+                          {isDeleted(currentSelection.data) && (
+                            <Chip label="Supprimé" color="warning" size="small" />
+                          )}
+                        </Typography>
+
+                        <Paper sx={{ p: 2, mb: 2 }}>
+                          <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 'bold' }}>
+                            Informations de l&apos;Entreprise
+                          </Typography>
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>Nom :</strong> {(currentSelection.data as Company).name}
+                          </Typography>
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>SIRET :</strong> {(currentSelection.data as Company).siretNumber}
+                          </Typography>
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>Créé le :</strong> {new Date(currentSelection.data.createdAt).toLocaleDateString('fr-FR')}
+                          </Typography>
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>Modifié le :</strong> {new Date(currentSelection.data.updatedAt).toLocaleDateString('fr-FR')}
+                          </Typography>
+                          {isDeleted(currentSelection.data) && (
+                            <Typography variant="body2" color="error">
+                              <strong>Supprimé le :</strong> {new Date(currentSelection.data.deletedAt!).toLocaleDateString('fr-FR')}
+                            </Typography>
+                          )}
+                        </Paper>
+
+                        <Button
+                          variant="contained"
+                          disabled={isDeleted(currentSelection.data)}
+                          onClick={() => router.push('/dashboard/administration/entreprises')}
+                          sx={{
+                            background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+                            '&:hover': {
+                              background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                            },
+                          }}
+                        >
+                          Gérer cette entreprise
+                        </Button>
+                      </Box>
+                    )}
                   </Box>
                 )}
               </Card>
