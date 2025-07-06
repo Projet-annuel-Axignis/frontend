@@ -193,7 +193,7 @@ export const hierarchyService = {
                   .filter(part => includeDeleted || !isDeleted(part));
 
                 const buildingLots = data.lots
-                  .filter(lot => lot.buildingId === building.id)
+                  .filter(lot => lot.building.id === building.id)
                   .filter(lot => includeDeleted || !isDeleted(lot));
 
                 return {
