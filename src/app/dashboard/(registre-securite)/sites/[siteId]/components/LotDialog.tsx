@@ -75,9 +75,13 @@ const LotDialog = ({
       if (editingLot) {
         // Find the part that contains this partFloor
         const relatedPart = findPartForPartFloor(editingLot.partFloor?.id || 0);
+
+        // Verify that the building exists in the available buildings
+        const buildingExists = buildings.some(b => b.id === editingLot.building?.id);
+
         setFormData({
           name: editingLot.name,
-          buildingId: editingLot.building?.id || 0,
+          buildingId: buildingExists ? (editingLot.building?.id || 0) : 0,
           partId: relatedPart?.id || 0,
           partFloorId: editingLot.partFloor?.id || 0,
         });
@@ -91,7 +95,7 @@ const LotDialog = ({
       }
       setFormErrors({});
     }
-  }, [open, editingLot]);
+  }, [open, editingLot, buildings]);
 
   // Update available parts when building changes
   useEffect(() => {
@@ -125,7 +129,9 @@ const LotDialog = ({
       }
     } else {
       setAvailableParts([]);
-      setFormData(prev => ({ ...prev, partId: 0, partFloorId: 0 }));
+      if (formData.partId !== 0 || formData.partFloorId !== 0) {
+        setFormData(prev => ({ ...prev, partId: 0, partFloorId: 0 }));
+      }
     }
   };
 
@@ -141,7 +147,9 @@ const LotDialog = ({
       }
     } else {
       setAvailablePartFloors([]);
-      setFormData(prev => ({ ...prev, partFloorId: 0 }));
+      if (formData.partFloorId !== 0) {
+        setFormData(prev => ({ ...prev, partFloorId: 0 }));
+      }
     }
   };
 
@@ -235,7 +243,11 @@ const LotDialog = ({
             <FormControl fullWidth error={!!formErrors.buildingId}>
               <InputLabel>Bâtiment *</InputLabel>
               <Select
-                value={formData.buildingId || ''}
+                value={
+                  formData.buildingId && buildings.some(b => b.id === formData.buildingId)
+                    ? formData.buildingId
+                    : ''
+                }
                 onChange={(e) => setFormData(prev => ({
                   ...prev,
                   buildingId: Number(e.target.value),
@@ -263,7 +275,11 @@ const LotDialog = ({
             <FormControl fullWidth error={!!formErrors.partId}>
               <InputLabel>Partie *</InputLabel>
               <Select
-                value={formData.partId || ''}
+                value={
+                  formData.partId && availableParts.some(p => p.id === formData.partId)
+                    ? formData.partId
+                    : ''
+                }
                 onChange={(e) => setFormData(prev => ({
                   ...prev,
                   partId: Number(e.target.value),
@@ -299,7 +315,11 @@ const LotDialog = ({
             <FormControl fullWidth error={!!formErrors.partFloorId}>
               <InputLabel>Étage de partie *</InputLabel>
               <Select
-                value={formData.partFloorId || ''}
+                value={
+                  formData.partFloorId && availablePartFloors.some(pf => pf.id === formData.partFloorId)
+                    ? formData.partFloorId
+                    : ''
+                }
                 onChange={(e) => setFormData(prev => ({ ...prev, partFloorId: Number(e.target.value) }))}
                 label="Étage de partie *"
                 disabled={!formData.partId || isSubmitting}
