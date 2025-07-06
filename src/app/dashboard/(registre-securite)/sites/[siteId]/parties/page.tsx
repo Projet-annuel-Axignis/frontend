@@ -1,17 +1,18 @@
 'use client';
 
-import { useParams } from 'next/navigation';
 import { useSiteContext } from '../_providers/SiteProvider';
 import PartsTab from './PartsTab';
 
-export default function PartiesPage() {
-  const params = useParams();
-  const siteId = parseInt(params.siteId as string);
-  const { isDeleted, showNotification } = useSiteContext();
+export default function PartsPage() {
+  const { site, showNotification, isDeleted } = useSiteContext();
+
+  if (!site) {
+    return null;
+  }
 
   return (
     <PartsTab
-      siteId={siteId}
+      siteId={site.id}
       onNotification={showNotification}
       disabled={isDeleted}
     />

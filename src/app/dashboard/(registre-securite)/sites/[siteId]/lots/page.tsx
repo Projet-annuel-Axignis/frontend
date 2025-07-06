@@ -1,17 +1,18 @@
 'use client';
 
-import { useParams } from 'next/navigation';
 import { useSiteContext } from '../_providers/SiteProvider';
 import LotsTab from './LotsTab';
 
 export default function LotsPage() {
-  const params = useParams();
-  const siteId = parseInt(params.siteId as string);
-  const { isDeleted, showNotification } = useSiteContext();
+  const { site, showNotification, isDeleted } = useSiteContext();
+
+  if (!site) {
+    return null;
+  }
 
   return (
     <LotsTab
-      siteId={siteId}
+      siteId={site.id}
       onNotification={showNotification}
       disabled={isDeleted}
     />
