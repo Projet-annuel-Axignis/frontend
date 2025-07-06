@@ -1,7 +1,15 @@
-// Base types for site management
+// ============================================================================
+// TYPES POUR LA GESTION DES SITES ET DE LA HIÉRARCHIE IMMOBILIÈRE
+// ============================================================================
+// Ce fichier contient tous les types TypeScript pour la gestion des sites,
+// bâtiments, parties, étages et lots dans l'application de registre de sécurité.
 
 import { User } from "./auth";
 import { Company } from "./company";
+
+// ============================================================================
+// SITES - Niveau racine de la hiérarchie
+// ============================================================================
 
 export interface Site {
   id: number;
@@ -37,7 +45,10 @@ export interface UpdateSiteDto {
   reference?: string;
 }
 
-// Building types
+// ============================================================================
+// BÂTIMENTS - Niveau 2 de la hiérarchie
+// ============================================================================
+
 export interface Building {
   id: number;
   createdAt: string;
@@ -50,22 +61,6 @@ export interface Building {
   erpCategory: ErpCategory | null;
   authorizedUserIds: string[];
   users?: User[];
-}
-
-export interface ErpCategory {
-  description: string;
-  category: number;
-  group: string;
-}
-
-export interface Typologies {
-  description: string;
-  code: string;
-}
-
-export interface IghClass {
-  description: string;
-  code: string;
 }
 
 export interface CreateBuildingDto {
@@ -85,7 +80,27 @@ export interface UpdateBuildingDto {
   authorizedUserIds?: string[];
 }
 
-// Building Floor types
+// Types de classification des bâtiments
+export interface ErpCategory {
+  description: string;
+  category: number;
+  group: string;
+}
+
+export interface Typologies {
+  description: string;
+  code: string;
+}
+
+export interface IghClass {
+  description: string;
+  code: string;
+}
+
+// ============================================================================
+// ÉTAGES DE BÂTIMENT - Structure physique des bâtiments
+// ============================================================================
+
 export interface BuildingFloor {
   id: number;
   createdAt: string;
@@ -104,33 +119,11 @@ export interface UpdateBuildingFloorDto {
   name?: string;
 }
 
-// Part types
+// ============================================================================
+// PARTIES - Divisions fonctionnelles des bâtiments
+// ============================================================================
+
 export type PartType = 'PRIVATE' | 'COMMUNAL';
-
-export interface HabFamily {
-  name: HabFamilyName;
-  description: string;
-}
-
-export type HabFamilyName =
-  | 'FIRST_FAMILY_SINGLE'
-  | 'SECOND_FAMILY_SINGLE'
-  | 'SECOND_FAMILY_COMMUNITY'
-  | 'THIRD_FAMILY_COMMUNITY'
-  | 'FOURTH_FAMILY_COMMUNITY'
-  | 'RESIDENTIAL_ACCOMMODATION'
-  | 'ELDERLY_ACCOMMODATION'
-  | 'RESIDENTIAL_COVERED_CAR_PARK';
-
-export interface ErpType {
-  code: ErpTypeCode;
-  description: string;
-  tag: string;
-}
-
-export type ErpTypeCode =
-  | 'J' | 'L' | 'M' | 'N' | 'O' | 'P' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y'
-  | 'PA' | 'CTS' | 'SG' | 'PS' | 'GA' | 'OA' | 'EF' | 'REF';
 
 export interface Part {
   id: number;
@@ -163,14 +156,37 @@ export interface UpdatePartDto {
   erpTypeCodes?: ErpTypeCode[];
 }
 
-// Level assignment for parts
-export interface LevelAssignment {
-  levelNumber: number;
-  buildingFloorId: number | null;
-  partFloorData?: Omit<CreatePartFloorDto, 'buildingFloorId' | 'partId'>;
+// Classification des familles d'habitation
+export interface HabFamily {
+  name: HabFamilyName;
+  description: string;
 }
 
-// Part Floor types
+export type HabFamilyName =
+  | 'FIRST_FAMILY_SINGLE'
+  | 'SECOND_FAMILY_SINGLE'
+  | 'SECOND_FAMILY_COMMUNITY'
+  | 'THIRD_FAMILY_COMMUNITY'
+  | 'FOURTH_FAMILY_COMMUNITY'
+  | 'RESIDENTIAL_ACCOMMODATION'
+  | 'ELDERLY_ACCOMMODATION'
+  | 'RESIDENTIAL_COVERED_CAR_PARK';
+
+// Classification ERP (Établissement Recevant du Public)
+export interface ErpType {
+  code: ErpTypeCode;
+  description: string;
+  tag: string;
+}
+
+export type ErpTypeCode =
+  | 'J' | 'L' | 'M' | 'N' | 'O' | 'P' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y'
+  | 'PA' | 'CTS' | 'SG' | 'PS' | 'GA' | 'OA' | 'EF' | 'REF';
+
+// ============================================================================
+// ÉTAGES DE PARTIE - Données détaillées par niveau de partie
+// ============================================================================
+
 export interface PartFloor {
   id: number;
   createdAt: string;
@@ -209,16 +225,19 @@ export interface UpdatePartFloorDto {
   levelNumber?: number;
 }
 
-// Lot types
+// ============================================================================
+// LOTS - Unités spécifiques dans les bâtiments
+// ============================================================================
+
 export interface Lot {
   id: number;
   createdAt: string;
   updatedAt: string;
   deletedAt?: string;
   name: string;
-  buildingId: number;
-  buildingFloorId: number;
-  partFloorId?: number;
+  building: Building;
+  buildingFloor: BuildingFloor;
+  partFloor: PartFloor;
 }
 
 export interface CreateLotDto {
@@ -233,7 +252,21 @@ export interface UpdateLotDto {
   partFloorId?: number;
 }
 
-// API Response types
+// ============================================================================
+// TYPES UTILITAIRES POUR LA GESTION DES FORMULAIRES
+// ============================================================================
+
+// Type pour l'assignation des niveaux lors de la création/modification des parties
+export interface LevelAssignment {
+  levelNumber: number;
+  buildingFloorId: number | null;
+  partFloorData?: Omit<CreatePartFloorDto, 'buildingFloorId' | 'partId'>;
+}
+
+// ============================================================================
+// TYPES DE RÉPONSE API - Structures de données retournées par le backend
+// ============================================================================
+
 export interface SitesResponse {
   results: Site[];
   totalResults: number;
@@ -264,7 +297,11 @@ export interface LotsResponse {
   totalResults: number;
 }
 
-// Utility types for hierarchical data
+// ============================================================================
+// TYPES HIÉRARCHIQUES - Extensions pour la navigation et l'affichage
+// ============================================================================
+
+// Types étendus pour inclure les relations hiérarchiques
 export interface SiteWithBuildings extends Site {
   buildings?: Building[];
 }
