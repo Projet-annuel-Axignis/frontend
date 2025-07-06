@@ -34,7 +34,7 @@ import DashBoardHeader from '@/components/dashboard/DashBoardHeader';
 import { useBreadcrumbTitle } from '@/hooks/useBreadcrumbTitle';
 import { Company } from '@/types/company';
 import { Building, BuildingFloor, Lot, Part, PartFloor, Site } from '@/types/site';
-import HierarchyTree from './_components/HierarchyTree';
+import HierarchyTree from './HierarchyTree';
 
 const HierarchyPage = () => {
   const router = useRouter();
