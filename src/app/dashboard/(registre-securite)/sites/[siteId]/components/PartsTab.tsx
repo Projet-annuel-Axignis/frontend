@@ -262,10 +262,18 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
             </Typography>
           </Grid>
 
-          {part.erpTypeCodes && (
+          {part.erpTypes && part.erpTypes.length > 0 && (
             <Grid size={{ xs: 12 }}>
               <Typography variant="body2" color="text.secondary">
-                <strong>Code ERP :</strong> {part.erpTypeCodes}
+                <strong>Code ERP :</strong> {part.erpTypes.map(erpType => erpType.code).join(', ')}
+              </Typography>
+            </Grid>
+          )}
+
+          {part.habFamily && (
+            <Grid size={{ xs: 12 }}>
+              <Typography variant="body2" color="text.secondary">
+                <strong>Famille d&apos;habitation :</strong> {part.habFamily?.description}
               </Typography>
             </Grid>
           )}
@@ -421,7 +429,7 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
                       <TableCell>{getBuildingName(part.building)}</TableCell>
                       <TableCell>{part.partFloors?.length || 0} niveau(s)</TableCell>
                       <TableCell>{part.isIcpe ? 'Oui' : 'Non'}</TableCell>
-                      <TableCell>{part.erpTypeCodes || '-'}</TableCell>
+                      <TableCell>{part.erpTypes?.map(erpType => erpType.code).join(', ') || '-'}</TableCell>
                       <TableCell>
                         {!disabled && (
                           <Box sx={{ display: 'flex', gap: 1 }}>

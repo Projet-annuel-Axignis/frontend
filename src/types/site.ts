@@ -107,7 +107,12 @@ export interface UpdateBuildingFloorDto {
 // Part types
 export type PartType = 'PRIVATE' | 'COMMUNAL';
 
-export type HabFamily =
+export interface HabFamily {
+  name: HabFamilyName;
+  description: string;
+}
+
+export type HabFamilyName =
   | 'FIRST_FAMILY_SINGLE'
   | 'SECOND_FAMILY_SINGLE'
   | 'SECOND_FAMILY_COMMUNITY'
@@ -117,7 +122,13 @@ export type HabFamily =
   | 'ELDERLY_ACCOMMODATION'
   | 'RESIDENTIAL_COVERED_CAR_PARK';
 
-export type ErpType =
+export interface ErpType {
+  code: ErpTypeCode;
+  description: string;
+  tag: string;
+}
+
+export type ErpTypeCode =
   | 'J' | 'L' | 'M' | 'N' | 'O' | 'P' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y'
   | 'PA' | 'CTS' | 'SG' | 'PS' | 'GA' | 'OA' | 'EF' | 'REF';
 
@@ -140,16 +151,16 @@ export interface CreatePartDto {
   isIcpe?: boolean;
   type: PartType;
   buildingId: number;
-  habFamilyName?: HabFamily;
-  erpTypeCodes?: ErpType[];
+  habFamilyName?: HabFamilyName;
+  erpTypeCodes?: ErpTypeCode[];
 }
 
 export interface UpdatePartDto {
   name?: string;
   isIcpe?: boolean;
   type?: PartType;
-  habFamilyName?: HabFamily;
-  erpTypeCodes?: ErpType[];
+  habFamilyName?: HabFamilyName;
+  erpTypeCodes?: ErpTypeCode[];
 }
 
 // Level assignment for parts
