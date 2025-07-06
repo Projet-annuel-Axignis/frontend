@@ -1,8 +1,8 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import BuildingsTab from '../_components/BuildingsTab';
 import { useSiteContext } from '../_providers/SiteProvider';
+import BuildingsTab from './BuildingsTab';
 
 export default function BatimentsPage() {
   const params = useParams();

@@ -1,8 +1,8 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import LotsTab from '../_components/LotsTab';
 import { useSiteContext } from '../_providers/SiteProvider';
+import LotsTab from './LotsTab';
 
 export default function LotsPage() {
   const params = useParams();

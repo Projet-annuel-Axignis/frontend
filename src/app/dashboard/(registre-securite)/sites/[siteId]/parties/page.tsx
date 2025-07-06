@@ -1,8 +1,8 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import PartsTab from '../_components/PartsTab';
 import { useSiteContext } from '../_providers/SiteProvider';
+import PartsTab from './PartsTab';
 
 export default function PartiesPage() {
   const params = useParams();
