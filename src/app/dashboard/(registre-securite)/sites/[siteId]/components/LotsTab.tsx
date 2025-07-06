@@ -1,61 +1,41 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
 'use client';
 
-import {
-  buildingFloorService,
-  buildingService,
-  lotService,
-  partFloorService,
-  partService
-} from '@/services/siteService';
-import {
-  Building,
-  BuildingFloor,
-  BuildingPart,
-  CreateLotDto,
-  Lot,
-  PartFloor,
-  UpdateLotDto
-} from '@/types/site';
+import SearchFilters from '@/components/dashboard/SearchFilters';
+import { buildingFloorService, buildingService, lotService, partFloorService } from '@/services/siteService';
+import { Building, BuildingFloor, CreateLotDto, Lot, PartFloor, UpdateLotDto } from '@/types/site';
 import {
   Add as AddIcon,
   Apartment as BuildingIcon,
-  Clear as ClearIcon,
   Delete as DeleteIcon,
   Edit as EditIcon,
-  ExpandMore as ExpandMoreIcon,
   Inventory as InventoryIcon,
   Layers as LayersIcon,
   Refresh as RefreshIcon,
-  Search as SearchIcon,
   ViewModule as ViewModuleIcon
 } from '@mui/icons-material';
 import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
   Alert,
   Box,
   Button,
   Card,
+  CardActions,
+  CardContent,
   Chip,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   FormControl,
-  FormControlLabel,
+  Grid,
   IconButton,
-  InputAdornment,
   InputLabel,
   MenuItem,
   Paper,
   Select,
   Stack,
-  Switch,
   Table,
   TableBody,
   TableCell,
@@ -64,11 +44,9 @@ import {
   TableRow,
   TextField,
   Tooltip,
-  Typography,
-  useMediaQuery,
-  useTheme
+  Typography
 } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface LotsTabProps {
   siteId: number;
@@ -76,46 +54,31 @@ interface LotsTabProps {
   disabled?: boolean;
 }
 
-interface Filters {
-  search: string;
-  buildingId: number | '';
-  includeDeleted: boolean;
-  showAdvanced: boolean;
-}
-
 interface LotFormData {
   name: string;
   buildingId: number;
   buildingFloorId: number;
-  partFloorId: number;
+  partFloorId?: number;
 }
 
-interface HierarchyData {
-  buildings: Building[];
-  buildingFloors: BuildingFloor[];
-  buildingParts: BuildingPart[];
-  partFloors: PartFloor[];
+interface LotFilters {
+  search: string;
+  buildingId: number | '';
+  includeDeleted: boolean;
 }
 
-const LotsTab: React.FC<LotsTabProps> = ({ siteId, onNotification, disabled = false }) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-
+const LotsTab = ({ siteId, onNotification, disabled = false }: LotsTabProps) => {
   // Data states
   const [lots, setLots] = useState<Lot[]>([]);
-  const [hierarchy, setHierarchy] = useState<HierarchyData>({
-    buildings: [],
-    buildingFloors: [],
-    buildingParts: [],
-    partFloors: [],
-  });
+  const [buildings, setBuildings] = useState<Building[]>([]);
+  const [buildingFloors, setBuildingFloors] = useState<BuildingFloor[]>([]);
+  const [partFloors, setPartFloors] = useState<PartFloor[]>([]);
   const [loading, setLoading] = useState(true);
   const [filteredLots, setFilteredLots] = useState<Lot[]>([]);
 
   // Dialog states
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create');
-  const [selectedLot, setSelectedLot] = useState<Lot | null>(null);
+  const [editingLot, setEditingLot] = useState<Lot | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [lotToDelete, setLotToDelete] = useState<Lot | null>(null);
 
@@ -124,102 +87,83 @@ const LotsTab: React.FC<LotsTabProps> = ({ siteId, onNotification, disabled = fa
     name: '',
     buildingId: 0,
     buildingFloorId: 0,
-    partFloorId: 0,
+    partFloorId: undefined,
   });
   const [formErrors, setFormErrors] = useState<Partial<LotFormData>>({});
 
   // Filters state
-  const [filters, setFilters] = useState<Filters>({
+  const [filters, setFilters] = useState<LotFilters>({
     search: '',
     buildingId: '',
     includeDeleted: false,
-    showAdvanced: false,
   });
 
-  // Filtered form options based on selections
+  // Available options for form
   const [availableBuildingFloors, setAvailableBuildingFloors] = useState<BuildingFloor[]>([]);
   const [availablePartFloors, setAvailablePartFloors] = useState<PartFloor[]>([]);
 
   // Load data
   useEffect(() => {
     loadData();
-  }, [siteId, filters.includeDeleted]);
+  }, [siteId]);
 
-  // Filter lots when search or building filter changes
+  // Filter lots when search, building filter, or includeDeleted changes
   useEffect(() => {
     filterLots();
-  }, [lots, filters.search, filters.buildingId]);
+  }, [lots, filters.search, filters.buildingId, filters.includeDeleted]);
 
-  // Update available floors when building changes
+  // Update available building floors when building changes
   useEffect(() => {
     updateAvailableBuildingFloors();
-  }, [formData.buildingId, hierarchy.buildingFloors]);
+  }, [formData.buildingId, buildingFloors]);
 
   // Update available part floors when building floor changes
   useEffect(() => {
     updateAvailablePartFloors();
-  }, [formData.buildingFloorId, hierarchy.partFloors, hierarchy.buildingParts]);
+  }, [formData.buildingFloorId, partFloors]);
 
   const loadData = async () => {
     try {
       setLoading(true);
 
-      // Load all hierarchy data
-      const [buildingsRes, lotsRes] = await Promise.all([
-        buildingService.getBuildings({ siteId, includeDeleted: filters.includeDeleted }),
-        lotService.getLots({ siteId, includeDeleted: filters.includeDeleted }),
-      ]);
+      // Load buildings for this site (including deleted ones to have complete data)
+      const buildingsResponse = await buildingService.getBuildings({
+        siteId,
+        includeDeleted: true,
+      });
+      setBuildings(buildingsResponse.buildings);
 
-      const buildings = buildingsRes.buildings;
-      setLots(lotsRes.lots);
-
-      if (buildings.length > 0) {
-        // Load all related data in parallel
-        const [buildingFloorsRes, buildingPartsRes] = await Promise.all([
-          Promise.all(buildings.map(b =>
+      // Load all building floors and part floors for buildings in this site
+      if (buildingsResponse.buildings.length > 0) {
+        const [floorsPromises, partFloorsPromises, lotsResponse] = await Promise.all([
+          Promise.all(buildingsResponse.buildings.map(building =>
             buildingFloorService.getBuildingFloors({
-              buildingId: b.id,
-              includeDeleted: filters.includeDeleted
+              buildingId: building.id,
+              includeDeleted: true,
             })
           )),
-          Promise.all(buildings.map(b =>
-            partService.getParts({
-              buildingId: b.id,
-              includeDeleted: filters.includeDeleted
+          Promise.all(buildingsResponse.buildings.map(building =>
+            partFloorService.getPartFloors({
+              buildingId: building.id,
+              includeDeleted: true,
             })
           )),
+          lotService.getLots({
+            siteId,
+            includeDeleted: true,
+          })
         ]);
 
-        const allBuildingFloors = buildingFloorsRes.flatMap(res => res.buildingFloors);
-        const allBuildingParts = buildingPartsRes.flatMap(res => res.parts);
+        const allBuildingFloors = floorsPromises.flatMap(response => response.buildingFloors);
+        const allPartFloors = partFloorsPromises.flatMap(response => response.partFloors);
 
-        // Load part floors for all parts
-        let allPartFloors = [];
-        if (allBuildingFloors.length > 0) {
-          const partFloorsRes = await Promise.all(
-            allBuildingFloors.map(floor =>
-              partFloorService.getPartFloors({
-                buildingFloorId: floor.id,
-                includeDeleted: filters.includeDeleted,
-              })
-            )
-          );
-          allPartFloors = partFloorsRes.flatMap(res => res.partFloors);
-        }
-
-        setHierarchy({
-          buildings,
-          buildingFloors: allBuildingFloors,
-          buildingParts: allBuildingParts,
-          partFloors: allPartFloors,
-        });
+        setBuildingFloors(allBuildingFloors);
+        setPartFloors(allPartFloors);
+        setLots(lotsResponse.lots);
       } else {
-        setHierarchy({
-          buildings: [],
-          buildingFloors: [],
-          buildingParts: [],
-          partFloors: [],
-        });
+        setBuildingFloors([]);
+        setPartFloors([]);
+        setLots([]);
       }
     } catch (error) {
       console.error('Erreur lors du chargement des lots:', error);
@@ -231,40 +175,44 @@ const LotsTab: React.FC<LotsTabProps> = ({ siteId, onNotification, disabled = fa
 
   const updateAvailableBuildingFloors = () => {
     if (formData.buildingId) {
-      const floors = hierarchy.buildingFloors.filter(
-        floor => floor.buildingId === formData.buildingId && !floor.deletedAt
+      const floorsForBuilding = buildingFloors.filter(
+        floor => floor.building.id === formData.buildingId && !floor.deletedAt
       );
-      setAvailableBuildingFloors(floors);
+      setAvailableBuildingFloors(floorsForBuilding);
+
+      // Reset building floor selection if current selection is not available
+      if (formData.buildingFloorId && !floorsForBuilding.find(f => f.id === formData.buildingFloorId)) {
+        setFormData(prev => ({ ...prev, buildingFloorId: 0, partFloorId: undefined }));
+      }
     } else {
       setAvailableBuildingFloors([]);
-    }
-
-    // Reset building floor selection if not valid anymore
-    if (formData.buildingFloorId && !availableBuildingFloors.find(f => f.id === formData.buildingFloorId)) {
-      setFormData(prev => ({ ...prev, buildingFloorId: 0, partFloorId: 0 }));
     }
   };
 
   const updateAvailablePartFloors = () => {
     if (formData.buildingFloorId) {
-      // Get part floors for this building floor
-      const partFloors = hierarchy.partFloors.filter(
-        partFloor => partFloor.buildingFloorId === formData.buildingFloorId && !partFloor.deletedAt
+      const partFloorsForBuildingFloor = partFloors.filter(
+        partFloor => partFloor.buildingFloor.id === formData.buildingFloorId && !partFloor.deletedAt
       );
+      setAvailablePartFloors(partFloorsForBuildingFloor);
 
-      setAvailablePartFloors(partFloors);
+      // Reset part floor selection if current selection is not available
+      if (formData.partFloorId && !partFloorsForBuildingFloor.find(pf => pf.id === formData.partFloorId)) {
+        setFormData(prev => ({ ...prev, partFloorId: undefined }));
+      }
     } else {
       setAvailablePartFloors([]);
-    }
-
-    // Reset part floor selection if not valid anymore
-    if (formData.partFloorId && !availablePartFloors.find(f => f.id === formData.partFloorId)) {
-      setFormData(prev => ({ ...prev, partFloorId: 0 }));
+      setFormData(prev => ({ ...prev, partFloorId: undefined }));
     }
   };
 
   const filterLots = () => {
     let filtered = [...lots];
+
+    // Filter by deleted status
+    if (!filters.includeDeleted) {
+      filtered = filtered.filter(lot => !lot.deletedAt);
+    }
 
     // Filter by search term
     if (filters.search) {
@@ -276,47 +224,32 @@ const LotsTab: React.FC<LotsTabProps> = ({ siteId, onNotification, disabled = fa
 
     // Filter by building
     if (filters.buildingId !== '') {
-      filtered = filtered.filter(lot => lot.buildingId === Number(filters.buildingId));
+      filtered = filtered.filter(lot => lot.building.id === Number(filters.buildingId));
     }
 
     setFilteredLots(filtered);
   };
 
-  const handleFilterChange = (field: keyof Filters, value: any) => {
-    setFilters(prev => ({ ...prev, [field]: value }));
-  };
-
-  const resetFilters = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setFilters({
-      search: '',
-      buildingId: '',
-      includeDeleted: false,
-      showAdvanced: false,
-    });
-  };
-
   const openCreateDialog = () => {
-    setDialogMode('create');
-    setSelectedLot(null);
+    setEditingLot(null);
+    const availableBuildings = buildings.filter(building => !building.deletedAt);
     setFormData({
       name: '',
-      buildingId: hierarchy.buildings.length > 0 ? hierarchy.buildings[0].id : 0,
+      buildingId: availableBuildings.length > 0 ? availableBuildings[0].id : 0,
       buildingFloorId: 0,
-      partFloorId: 0,
+      partFloorId: undefined,
     });
     setFormErrors({});
     setDialogOpen(true);
   };
 
   const openEditDialog = (lot: Lot) => {
-    setDialogMode('edit');
-    setSelectedLot(lot);
+    setEditingLot(lot);
     setFormData({
       name: lot.name,
-      buildingId: lot.buildingId,
-      buildingFloorId: lot.buildingFloorId,
-      partFloorId: lot.partFloorId || 0,
+      buildingId: lot.building.id,
+      buildingFloorId: lot.buildingFloor.id,
+      partFloorId: lot.partFloor?.id,
     });
     setFormErrors({});
     setDialogOpen(true);
@@ -324,8 +257,8 @@ const LotsTab: React.FC<LotsTabProps> = ({ siteId, onNotification, disabled = fa
 
   const closeDialog = () => {
     setDialogOpen(false);
-    setSelectedLot(null);
-    setFormData({ name: '', buildingId: 0, buildingFloorId: 0, partFloorId: 0 });
+    setEditingLot(null);
+    setFormData({ name: '', buildingId: 0, buildingFloorId: 0, partFloorId: undefined });
     setFormErrors({});
   };
 
@@ -341,36 +274,35 @@ const LotsTab: React.FC<LotsTabProps> = ({ siteId, onNotification, disabled = fa
     }
 
     if (!formData.buildingFloorId) {
-      errors.buildingFloorId = 'L\'étage de bâtiment est requis';
-    }
-
-    if (!formData.partFloorId) {
-      errors.partFloorId = 'L\'étage de partie est requis';
+      errors.buildingFloorId = 'L&apos;étage de bâtiment est requis';
     }
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = async () => {
+  const handleSave = async () => {
     if (!validateForm()) return;
 
     try {
-      if (dialogMode === 'create') {
+      if (editingLot) {
+        // Update
+        const updateData: UpdateLotDto = {
+          name: formData.name.trim(),
+          partFloorId: formData.partFloorId || null,
+        };
+        await lotService.updateLot(editingLot.id, updateData);
+        onNotification('Lot modifié avec succès', 'success');
+      } else {
+        // Create
         const createData: CreateLotDto = {
           name: formData.name.trim(),
           buildingId: formData.buildingId,
           buildingFloorId: formData.buildingFloorId,
-          partFloorId: formData.partFloorId,
+          partFloorId: formData.partFloorId || undefined,
         };
         await lotService.createLot(createData);
         onNotification('Lot créé avec succès', 'success');
-      } else if (selectedLot) {
-        const updateData: UpdateLotDto = {
-          name: formData.name.trim(),
-        };
-        await lotService.updateLot(selectedLot.id, updateData);
-        onNotification('Lot modifié avec succès', 'success');
       }
 
       closeDialog();
@@ -401,29 +333,80 @@ const LotsTab: React.FC<LotsTabProps> = ({ siteId, onNotification, disabled = fa
     }
   };
 
-  const getBuildingName = (buildingId: number): string => {
-    const building = hierarchy.buildings.find(b => b.id === buildingId);
-    return building ? building.name : `Bâtiment ${buildingId}`;
-  };
+  // Render mobile card view
+  const renderCard = (lot: Lot) => (
+    <Card key={lot.id} sx={{ mb: 2, opacity: lot.deletedAt ? 0.6 : 1 }}>
+      <CardContent>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+          <Typography
+            variant="h6"
+            sx={{
+              textDecoration: lot.deletedAt ? 'line-through' : 'none',
+              flex: 1,
+            }}
+          >
+            {lot.name}
+          </Typography>
+          <Chip
+            size="small"
+            label={lot.deletedAt ? 'Supprimé' : 'Actif'}
+            color={lot.deletedAt ? 'error' : 'success'}
+            variant="outlined"
+          />
+        </Box>
 
-  const getBuildingFloorName = (buildingFloorId: number): string => {
-    const floor = hierarchy.buildingFloors.find(f => f.id === buildingFloorId);
-    return floor ? floor.name : `Étage ${buildingFloorId}`;
-  };
+        <Grid container spacing={2}>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Typography variant="body2" color="text.secondary">
+              <strong>Bâtiment :</strong> {lot.building.name}
+            </Typography>
+          </Grid>
 
-  const getPartFloorName = (partFloorId: number): string => {
-    const partFloor = hierarchy.partFloors.find(pf => pf.id === partFloorId);
-    return partFloor ? partFloor.name : `Étage partie ${partFloorId}`;
-  };
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Typography variant="body2" color="text.secondary">
+              <strong>Étage de bâtiment :</strong> {lot.buildingFloor.name}
+            </Typography>
+          </Grid>
 
-  const getPartName = (partId: number): string => {
-    const part = hierarchy.buildingParts.find(p => p.id === partId);
-    return part ? part.name : `Partie ${partId}`;
-  };
+          {lot.partFloor && (
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Typography variant="body2" color="text.secondary">
+                <strong>Étage de partie :</strong> {lot.partFloor.name}
+              </Typography>
+            </Grid>
+          )}
 
-  const clearSearch = () => {
-    setFilters(prev => ({ ...prev, search: '' }));
-  };
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Typography variant="body2" color="text.secondary">
+              <strong>Date de création :</strong> {new Date(lot.createdAt).toLocaleDateString('fr-FR')}
+            </Typography>
+          </Grid>
+        </Grid>
+      </CardContent>
+
+      {!disabled && (
+        <CardActions>
+          <Button
+            size="small"
+            startIcon={<EditIcon />}
+            onClick={() => openEditDialog(lot)}
+            disabled={!!lot.deletedAt}
+          >
+            Modifier
+          </Button>
+          <Button
+            size="small"
+            color="error"
+            startIcon={<DeleteIcon />}
+            onClick={() => handleDelete(lot)}
+            disabled={!!lot.deletedAt}
+          >
+            Supprimer
+          </Button>
+        </CardActions>
+      )}
+    </Card>
+  );
 
   if (loading) {
     return (
@@ -434,7 +417,7 @@ const LotsTab: React.FC<LotsTabProps> = ({ siteId, onNotification, disabled = fa
   }
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box>
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h5" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -455,7 +438,7 @@ const LotsTab: React.FC<LotsTabProps> = ({ siteId, onNotification, disabled = fa
             variant="contained"
             startIcon={<AddIcon />}
             onClick={openCreateDialog}
-            disabled={disabled || hierarchy.buildings.length === 0}
+            disabled={disabled || buildings.filter(b => !b.deletedAt).length === 0}
             sx={{
               minWidth: 'auto',
               background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
@@ -469,210 +452,173 @@ const LotsTab: React.FC<LotsTabProps> = ({ siteId, onNotification, disabled = fa
         </Box>
       </Box>
 
-      {hierarchy.buildings.length === 0 ? (
+      {buildings.filter(b => !b.deletedAt).length === 0 ? (
         <Alert severity="info" sx={{ mb: 3 }}>
-          Aucun bâtiment trouvé sur ce site. Vous devez d&apos;abord créer des bâtiments, des étages et des parties pour pouvoir créer des lots.
-        </Alert>
-      ) : hierarchy.buildingFloors.length === 0 ? (
-        <Alert severity="warning" sx={{ mb: 3 }}>
-          Aucun étage de bâtiment trouvé. Vous devez créer des étages de bâtiment pour pouvoir créer des lots.
-        </Alert>
-      ) : hierarchy.partFloors.length === 0 ? (
-        <Alert severity="warning" sx={{ mb: 3 }}>
-          Aucun étage de partie trouvé. Vous devez créer des parties et leurs étages pour pouvoir créer des lots.
+          Aucun bâtiment actif trouvé sur ce site. Vous devez d&apos;abord créer des bâtiments pour pouvoir ajouter des lots.
         </Alert>
       ) : (
         <>
           {/* Filters */}
-          <Card sx={{ p: 2, mb: 3 }}>
-            <Box sx={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: 2,
-              alignItems: 'center',
-              '& > *': { minWidth: { xs: '100%', sm: 'auto' } }
-            }}>
-              <TextField
-                size="small"
-                placeholder="Rechercher un lot..."
-                value={filters.search}
-                onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-                sx={{ flex: { xs: '1 1 100%', sm: '1 1 300px' } }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon />
-                    </InputAdornment>
-                  ),
-                  endAdornment: filters.search && (
-                    <InputAdornment position="end">
-                      <IconButton size="small" onClick={clearSearch}>
-                        <ClearIcon />
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
+          <SearchFilters
+            searchValue={filters.search}
+            onSearchChange={(value) => setFilters(prev => ({ ...prev, search: value }))}
+            searchPlaceholder="Rechercher un lot..."
+            selectValue={filters.buildingId}
+            onSelectChange={(value) => setFilters(prev => ({
+              ...prev,
+              buildingId: value === '' ? '' : Number(value)
+            }))}
+            selectLabel="Bâtiment"
+            selectOptions={buildings
+              .filter(building => filters.includeDeleted || !building.deletedAt)
+              .map(building => ({
+                value: building.id,
+                label: building.name
+              }))}
+            selectAllLabel="Tous les bâtiments"
+            includeDeleted={filters.includeDeleted}
+            onIncludeDeletedChange={(value) => setFilters(prev => ({ ...prev, includeDeleted: value }))}
+            resultsCount={filteredLots.length}
+            resultsLabel="lot(s)"
+          />
 
-              <FormControl size="small" sx={{ minWidth: 200 }}>
-                <InputLabel>Bâtiment</InputLabel>
-                <Select
-                  value={filters.buildingId}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setFilters(prev => ({
-                      ...prev,
-                      buildingId: value === '' ? '' : Number(value)
-                    }));
-                  }}
-                  label="Bâtiment"
-                >
-                  <MenuItem value="">Tous les bâtiments</MenuItem>
-                  {hierarchy.buildings.map((building) => (
-                    <MenuItem key={building.id} value={building.id}>
-                      {building.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={filters.includeDeleted}
-                    onChange={(e) => setFilters(prev => ({ ...prev, includeDeleted: e.target.checked }))}
-                    size="small"
-                  />
-                }
-                label="Inclure supprimés"
-              />
-
-              <Typography variant="body2" color="text.secondary" sx={{ ml: 'auto' }}>
-                {filteredLots.length} lot(s)
+          {/* Content */}
+          {filteredLots.length === 0 ? (
+            <Paper sx={{ p: 4, textAlign: 'center' }}>
+              <InventoryIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+              <Typography variant="h6" color="text.secondary" gutterBottom>
+                {filters.search || filters.buildingId ? 'Aucun lot trouvé' : 'Aucun lot créé'}
               </Typography>
-            </Box>
-          </Card>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                {filters.search || filters.buildingId
+                  ? "Aucun lot ne correspond à vos critères de recherche"
+                  : "Commencez par créer votre premier lot"}
+              </Typography>
+              {!filters.search && !filters.buildingId && (
+                <Button
+                  variant="contained"
+                  startIcon={<AddIcon />}
+                  onClick={openCreateDialog}
+                  disabled={disabled}
+                >
+                  Créer le premier lot
+                </Button>
+              )}
+            </Paper>
+          ) : (
+            <>
+              {/* Desktop Table View */}
+              <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                <TableContainer component={Paper}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Nom</TableCell>
+                        <TableCell>Bâtiment</TableCell>
+                        <TableCell>Étage de bâtiment</TableCell>
+                        <TableCell>Étage de partie</TableCell>
+                        <TableCell>Date de création</TableCell>
+                        <TableCell>Statut</TableCell>
+                        <TableCell align="right">Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {filteredLots.map((lot) => (
+                        <TableRow key={lot.id} hover>
+                          <TableCell>
+                            <Typography variant="body2" fontWeight="medium">
+                              {lot.name}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <BuildingIcon fontSize="small" color="action" />
+                              <Typography variant="body2">
+                                {lot.building.name}
+                              </Typography>
+                            </Box>
+                          </TableCell>
+                          <TableCell>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <LayersIcon fontSize="small" color="action" />
+                              <Typography variant="body2">
+                                {lot.buildingFloor.name}
+                              </Typography>
+                            </Box>
+                          </TableCell>
+                          <TableCell>
+                            {lot.partFloor ? (
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <ViewModuleIcon fontSize="small" color="action" />
+                                <Typography variant="body2">
+                                  {lot.partFloor.name}
+                                </Typography>
+                              </Box>
+                            ) : (
+                              <Typography variant="body2" color="text.secondary">
+                                Aucun
+                              </Typography>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">
+                              {new Date(lot.createdAt).toLocaleDateString('fr-FR')}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              size="small"
+                              label={lot.deletedAt ? 'Supprimé' : 'Actif'}
+                              color={lot.deletedAt ? 'error' : 'success'}
+                              variant="outlined"
+                            />
+                          </TableCell>
+                          <TableCell align="right">
+                            <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
+                              <Tooltip title="Modifier">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => openEditDialog(lot)}
+                                  disabled={disabled || !!lot.deletedAt}
+                                >
+                                  <EditIcon />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Supprimer">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => handleDelete(lot)}
+                                  disabled={disabled || !!lot.deletedAt}
+                                  color="error"
+                                >
+                                  <DeleteIcon />
+                                </IconButton>
+                              </Tooltip>
+                            </Box>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Box>
 
-          {/* Table */}
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Nom</TableCell>
-                  <TableCell>Bâtiment</TableCell>
-                  <TableCell>Étage de Bâtiment</TableCell>
-                  <TableCell>Étage de Partie</TableCell>
-                  <TableCell>Date de création</TableCell>
-                  <TableCell>Statut</TableCell>
-                  <TableCell align="right">Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredLots.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
-                      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-                        <InventoryIcon sx={{ fontSize: 48, color: 'text.secondary' }} />
-                        <Typography variant="body1" color="text.secondary">
-                          {filters.search || filters.buildingId ? 'Aucun lot trouvé' : 'Aucun lot créé'}
-                        </Typography>
-                        {!filters.search && !filters.buildingId && (
-                          <Button
-                            variant="contained"
-                            startIcon={<AddIcon />}
-                            onClick={openCreateDialog}
-                            disabled={disabled}
-                          >
-                            Créer le premier lot
-                          </Button>
-                        )}
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredLots.map((lot) => (
-                    <TableRow key={lot.id} hover>
-                      <TableCell>
-                        <Typography variant="body2" fontWeight="medium">
-                          {lot.name}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <BuildingIcon fontSize="small" color="action" />
-                          <Typography variant="body2">
-                            {getBuildingName(lot.buildingId)}
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <LayersIcon fontSize="small" color="action" />
-                          <Typography variant="body2">
-                            {getBuildingFloorName(lot.buildingFloorId)}
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <ViewModuleIcon fontSize="small" color="action" />
-                          <Typography variant="body2">
-                            {getPartFloorName(lot.partFloorId)}
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">
-                          {new Date(lot.createdAt).toLocaleDateString('fr-FR')}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          size="small"
-                          label={lot.deletedAt ? 'Supprimé' : 'Actif'}
-                          color={lot.deletedAt ? 'error' : 'success'}
-                          variant="outlined"
-                        />
-                      </TableCell>
-                      <TableCell align="right">
-                        <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
-                          <Tooltip title="Modifier">
-                            <IconButton
-                              size="small"
-                              onClick={() => openEditDialog(lot)}
-                              disabled={disabled || !!lot.deletedAt}
-                            >
-                              <EditIcon />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Supprimer">
-                            <IconButton
-                              size="small"
-                              onClick={() => handleDelete(lot)}
-                              disabled={disabled || !!lot.deletedAt}
-                              color="error"
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </Tooltip>
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
+              {/* Mobile Card View */}
+              <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+                {filteredLots.map(renderCard)}
+              </Box>
+            </>
+          )}
         </>
       )}
 
       {/* Create/Edit Dialog */}
-      <Dialog open={dialogOpen} onClose={closeDialog} maxWidth="md" fullWidth>
+      <Dialog open={dialogOpen} onClose={closeDialog} maxWidth="sm" fullWidth>
         <DialogTitle>
-          {selectedLot ? 'Modifier le lot' : 'Créer un nouveau lot'}
+          {editingLot ? 'Modifier le lot' : 'Créer un nouveau lot'}
         </DialogTitle>
         <DialogContent>
-          <Stack spacing={3} sx={{ pt: 2 }}>
+          <Stack spacing={2} sx={{ pt: 2 }}>
             <TextField
               fullWidth
               label="Nom du lot *"
@@ -680,113 +626,87 @@ const LotsTab: React.FC<LotsTabProps> = ({ siteId, onNotification, disabled = fa
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
               error={!!formErrors.name}
               helperText={formErrors.name}
-              placeholder="ex: Lot A1, Local technique, Bureau 201..."
+              placeholder="ex: Local commercial A, Appartement 101, Bureau 203..."
             />
 
-            <Accordion defaultExpanded>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography variant="h6">Configuration hiérarchique</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Stack spacing={2}>
-                  <FormControl fullWidth error={!!formErrors.buildingId}>
-                    <InputLabel>Bâtiment *</InputLabel>
-                    <Select
-                      value={formData.buildingId}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        buildingId: Number(e.target.value),
-                        buildingFloorId: 0,
-                        partFloorId: 0,
-                      }))}
-                      label="Bâtiment *"
-                      disabled={!!selectedLot} // Can't change hierarchy when editing
-                    >
-                      {hierarchy.buildings.map((building) => (
-                        <MenuItem key={building.id} value={building.id}>
-                          {building.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                    {formErrors.buildingId && (
-                      <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.5 }}>
-                        {formErrors.buildingId}
-                      </Typography>
-                    )}
-                  </FormControl>
+            <FormControl fullWidth error={!!formErrors.buildingId}>
+              <InputLabel>Bâtiment *</InputLabel>
+              <Select
+                value={formData.buildingId}
+                onChange={(e) => setFormData(prev => ({ ...prev, buildingId: Number(e.target.value), buildingFloorId: 0, partFloorId: undefined }))}
+                label="Bâtiment *"
+                disabled={!!editingLot} // Can't change building when editing
+              >
+                {buildings
+                  .filter(building => filters.includeDeleted || !building.deletedAt)
+                  .map((building) => (
+                    <MenuItem key={building.id} value={building.id}>
+                      {building.name}
+                    </MenuItem>
+                  ))}
+              </Select>
+              {formErrors.buildingId && (
+                <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.5 }}>
+                  {formErrors.buildingId}
+                </Typography>
+              )}
+            </FormControl>
 
-                  <FormControl fullWidth error={!!formErrors.buildingFloorId} disabled={!formData.buildingId}>
-                    <InputLabel>Étage de Bâtiment *</InputLabel>
-                    <Select
-                      value={formData.buildingFloorId}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        buildingFloorId: Number(e.target.value),
-                        partFloorId: 0,
-                      }))}
-                      label="Étage de Bâtiment *"
-                      disabled={!!selectedLot || !formData.buildingId}
-                    >
-                      {availableBuildingFloors.map((floor) => (
-                        <MenuItem key={floor.id} value={floor.id}>
-                          {floor.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                    {formErrors.buildingFloorId && (
-                      <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.5 }}>
-                        {formErrors.buildingFloorId}
-                      </Typography>
-                    )}
-                  </FormControl>
+            <FormControl fullWidth error={!!formErrors.buildingFloorId}>
+              <InputLabel>Étage de bâtiment *</InputLabel>
+              <Select
+                value={formData.buildingFloorId}
+                onChange={(e) => setFormData(prev => ({ ...prev, buildingFloorId: Number(e.target.value), partFloorId: undefined }))}
+                label="Étage de bâtiment *"
+                disabled={!formData.buildingId || (!!editingLot)} // Can't change building floor when editing
+              >
+                {availableBuildingFloors.map((floor) => (
+                  <MenuItem key={floor.id} value={floor.id}>
+                    {floor.name}
+                  </MenuItem>
+                ))}
+              </Select>
+              {formErrors.buildingFloorId && (
+                <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.5 }}>
+                  {formErrors.buildingFloorId}
+                </Typography>
+              )}
+            </FormControl>
 
-                  <FormControl fullWidth error={!!formErrors.partFloorId} disabled={!formData.buildingFloorId}>
-                    <InputLabel>Étage de Partie *</InputLabel>
-                    <Select
-                      value={formData.partFloorId}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        partFloorId: Number(e.target.value),
-                      }))}
-                      label="Étage de Partie *"
-                      disabled={!!selectedLot || !formData.buildingFloorId}
-                    >
-                      {availablePartFloors.map((partFloor) => (
-                        <MenuItem key={partFloor.id} value={partFloor.id}>
-                          {getPartFloorName(partFloor.id)}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                    {formErrors.partFloorId && (
-                      <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.5 }}>
-                        {formErrors.partFloorId}
-                      </Typography>
-                    )}
-                  </FormControl>
-
-                  {formData.buildingId && formData.buildingFloorId && formData.partFloorId && (
-                    <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
-                        Aperçu de la hiérarchie :
-                      </Typography>
-                      <Typography variant="body2">
-                        <strong>{getBuildingName(formData.buildingId)}</strong>
-                        {' → '}
-                        <strong>{getBuildingFloorName(formData.buildingFloorId)}</strong>
-                        {' → '}
-                        <strong>{getPartFloorName(formData.partFloorId)}</strong>
-                      </Typography>
-                    </Box>
-                  )}
-                </Stack>
-              </AccordionDetails>
-            </Accordion>
+            <FormControl fullWidth>
+              <InputLabel>Étage de partie (optionnel)</InputLabel>
+              <Select
+                value={formData.partFloorId || ''}
+                onChange={(e) => setFormData(prev => ({ ...prev, partFloorId: e.target.value ? Number(e.target.value) : undefined }))}
+                label="Étage de partie (optionnel)"
+                disabled={!formData.buildingFloorId}
+              >
+                <MenuItem value="">
+                  <em>Aucun</em>
+                </MenuItem>
+                {availablePartFloors.map((partFloor) => (
+                  <MenuItem key={partFloor.id} value={partFloor.id}>
+                    {partFloor.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </Stack>
         </DialogContent>
         <DialogActions>
           <Button onClick={closeDialog}>Annuler</Button>
-          <Button onClick={handleSubmit} variant="contained">
-            {selectedLot ? 'Modifier' : 'Créer'}
+          <Button
+            onClick={handleSave}
+            variant="contained"
+            sx={{
+              minWidth: 'auto',
+              background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+              '&:hover': {
+                background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+              },
+            }}
+          >
+            {editingLot ? 'Modifier' : 'Créer'}
           </Button>
         </DialogActions>
       </Dialog>

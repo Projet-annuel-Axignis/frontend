@@ -348,13 +348,14 @@ export const lotService = {
     const searchParams = new URLSearchParams();
     searchParams.append('limit', '1000');
     searchParams.append('offset', '0');
-    searchParams.append('sortOrder', 'desc');
+    searchParams.append('sortOrder', 'asc');
     searchParams.append('sortField', 'name');
 
     if (params.siteId) {
-      searchParams.append('filterField', 'site.id');
-      searchParams.append('filterOp', 'equals');
-      searchParams.append('filter', params.siteId.toString());
+      // TODO: Attente correction du backend
+      // searchParams.append('filterField', 'building.site.id');
+      // searchParams.append('filterOp', 'equals');
+      // searchParams.append('filter', params.siteId.toString());
     } else if (params.buildingId) {
       searchParams.append('filterField', 'building.id');
       searchParams.append('filterOp', 'equals');
