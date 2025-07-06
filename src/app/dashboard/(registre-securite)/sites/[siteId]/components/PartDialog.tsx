@@ -11,6 +11,7 @@ import {
 import {
   Box,
   Button,
+  Chip,
   Dialog,
   DialogActions,
   DialogContent,
@@ -141,6 +142,12 @@ const PartDialog: React.FC<PartDialogProps> = ({
     // Use complete part floors data if available, otherwise fallback to part.partFloors
     const partFloorsToUse = completePartFloors || existingPart?.partFloors || [];
 
+    console.log('initializeLevelAssignments called with:', {
+      levelCount,
+      partFloorsToUse: partFloorsToUse.length,
+      partFloors: partFloorsToUse
+    });
+
     for (let i = 1; i <= levelCount; i++) {
       assignments.push({
         levelNumber: i,
@@ -162,12 +169,17 @@ const PartDialog: React.FC<PartDialogProps> = ({
       console.log('Populating with existing part floors:', partFloorsToUse);
 
       partFloorsToUse.forEach((partFloor, index) => {
-        if (assignments[index]) {
+        console.log(`Processing partFloor ${index}:`, partFloor);
+
+        // Find the assignment that corresponds to this partFloor's levelNumber
+        const assignmentIndex = assignments.findIndex(a => a.levelNumber === partFloor.levelNumber);
+
+        if (assignmentIndex !== -1) {
           // Use buildingFloor.id from complete data if available
           const buildingFloorId = partFloor.buildingFloor?.id || null;
 
-          assignments[index].buildingFloorId = buildingFloorId;
-          assignments[index].partFloorData = {
+          assignments[assignmentIndex].buildingFloorId = buildingFloorId;
+          assignments[assignmentIndex].partFloorData = {
             name: partFloor.name,
             publicCount: partFloor.publicCount,
             staffCount: partFloor.staffCount,
@@ -177,7 +189,9 @@ const PartDialog: React.FC<PartDialogProps> = ({
             levelNumber: partFloor.levelNumber,
           };
 
-          console.log(`Level ${i}: buildingFloorId = ${buildingFloorId}, partFloor:`, partFloor);
+          console.log(`Level ${partFloor.levelNumber}: buildingFloorId = ${buildingFloorId}, updated assignment:`, assignments[assignmentIndex]);
+        } else {
+          console.warn(`No assignment found for levelNumber ${partFloor.levelNumber}`);
         }
       });
     }
@@ -338,13 +352,23 @@ const PartDialog: React.FC<PartDialogProps> = ({
 
             {hasTypology('ERP') && (
               <FormControl fullWidth disabled={loading}>
-                <InputLabel>Code ERP</InputLabel>
+                <InputLabel>Codes ERP</InputLabel>
                 <Select
-                  value={formData.erpTypeCodes?.[0] || ''}
-                  onChange={(e) => handleFormChange('erpTypeCodes', e.target.value ? [e.target.value] : [])}
-                  label="Code ERP"
+                  multiple
+                  value={formData.erpTypeCodes || []}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    handleFormChange('erpTypeCodes', typeof value === 'string' ? value.split(',') : value);
+                  }}
+                  label="Codes ERP"
+                  renderValue={(selected) => (
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                      {(selected as string[]).map((value) => (
+                        <Chip key={value} label={value} size="small" />
+                      ))}
+                    </Box>
+                  )}
                 >
-                  <MenuItem value=""></MenuItem>
                   <MenuItem value="J">J - Structures d&apos;accueil pour personnes âgées</MenuItem>
                   <MenuItem value="L">L - Salles de spectacles</MenuItem>
                   <MenuItem value="M">M - Magasins de vente</MenuItem>
