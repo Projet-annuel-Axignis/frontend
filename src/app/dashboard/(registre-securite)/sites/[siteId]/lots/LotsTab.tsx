@@ -411,8 +411,8 @@ const LotsTab = ({ siteId, onNotification, disabled = false }: LotsTabProps) => 
                       {loading ? (
                         <TableRow>
                           <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
-                            <CircularProgress size={24} />
-                            <Typography variant="body2" sx={{ mt: 1 }}>
+                            <CircularProgress size={32} />
+                            <Typography variant="body1" sx={{ mt: 1 }}>
                               Chargement des lots...
                             </Typography>
                           </TableCell>
@@ -519,9 +519,9 @@ const LotsTab = ({ siteId, onNotification, disabled = false }: LotsTabProps) => 
               {/* Mobile Card View */}
               <Box sx={{ display: { xs: 'block', md: 'none' } }}>
                 {loading ? (
-                  <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-                    <CircularProgress size={24} />
-                    <Typography variant="body2" sx={{ ml: 2 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 8 }}>
+                    <CircularProgress size={32} />
+                    <Typography variant="body1" sx={{ ml: 2 }}>
                       Chargement des lots...
                     </Typography>
                   </Box>
