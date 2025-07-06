@@ -119,7 +119,7 @@ const HierarchyTree: React.FC<HierarchyTreeProps> = ({
     try {
       setLoading(true);
       const result = await hierarchyService.loadHierarchicalData({ includeDeleted });
-      const hierarchy = hierarchyService.buildCompleteHierarchy(result.data, result.includeDeleted);
+      const hierarchy = hierarchyService.buildCompleteHierarchy(result.data, result.partFloorsMap, result.includeDeleted);
       setHierarchyData(hierarchy);
     } catch (error) {
       console.error('Erreur lors du chargement de la hiérarchie:', error);
