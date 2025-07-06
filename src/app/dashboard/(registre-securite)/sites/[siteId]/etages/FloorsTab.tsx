@@ -44,6 +44,7 @@ import {
   Tooltip,
   Typography
 } from '@mui/material';
+import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
 interface FloorsTabProps {
@@ -64,6 +65,9 @@ interface FloorFilters {
 }
 
 const FloorsTab: React.FC<FloorsTabProps> = ({ siteId, onNotification, disabled = false }) => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   // Data states
   const [floors, setFloors] = useState<BuildingFloor[]>([]);
   const [buildings, setBuildings] = useState<Building[]>([]);
@@ -101,6 +105,21 @@ const FloorsTab: React.FC<FloorsTabProps> = ({ siteId, onNotification, disabled 
     filterFloors();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [floors, filters.search, filters.buildingId, filters.includeDeleted]);
+
+  // Check for edit parameter in URL
+  useEffect(() => {
+    const editId = searchParams.get('edit');
+    if (editId && floors.length > 0) {
+      const floorToEdit = floors.find(f => f.id === parseInt(editId));
+      if (floorToEdit) {
+        openEditDialog(floorToEdit);
+        // Remove the edit parameter from URL
+        const url = new URL(window.location.href);
+        url.searchParams.delete('edit');
+        router.replace(url.pathname + url.search);
+      }
+    }
+  }, [floors, searchParams, router]);
 
   const loadData = async () => {
     try {

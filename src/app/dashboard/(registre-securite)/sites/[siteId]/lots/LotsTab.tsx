@@ -41,6 +41,7 @@ import {
   Tooltip,
   Typography
 } from '@mui/material';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import LotDialog from './LotDialog';
 
@@ -59,6 +60,9 @@ interface LotFilters {
 }
 
 const LotsTab = ({ siteId, onNotification, disabled = false }: LotsTabProps) => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   // Data states
   const [lots, setLots] = useState<Lot[]>([]);
   const [buildings, setBuildings] = useState<Building[]>([]);
@@ -89,6 +93,21 @@ const LotsTab = ({ siteId, onNotification, disabled = false }: LotsTabProps) => 
   useEffect(() => {
     filterLots();
   }, [lots, filters.search, filters.buildingId, filters.includeDeleted]);
+
+  // Check for edit parameter in URL
+  useEffect(() => {
+    const editId = searchParams.get('edit');
+    if (editId && lots.length > 0) {
+      const lotToEdit = lots.find(l => l.id === parseInt(editId));
+      if (lotToEdit) {
+        openEditDialog(lotToEdit);
+        // Remove the edit parameter from URL
+        const url = new URL(window.location.href);
+        url.searchParams.delete('edit');
+        router.replace(url.pathname + url.search);
+      }
+    }
+  }, [lots, searchParams, router]);
 
   const loadData = async () => {
     try {
