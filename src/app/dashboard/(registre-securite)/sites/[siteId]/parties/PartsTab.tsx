@@ -19,6 +19,7 @@ import {
   CardActions,
   CardContent,
   Chip,
+  CircularProgress,
   Grid,
   IconButton,
   Paper,
@@ -51,7 +52,7 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
   const [buildings, setBuildings] = useState<Building[]>([]);
   const [buildingFloors, setBuildingFloors] = useState<BuildingFloor[]>([]);
   const [filteredParts, setFilteredParts] = useState<Part[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Filter states
   const [filters, setFilters] = useState<Filters>({
@@ -119,8 +120,9 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
     } catch (error) {
       console.error('Error loading data:', error);
       onNotification('Erreur lors du chargement des données', 'error');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const filterParts = () => {
@@ -375,14 +377,6 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
     </Card>
   );
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4 }}>
-        <Typography>Chargement des parties...</Typography>
-      </Box>
-    );
-  }
-
   return (
     <Box>
       {/* Header */}
@@ -406,7 +400,7 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
               variant="contained"
               startIcon={<AddIcon />}
               onClick={openCreateDialog}
-              disabled={buildings.filter(b => !b.deletedAt).length === 0}
+              disabled={loading || buildings.filter(b => !b.deletedAt).length === 0}
               sx={{
                 minWidth: 'auto',
                 background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
@@ -444,8 +438,11 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
 
       {/* Content */}
       {loading ? (
-        <Box sx={{ textAlign: 'center', py: 4 }}>
-          <Typography>Chargement...</Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 8 }}>
+          <CircularProgress size={32} />
+          <Typography variant="body1" sx={{ ml: 2 }}>
+            Chargement des parties...
+          </Typography>
         </Box>
       ) : filteredParts.length === 0 ? (
         <Paper sx={{ p: 4, textAlign: 'center' }}>

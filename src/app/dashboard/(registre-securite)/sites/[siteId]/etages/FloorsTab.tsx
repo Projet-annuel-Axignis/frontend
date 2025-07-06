@@ -21,6 +21,7 @@ import {
   CardActions,
   CardContent,
   Chip,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -311,14 +312,6 @@ const FloorsTab: React.FC<FloorsTabProps> = ({ siteId, onNotification, disabled 
     </Card>
   );
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4 }}>
-        <Typography>Chargement des étages...</Typography>
-      </Box>
-    );
-  }
-
   return (
     <Box>
       {/* Header */}
@@ -333,7 +326,7 @@ const FloorsTab: React.FC<FloorsTabProps> = ({ siteId, onNotification, disabled 
             variant="outlined"
             startIcon={<RefreshIcon />}
             onClick={loadData}
-            disabled={disabled}
+            disabled={disabled || loading}
           >
             Actualiser
           </Button>
@@ -355,6 +348,7 @@ const FloorsTab: React.FC<FloorsTabProps> = ({ siteId, onNotification, disabled 
         </Box>
       </Box>
 
+      {/* Content */}
       {buildings.filter(b => !b.deletedAt).length === 0 ? (
         <Alert severity="info" sx={{ mb: 3 }}>
           Aucun bâtiment actif trouvé sur ce site. Vous devez d&apos;abord créer des bâtiments pour pouvoir ajouter des étages.
@@ -386,7 +380,7 @@ const FloorsTab: React.FC<FloorsTabProps> = ({ siteId, onNotification, disabled 
           />
 
           {/* Content */}
-          {filteredFloors.length === 0 ? (
+          {!loading && filteredFloors.length === 0 ? (
             <Paper sx={{ p: 4, textAlign: 'center' }}>
               <LayersIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
               <Typography variant="h6" color="text.secondary" gutterBottom>
@@ -424,59 +418,70 @@ const FloorsTab: React.FC<FloorsTabProps> = ({ siteId, onNotification, disabled 
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {filteredFloors.map((floor) => (
-                        <TableRow key={floor.id} hover>
-                          <TableCell>
-                            <Typography variant="body2" fontWeight="medium">
-                              {floor.name}
+                      {loading ? (
+                        <TableRow>
+                          <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
+                            <CircularProgress size={32} />
+                            <Typography variant="body1" sx={{ mt: 1 }}>
+                              Chargement des étages...
                             </Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <BuildingIcon fontSize="small" color="action" />
-                              <Typography variant="body2">
-                                {floor.building.name}
-                              </Typography>
-                            </Box>
-                          </TableCell>
-                          <TableCell>
-                            <Typography variant="body2">
-                              {new Date(floor.createdAt).toLocaleDateString('fr-FR')}
-                            </Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Chip
-                              size="small"
-                              label={floor.deletedAt ? 'Supprimé' : 'Actif'}
-                              color={floor.deletedAt ? 'error' : 'success'}
-                              variant="outlined"
-                            />
-                          </TableCell>
-                          <TableCell align="right">
-                            <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
-                              <Tooltip title="Modifier">
-                                <IconButton
-                                  size="small"
-                                  onClick={() => openEditDialog(floor)}
-                                  disabled={disabled || !!floor.deletedAt}
-                                >
-                                  <EditIcon />
-                                </IconButton>
-                              </Tooltip>
-                              <Tooltip title="Supprimer">
-                                <IconButton
-                                  size="small"
-                                  onClick={() => handleDelete(floor)}
-                                  disabled={disabled || !!floor.deletedAt}
-                                  color="error"
-                                >
-                                  <DeleteIcon />
-                                </IconButton>
-                              </Tooltip>
-                            </Box>
                           </TableCell>
                         </TableRow>
-                      ))}
+                      ) : (
+                        filteredFloors.map((floor) => (
+                          <TableRow key={floor.id} hover>
+                            <TableCell>
+                              <Typography variant="body2" fontWeight="medium">
+                                {floor.name}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <BuildingIcon fontSize="small" color="action" />
+                                <Typography variant="body2">
+                                  {floor.building.name}
+                                </Typography>
+                              </Box>
+                            </TableCell>
+                            <TableCell>
+                              <Typography variant="body2">
+                                {new Date(floor.createdAt).toLocaleDateString('fr-FR')}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Chip
+                                size="small"
+                                label={floor.deletedAt ? 'Supprimé' : 'Actif'}
+                                color={floor.deletedAt ? 'error' : 'success'}
+                                variant="outlined"
+                              />
+                            </TableCell>
+                            <TableCell align="right">
+                              <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
+                                <Tooltip title="Modifier">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => openEditDialog(floor)}
+                                    disabled={disabled || !!floor.deletedAt}
+                                  >
+                                    <EditIcon />
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Supprimer">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handleDelete(floor)}
+                                    disabled={disabled || !!floor.deletedAt}
+                                    color="error"
+                                  >
+                                    <DeleteIcon />
+                                  </IconButton>
+                                </Tooltip>
+                              </Box>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
                     </TableBody>
                   </Table>
                 </TableContainer>
@@ -484,7 +489,16 @@ const FloorsTab: React.FC<FloorsTabProps> = ({ siteId, onNotification, disabled 
 
               {/* Mobile Card View */}
               <Box sx={{ display: { xs: 'block', md: 'none' } }}>
-                {filteredFloors.map(renderCard)}
+                {loading ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 8 }}>
+                    <CircularProgress size={32} />
+                    <Typography variant="body1" sx={{ ml: 2 }}>
+                      Chargement des étages...
+                    </Typography>
+                  </Box>
+                ) : (
+                  filteredFloors.map(renderCard)
+                )}
               </Box>
             </>
           )}

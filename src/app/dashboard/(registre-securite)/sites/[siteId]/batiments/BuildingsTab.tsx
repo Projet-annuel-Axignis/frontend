@@ -19,6 +19,7 @@ import {
   Card,
   CardContent,
   Chip,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -48,10 +49,11 @@ const BuildingsTab: React.FC<BuildingsTabProps> = ({
   onNotification,
   disabled = false,
 }) => {
-  const { isLoading: loading, withLoading } = useLoading();
+  const { isLoading: actionLoading, withLoading } = useLoading();
 
   // Data states
   const [buildings, setBuildings] = useState<Building[]>([]);
+  const [dataLoading, setDataLoading] = useState(true);
 
   // Filter states
   const [search, setSearch] = useState('');
@@ -71,6 +73,7 @@ const BuildingsTab: React.FC<BuildingsTabProps> = ({
 
   const loadBuildings = async () => {
     try {
+      setDataLoading(true);
       const result = await buildingService.getBuildings({
         siteId,
         search,
@@ -81,6 +84,8 @@ const BuildingsTab: React.FC<BuildingsTabProps> = ({
     } catch (error) {
       console.error('Error loading buildings:', error);
       onNotification('Erreur lors du chargement des bâtiments', 'error');
+    } finally {
+      setDataLoading(false);
     }
   };
 
@@ -213,7 +218,7 @@ const BuildingsTab: React.FC<BuildingsTabProps> = ({
           variant="contained"
           startIcon={<AddIcon />}
           onClick={handleCreateBuilding}
-          disabled={disabled || loading}
+          disabled={disabled || actionLoading || dataLoading}
           sx={{
             ml: 'auto',
             background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
@@ -229,39 +234,51 @@ const BuildingsTab: React.FC<BuildingsTabProps> = ({
       {/* Results Summary */}
       <Box sx={{ mb: 2 }}>
         <Typography variant="body2" color="text.secondary">
-          {filteredBuildings.length} bâtiment{filteredBuildings.length !== 1 ? 's' : ''} trouvé{filteredBuildings.length !== 1 ? 's' : ''}
+          {dataLoading ? 'Chargement...' : `${filteredBuildings.length} bâtiment${filteredBuildings.length !== 1 ? 's' : ''} trouvé${filteredBuildings.length !== 1 ? 's' : ''}`}
         </Typography>
       </Box>
 
-      {/* Buildings Grid */}
-      <Grid container spacing={3}>
-        {filteredBuildings.map((building) => (
-          <Grid key={building.id} size={{ xs: 12, sm: 6, lg: 4 }}>
-            <BuildingCard
-              building={building}
-              onEdit={handleEditBuilding}
-              onDelete={handleDeleteBuilding}
-              onRestore={handleRestoreBuilding}
-              disabled={disabled}
-            />
-          </Grid>
-        ))}
-      </Grid>
-
-      {/* Empty State */}
-      {filteredBuildings.length === 0 && (
-        <Paper sx={{ p: 4, textAlign: 'center' }}>
-          <ApartmentIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
-          <Typography variant="h6" color="text.secondary" gutterBottom>
-            Aucun bâtiment trouvé
+      {/* Content */}
+      {dataLoading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 8 }}>
+          <CircularProgress size={32} />
+          <Typography variant="body1" sx={{ ml: 2 }}>
+            Chargement des bâtiments...
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {search || includeDeleted
-              ? 'Aucun bâtiment ne correspond à vos critères.'
-              : 'Commencez par créer votre premier bâtiment.'
-            }
-          </Typography>
-        </Paper>
+        </Box>
+      ) : (
+        <>
+          {/* Buildings Grid */}
+          {filteredBuildings.length > 0 ? (
+            <Grid container spacing={3}>
+              {filteredBuildings.map((building) => (
+                <Grid key={building.id} size={{ xs: 12, sm: 6, lg: 4 }}>
+                  <BuildingCard
+                    building={building}
+                    onEdit={handleEditBuilding}
+                    onDelete={handleDeleteBuilding}
+                    onRestore={handleRestoreBuilding}
+                    disabled={disabled || actionLoading}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          ) : (
+            /* Empty State */
+            <Paper sx={{ p: 4, textAlign: 'center' }}>
+              <ApartmentIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+              <Typography variant="h6" color="text.secondary" gutterBottom>
+                Aucun bâtiment trouvé
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {search || includeDeleted
+                  ? 'Aucun bâtiment ne correspond à vos critères.'
+                  : 'Commencez par créer votre premier bâtiment.'
+                }
+              </Typography>
+            </Paper>
+          )}
+        </>
       )}
 
       {/* Building Dialog */}
@@ -273,7 +290,7 @@ const BuildingsTab: React.FC<BuildingsTabProps> = ({
         }}
         onSubmit={handleSubmitBuilding}
         building={editingBuilding}
-        loading={loading}
+        loading={actionLoading}
       />
 
       {/* Delete Confirmation Dialog */}
@@ -297,7 +314,7 @@ const BuildingsTab: React.FC<BuildingsTabProps> = ({
               setDeleteDialogOpen(false);
               setBuildingToDelete(null);
             }}
-            disabled={loading}
+            disabled={actionLoading}
           >
             Annuler
           </Button>
@@ -305,7 +322,7 @@ const BuildingsTab: React.FC<BuildingsTabProps> = ({
             onClick={confirmDeleteBuilding}
             color="error"
             variant="contained"
-            disabled={loading}
+            disabled={actionLoading}
           >
             Supprimer
           </Button>
