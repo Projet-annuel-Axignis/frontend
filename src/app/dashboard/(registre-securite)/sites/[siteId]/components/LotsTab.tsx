@@ -499,7 +499,12 @@ const LotsTab = ({ siteId, onNotification, disabled = false }: LotsTabProps) => 
                   variant="contained"
                   startIcon={<AddIcon />}
                   onClick={openCreateDialog}
-                  disabled={disabled}
+                  sx={{
+                    background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                    },
+                  }}
                 >
                   Créer le premier lot
                 </Button>
