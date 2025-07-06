@@ -38,6 +38,7 @@ export default function LoadingProvider({ children }: LoadingProviderProps) {
     const sectionsWithTabs = [
       '/dashboard/administration',
       '/dashboard/produits',
+      '/dashboard/sites',
       // Ajouter d'autres sections avec tabs ici
     ];
 
