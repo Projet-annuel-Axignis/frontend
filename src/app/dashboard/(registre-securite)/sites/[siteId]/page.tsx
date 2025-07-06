@@ -1,6 +1,7 @@
 'use client';
 
 import DashBoardHeader from '@/components/dashboard/DashBoardHeader';
+import { useBreadcrumbTitle } from '@/hooks/useBreadcrumbTitle';
 import { useLoading } from '@/hooks/useLoading';
 import companyService from '@/services/companyService';
 import { getFullAddress, siteService } from '@/services/siteService';
@@ -85,6 +86,9 @@ const SiteDetailPage = () => {
   const [company, setCompany] = useState<Company | null>(null);
   const [tabValue, setTabValue] = useState(0);
 
+  // Définir le titre personnalisé pour le breadcrumb
+  useBreadcrumbTitle(String(siteId), site?.name || `Site ${siteId}`);
+
   // Notification states
   const [notification, setNotification] = useState<{
     open: boolean;
@@ -117,6 +121,7 @@ const SiteDetailPage = () => {
     if (siteId) {
       loadSiteData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [siteId]);
 
   const loadSiteData = async () => {

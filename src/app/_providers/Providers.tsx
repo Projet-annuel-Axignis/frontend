@@ -3,6 +3,7 @@ import { CssBaseline, ThemeProvider } from '@mui/material';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import { NextIntlClientProvider } from 'next-intl';
 import { ReactNode } from 'react';
+import { BreadcrumbProvider } from './BreadcrumbProvider';
 import LoadingProvider from './LoadingProvider';
 import { ToastProvider } from './ToastProvider';
 import { UserProvider } from './UserProvider';
@@ -29,7 +30,9 @@ export function Providers({ children }: ProvidersProps) {
           <LoadingProvider>
             <ToastProvider>
               <UserProvider>
-                {children}
+                <BreadcrumbProvider>
+                  {children}
+                </BreadcrumbProvider>
               </UserProvider>
             </ToastProvider>
           </LoadingProvider>
