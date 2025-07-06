@@ -229,22 +229,22 @@ const HierarchyPage = () => {
         break;
       case 'building':
         if (parent && parent.id) {
-          router.push(`/dashboard/sites/${parent.id}?tab=batiments`);
+          router.push(`/dashboard/sites/${parent.id}/batiments`);
         }
         break;
       case 'part':
         if (selectedSite) {
-          router.push(`/dashboard/sites/${selectedSite.id}?tab=parties`);
+          router.push(`/dashboard/sites/${selectedSite.id}/parties`);
         }
         break;
       case 'building-floor':
         if (selectedSite) {
-          router.push(`/dashboard/sites/${selectedSite.id}?tab=etages`);
+          router.push(`/dashboard/sites/${selectedSite.id}/etages`);
         }
         break;
       case 'lot':
         if (selectedSite) {
-          router.push(`/dashboard/sites/${selectedSite.id}?tab=lots`);
+          router.push(`/dashboard/sites/${selectedSite.id}/lots`);
         }
         break;
       default:
@@ -262,7 +262,7 @@ const HierarchyPage = () => {
         break;
       case 'building':
         if (selectedSite) {
-          router.push(`/dashboard/sites/${selectedSite.id}?tab=buildings`);
+          router.push(`/dashboard/sites/${selectedSite.id}/batiments`);
         }
         break;
       default:
@@ -303,7 +303,7 @@ const HierarchyPage = () => {
     if (selectedBuilding) {
       breadcrumbs.push({
         label: selectedBuilding.name,
-        href: `/dashboard/sites/${selectedSite?.id}?tab=buildings`,
+        href: `/dashboard/sites/${selectedSite?.id}/batiments`,
         icon: <BuildingIcon fontSize="small" />
       });
     }
@@ -477,7 +477,7 @@ const HierarchyPage = () => {
                         <Button
                           variant="contained"
                           disabled={isDeleted(currentSelection.data)}
-                          onClick={() => showToast('Gestion des lots en cours de développement', 'info')}
+                          onClick={() => selectedSite && router.push(`/dashboard/sites/${selectedSite.id}/lots?edit=${(currentSelection.data as Lot).id}`)}
                           sx={{
                             background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
                             '&:hover': {
@@ -485,7 +485,7 @@ const HierarchyPage = () => {
                             },
                           }}
                         >
-                          Gérer ce lot
+                          Modifier ce lot
                         </Button>
                       </Box>
                     )}
@@ -566,7 +566,7 @@ const HierarchyPage = () => {
                         <Button
                           variant="contained"
                           disabled={isDeleted(currentSelection.data)}
-                          onClick={() => showToast('Gestion des étages en cours de développement', 'info')}
+                          onClick={() => selectedSite && router.push(`/dashboard/sites/${selectedSite.id}/etages?edit=${(currentSelection.data as BuildingFloor | PartFloor).id}`)}
                           sx={{
                             background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
                             '&:hover': {
@@ -574,7 +574,7 @@ const HierarchyPage = () => {
                             },
                           }}
                         >
-                          Gérer cet étage
+                          Modifier cet étage
                         </Button>
                       </Box>
                     )}
@@ -653,7 +653,7 @@ const HierarchyPage = () => {
                         <Button
                           variant="contained"
                           disabled={isDeleted(currentSelection.data)}
-                          onClick={() => selectedSite && router.push(`/dashboard/sites/${selectedSite.id}?tab=parties`)}
+                          onClick={() => selectedSite && router.push(`/dashboard/sites/${selectedSite.id}/parties?edit=${(currentSelection.data as Part).id}`)}
                           sx={{
                             background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
                             '&:hover': {
@@ -661,7 +661,7 @@ const HierarchyPage = () => {
                             },
                           }}
                         >
-                          Gérer cette partie
+                          Modifier cette partie
                         </Button>
                       </Box>
                     )}
@@ -754,7 +754,7 @@ const HierarchyPage = () => {
                         <Button
                           variant="contained"
                           disabled={isDeleted(currentSelection.data)}
-                          onClick={() => selectedSite && router.push(`/dashboard/sites/${selectedSite.id}?tab=buildings`)}
+                          onClick={() => selectedSite && router.push(`/dashboard/sites/${selectedSite.id}/batiments?edit=${(currentSelection.data as Building).id}`)}
                           sx={{
                             background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
                             '&:hover': {
@@ -762,7 +762,7 @@ const HierarchyPage = () => {
                             },
                           }}
                         >
-                          Gérer ce bâtiment
+                          Modifier ce bâtiment
                         </Button>
                       </Box>
                     )}

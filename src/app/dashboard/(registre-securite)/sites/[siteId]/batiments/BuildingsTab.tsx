@@ -35,6 +35,7 @@ import {
   TextField,
   Typography
 } from '@mui/material';
+import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import BuildingDialog from './BuildingDialog';
 
@@ -50,6 +51,8 @@ const BuildingsTab: React.FC<BuildingsTabProps> = ({
   disabled = false,
 }) => {
   const { isLoading: actionLoading, withLoading } = useLoading();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   // Data states
   const [buildings, setBuildings] = useState<Building[]>([]);
@@ -70,6 +73,21 @@ const BuildingsTab: React.FC<BuildingsTabProps> = ({
     loadBuildings();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [siteId, search, includeDeleted]);
+
+  // Check for edit parameter in URL
+  useEffect(() => {
+    const editId = searchParams.get('edit');
+    if (editId && buildings.length > 0) {
+      const buildingToEdit = buildings.find(b => b.id === parseInt(editId));
+      if (buildingToEdit) {
+        handleEditBuilding(buildingToEdit);
+        // Remove the edit parameter from URL
+        const url = new URL(window.location.href);
+        url.searchParams.delete('edit');
+        router.replace(url.pathname + url.search);
+      }
+    }
+  }, [buildings, searchParams, router]);
 
   const loadBuildings = async () => {
     try {
