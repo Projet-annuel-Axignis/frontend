@@ -4,8 +4,8 @@
 'use client';
 
 import SearchFilters from '@/components/dashboard/SearchFilters';
-import { buildingFloorService, buildingService, lotService, partFloorService } from '@/services/siteService';
-import { Building, BuildingFloor, CreateLotDto, Lot, PartFloor, UpdateLotDto } from '@/types/site';
+import { buildingService, lotService, partFloorService, partService } from '@/services/siteService';
+import { Building, CreateLotDto, Lot, Part, PartFloor, UpdateLotDto } from '@/types/site';
 import {
   Add as AddIcon,
   Apartment as BuildingIcon,
@@ -57,8 +57,8 @@ interface LotsTabProps {
 interface LotFormData {
   name: string;
   buildingId: number;
-  buildingFloorId: number;
-  partFloorId?: number;
+  partId: number;
+  partFloorId: number;
 }
 
 interface LotFilters {
@@ -71,8 +71,9 @@ const LotsTab = ({ siteId, onNotification, disabled = false }: LotsTabProps) => 
   // Data states
   const [lots, setLots] = useState<Lot[]>([]);
   const [buildings, setBuildings] = useState<Building[]>([]);
-  const [buildingFloors, setBuildingFloors] = useState<BuildingFloor[]>([]);
+  const [parts, setParts] = useState<Part[]>([]);
   const [partFloors, setPartFloors] = useState<PartFloor[]>([]);
+  const [partFloorsMap, setPartFloorsMap] = useState<Map<number, PartFloor[]>>(new Map());
   const [loading, setLoading] = useState(true);
   const [filteredLots, setFilteredLots] = useState<Lot[]>([]);
 
@@ -86,8 +87,8 @@ const LotsTab = ({ siteId, onNotification, disabled = false }: LotsTabProps) => 
   const [formData, setFormData] = useState<LotFormData>({
     name: '',
     buildingId: 0,
-    buildingFloorId: 0,
-    partFloorId: undefined,
+    partId: 0,
+    partFloorId: 0,
   });
   const [formErrors, setFormErrors] = useState<Partial<LotFormData>>({});
 
@@ -98,8 +99,8 @@ const LotsTab = ({ siteId, onNotification, disabled = false }: LotsTabProps) => 
     includeDeleted: false,
   });
 
-  // Available options for form
-  const [availableBuildingFloors, setAvailableBuildingFloors] = useState<BuildingFloor[]>([]);
+  // Available options for form based on hierarchical selections
+  const [availableParts, setAvailableParts] = useState<Part[]>([]);
   const [availablePartFloors, setAvailablePartFloors] = useState<PartFloor[]>([]);
 
   // Load data
@@ -112,15 +113,15 @@ const LotsTab = ({ siteId, onNotification, disabled = false }: LotsTabProps) => 
     filterLots();
   }, [lots, filters.search, filters.buildingId, filters.includeDeleted]);
 
-  // Update available building floors when building changes
+  // Update available parts when building changes
   useEffect(() => {
-    updateAvailableBuildingFloors();
-  }, [formData.buildingId, buildingFloors]);
+    updateAvailableParts();
+  }, [formData.buildingId, parts]);
 
-  // Update available part floors when building floor changes
+  // Update available part floors when part changes
   useEffect(() => {
     updateAvailablePartFloors();
-  }, [formData.buildingFloorId, partFloors]);
+  }, [formData.partId, partFloors]);
 
   const loadData = async () => {
     try {
@@ -133,36 +134,48 @@ const LotsTab = ({ siteId, onNotification, disabled = false }: LotsTabProps) => 
       });
       setBuildings(buildingsResponse.buildings);
 
-      // Load all building floors and part floors for buildings in this site
+      // Load all parts and part floors for buildings in this site
       if (buildingsResponse.buildings.length > 0) {
-        const [floorsPromises, partFloorsPromises, lotsResponse] = await Promise.all([
-          Promise.all(buildingsResponse.buildings.map(building =>
-            buildingFloorService.getBuildingFloors({
-              buildingId: building.id,
-              includeDeleted: true,
-            })
-          )),
-          Promise.all(buildingsResponse.buildings.map(building =>
-            partFloorService.getPartFloors({
-              buildingId: building.id,
-              includeDeleted: true,
-            })
-          )),
-          lotService.getLots({
-            siteId,
+        // First load parts for all buildings
+        const partsPromises = buildingsResponse.buildings.map(building =>
+          partService.getParts({
+            buildingId: building.id,
             includeDeleted: true,
           })
-        ]);
+        );
+        const partsResponses = await Promise.all(partsPromises);
+        const allParts = partsResponses.flatMap(response => response.parts);
+        setParts(allParts);
 
-        const allBuildingFloors = floorsPromises.flatMap(response => response.buildingFloors);
-        const allPartFloors = partFloorsPromises.flatMap(response => response.partFloors);
+        // Then load part floors for all parts
+        const partFloorsPromises = allParts.map(part =>
+          partFloorService.getPartFloors({
+            partId: part.id,
+            includeDeleted: true,
+          })
+        );
+        const partFloorsResponses = await Promise.all(partFloorsPromises);
+        const allPartFloors = partFloorsResponses.flatMap(response => response.partFloors);
 
-        setBuildingFloors(allBuildingFloors);
+        // Create a map of partId -> partFloors for efficient lookup
+        const newPartFloorsMap = new Map<number, PartFloor[]>();
+        allParts.forEach((part, index) => {
+          newPartFloorsMap.set(part.id, partFloorsResponses[index].partFloors);
+        });
+
         setPartFloors(allPartFloors);
+        setPartFloorsMap(newPartFloorsMap);
+
+        // Finally load lots
+        const lotsResponse = await lotService.getLots({
+          siteId,
+          includeDeleted: true,
+        });
         setLots(lotsResponse.lots);
       } else {
-        setBuildingFloors([]);
+        setParts([]);
         setPartFloors([]);
+        setPartFloorsMap(new Map());
         setLots([]);
       }
     } catch (error) {
@@ -173,36 +186,36 @@ const LotsTab = ({ siteId, onNotification, disabled = false }: LotsTabProps) => 
     }
   };
 
-  const updateAvailableBuildingFloors = () => {
+  const updateAvailableParts = () => {
     if (formData.buildingId) {
-      const floorsForBuilding = buildingFloors.filter(
-        floor => floor.building.id === formData.buildingId && !floor.deletedAt
+      const partsForBuilding = parts.filter(
+        part => part.building?.id === formData.buildingId && !part.deletedAt
       );
-      setAvailableBuildingFloors(floorsForBuilding);
+      setAvailableParts(partsForBuilding);
 
-      // Reset building floor selection if current selection is not available
-      if (formData.buildingFloorId && !floorsForBuilding.find(f => f.id === formData.buildingFloorId)) {
-        setFormData(prev => ({ ...prev, buildingFloorId: 0, partFloorId: undefined }));
+      // Reset part selection if current selection is not available
+      if (formData.partId && !partsForBuilding.find(p => p.id === formData.partId)) {
+        setFormData(prev => ({ ...prev, partId: 0, partFloorId: 0 }));
       }
     } else {
-      setAvailableBuildingFloors([]);
+      setAvailableParts([]);
     }
   };
 
   const updateAvailablePartFloors = () => {
-    if (formData.buildingFloorId) {
-      const partFloorsForBuildingFloor = partFloors.filter(
-        partFloor => partFloor.buildingFloor.id === formData.buildingFloorId && !partFloor.deletedAt
-      );
-      setAvailablePartFloors(partFloorsForBuildingFloor);
+    if (formData.partId) {
+      // Utiliser la map pour obtenir les partFloors de la part sélectionnée
+      const partFloorsForPart = partFloorsMap.get(formData.partId)?.filter(pf => !pf.deletedAt) || [];
+
+      setAvailablePartFloors(partFloorsForPart);
 
       // Reset part floor selection if current selection is not available
-      if (formData.partFloorId && !partFloorsForBuildingFloor.find(pf => pf.id === formData.partFloorId)) {
-        setFormData(prev => ({ ...prev, partFloorId: undefined }));
+      if (formData.partFloorId && !partFloorsForPart.find(pf => pf.id === formData.partFloorId)) {
+        setFormData(prev => ({ ...prev, partFloorId: 0 }));
       }
     } else {
       setAvailablePartFloors([]);
-      setFormData(prev => ({ ...prev, partFloorId: undefined }));
+      setFormData(prev => ({ ...prev, partFloorId: 0 }));
     }
   };
 
@@ -236,8 +249,8 @@ const LotsTab = ({ siteId, onNotification, disabled = false }: LotsTabProps) => 
     setFormData({
       name: '',
       buildingId: availableBuildings.length > 0 ? availableBuildings[0].id : 0,
-      buildingFloorId: 0,
-      partFloorId: undefined,
+      partId: 0,
+      partFloorId: 0,
     });
     setFormErrors({});
     setDialogOpen(true);
@@ -245,11 +258,17 @@ const LotsTab = ({ siteId, onNotification, disabled = false }: LotsTabProps) => 
 
   const openEditDialog = (lot: Lot) => {
     setEditingLot(lot);
+
+    // Pour l'édition, nous devons récupérer les IDs nécessaires
+    // Le lot a déjà building, buildingFloor, et partFloor
+    // Nous devons trouver la part qui correspond au partFloor
+    const relatedPart = lot.partFloor ? findPartForPartFloor(lot.partFloor.id) : null;
+
     setFormData({
       name: lot.name,
       buildingId: lot.building.id,
-      buildingFloorId: lot.buildingFloor.id,
-      partFloorId: lot.partFloor?.id,
+      partId: relatedPart?.id || 0,
+      partFloorId: lot.partFloor?.id || 0,
     });
     setFormErrors({});
     setDialogOpen(true);
@@ -258,7 +277,7 @@ const LotsTab = ({ siteId, onNotification, disabled = false }: LotsTabProps) => 
   const closeDialog = () => {
     setDialogOpen(false);
     setEditingLot(null);
-    setFormData({ name: '', buildingId: 0, buildingFloorId: 0, partFloorId: undefined });
+    setFormData({ name: '', buildingId: 0, partId: 0, partFloorId: 0 });
     setFormErrors({});
   };
 
@@ -273,8 +292,12 @@ const LotsTab = ({ siteId, onNotification, disabled = false }: LotsTabProps) => 
       errors.buildingId = 'Le bâtiment est requis';
     }
 
-    if (!formData.buildingFloorId) {
-      errors.buildingFloorId = 'L&apos;étage de bâtiment est requis';
+    if (!formData.partId) {
+      errors.partId = 'La partie est requise';
+    }
+
+    if (!formData.partFloorId) {
+      errors.partFloorId = 'L&apos;étage de partie est requis';
     }
 
     setFormErrors(errors);
@@ -285,21 +308,28 @@ const LotsTab = ({ siteId, onNotification, disabled = false }: LotsTabProps) => 
     if (!validateForm()) return;
 
     try {
+      // Récupérer les informations nécessaires pour la création/modification
+      const selectedPartFloor = partFloors.find(pf => pf.id === formData.partFloorId);
+      if (!selectedPartFloor) {
+        onNotification('Erreur: Étage de partie non trouvé', 'error');
+        return;
+      }
+
       if (editingLot) {
-        // Update
+        // Update - on ne peut modifier que le nom et le partFloor
         const updateData: UpdateLotDto = {
           name: formData.name.trim(),
-          partFloorId: formData.partFloorId || null,
+          partFloorId: formData.partFloorId,
         };
         await lotService.updateLot(editingLot.id, updateData);
         onNotification('Lot modifié avec succès', 'success');
       } else {
-        // Create
+        // Create - nous avons besoin de buildingId, buildingFloorId et partFloorId
         const createData: CreateLotDto = {
           name: formData.name.trim(),
           buildingId: formData.buildingId,
-          buildingFloorId: formData.buildingFloorId,
-          partFloorId: formData.partFloorId || undefined,
+          buildingFloorId: selectedPartFloor.buildingFloor.id,
+          partFloorId: formData.partFloorId,
         };
         await lotService.createLot(createData);
         onNotification('Lot créé avec succès', 'success');
@@ -331,6 +361,17 @@ const LotsTab = ({ siteId, onNotification, disabled = false }: LotsTabProps) => 
       console.error('Erreur lors de la suppression:', error);
       onNotification('Erreur lors de la suppression', 'error');
     }
+  };
+
+  // Helper function to find the part for a given partFloor
+  const findPartForPartFloor = (partFloorId: number): Part | undefined => {
+    // Chercher dans la map quelle part contient ce partFloor
+    for (const [partId, partFloorsList] of partFloorsMap) {
+      if (partFloorsList.some(pf => pf.id === partFloorId)) {
+        return parts.find(part => part.id === partId);
+      }
+    }
+    return undefined;
   };
 
   // Render mobile card view
@@ -369,11 +410,19 @@ const LotsTab = ({ siteId, onNotification, disabled = false }: LotsTabProps) => 
           </Grid>
 
           {lot.partFloor && (
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Typography variant="body2" color="text.secondary">
-                <strong>Étage de partie :</strong> {lot.partFloor.name}
-              </Typography>
-            </Grid>
+            <>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Typography variant="body2" color="text.secondary">
+                  <strong>Partie :</strong> {findPartForPartFloor(lot.partFloor.id)?.name || 'Inconnue'}
+                </Typography>
+              </Grid>
+
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Typography variant="body2" color="text.secondary">
+                  <strong>Étage de partie :</strong> {lot.partFloor.name}
+                </Typography>
+              </Grid>
+            </>
           )}
 
           <Grid size={{ xs: 12, md: 6 }}>
@@ -438,7 +487,7 @@ const LotsTab = ({ siteId, onNotification, disabled = false }: LotsTabProps) => 
             variant="contained"
             startIcon={<AddIcon />}
             onClick={openCreateDialog}
-            disabled={disabled || buildings.filter(b => !b.deletedAt).length === 0}
+            disabled={disabled || buildings.filter(b => !b.deletedAt).length === 0 || parts.filter(p => !p.deletedAt).length === 0}
             sx={{
               minWidth: 'auto',
               background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
@@ -454,7 +503,11 @@ const LotsTab = ({ siteId, onNotification, disabled = false }: LotsTabProps) => 
 
       {buildings.filter(b => !b.deletedAt).length === 0 ? (
         <Alert severity="info" sx={{ mb: 3 }}>
-          Aucun bâtiment actif trouvé sur ce site. Vous devez d&apos;abord créer des bâtiments pour pouvoir ajouter des lots.
+          Aucun bâtiment actif trouvé sur ce site. Vous devez d&apos;abord créer des bâtiments et des parties pour pouvoir ajouter des lots.
+        </Alert>
+      ) : parts.filter(p => !p.deletedAt).length === 0 ? (
+        <Alert severity="warning" sx={{ mb: 3 }}>
+          Aucune partie active trouvée dans les bâtiments de ce site. Vous devez d&apos;abord créer des parties dans vos bâtiments pour pouvoir ajouter des lots.
         </Alert>
       ) : (
         <>
@@ -520,8 +573,9 @@ const LotsTab = ({ siteId, onNotification, disabled = false }: LotsTabProps) => 
                       <TableRow>
                         <TableCell>Nom</TableCell>
                         <TableCell>Bâtiment</TableCell>
-                        <TableCell>Étage de bâtiment</TableCell>
+                        <TableCell>Partie</TableCell>
                         <TableCell>Étage de partie</TableCell>
+                        <TableCell>Étage de bâtiment</TableCell>
                         <TableCell>Date de création</TableCell>
                         <TableCell>Statut</TableCell>
                         <TableCell align="right">Actions</TableCell>
@@ -544,12 +598,18 @@ const LotsTab = ({ siteId, onNotification, disabled = false }: LotsTabProps) => 
                             </Box>
                           </TableCell>
                           <TableCell>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <LayersIcon fontSize="small" color="action" />
-                              <Typography variant="body2">
-                                {lot.buildingFloor.name}
+                            {lot.partFloor ? (
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <ViewModuleIcon fontSize="small" color="action" />
+                                <Typography variant="body2">
+                                  {findPartForPartFloor(lot.partFloor.id)?.name || 'Inconnue'}
+                                </Typography>
+                              </Box>
+                            ) : (
+                              <Typography variant="body2" color="text.secondary">
+                                Aucune
                               </Typography>
-                            </Box>
+                            )}
                           </TableCell>
                           <TableCell>
                             {lot.partFloor ? (
@@ -564,6 +624,14 @@ const LotsTab = ({ siteId, onNotification, disabled = false }: LotsTabProps) => 
                                 Aucun
                               </Typography>
                             )}
+                          </TableCell>
+                          <TableCell>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <LayersIcon fontSize="small" color="action" />
+                              <Typography variant="body2">
+                                {lot.buildingFloor.name}
+                              </Typography>
+                            </Box>
                           </TableCell>
                           <TableCell>
                             <Typography variant="body2">
@@ -618,7 +686,7 @@ const LotsTab = ({ siteId, onNotification, disabled = false }: LotsTabProps) => 
       )}
 
       {/* Create/Edit Dialog */}
-      <Dialog open={dialogOpen} onClose={closeDialog} maxWidth="sm" fullWidth>
+      <Dialog open={dialogOpen} onClose={closeDialog} maxWidth="md" fullWidth>
         <DialogTitle>
           {editingLot ? 'Modifier le lot' : 'Créer un nouveau lot'}
         </DialogTitle>
@@ -638,7 +706,12 @@ const LotsTab = ({ siteId, onNotification, disabled = false }: LotsTabProps) => 
               <InputLabel>Bâtiment *</InputLabel>
               <Select
                 value={formData.buildingId}
-                onChange={(e) => setFormData(prev => ({ ...prev, buildingId: Number(e.target.value), buildingFloorId: 0, partFloorId: undefined }))}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  buildingId: Number(e.target.value),
+                  partId: 0,
+                  partFloorId: 0
+                }))}
                 label="Bâtiment *"
                 disabled={!!editingLot} // Can't change building when editing
               >
@@ -657,45 +730,93 @@ const LotsTab = ({ siteId, onNotification, disabled = false }: LotsTabProps) => 
               )}
             </FormControl>
 
-            <FormControl fullWidth error={!!formErrors.buildingFloorId}>
-              <InputLabel>Étage de bâtiment *</InputLabel>
+            <FormControl fullWidth error={!!formErrors.partId}>
+              <InputLabel>Partie *</InputLabel>
               <Select
-                value={formData.buildingFloorId}
-                onChange={(e) => setFormData(prev => ({ ...prev, buildingFloorId: Number(e.target.value), partFloorId: undefined }))}
-                label="Étage de bâtiment *"
-                disabled={!formData.buildingId || (!!editingLot)} // Can't change building floor when editing
+                value={formData.partId}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  partId: Number(e.target.value),
+                  partFloorId: 0
+                }))}
+                label="Partie *"
+                disabled={!formData.buildingId || (!!editingLot)} // Can't change part when editing
               >
-                {availableBuildingFloors.map((floor) => (
-                  <MenuItem key={floor.id} value={floor.id}>
-                    {floor.name}
+                {availableParts.length === 0 ? (
+                  <MenuItem disabled>
+                    <em>Aucune partie disponible dans ce bâtiment</em>
                   </MenuItem>
-                ))}
+                ) : (
+                  availableParts.map((part) => (
+                    <MenuItem key={part.id} value={part.id}>
+                      {part.name}
+                    </MenuItem>
+                  ))
+                )}
               </Select>
-              {formErrors.buildingFloorId && (
+              {formErrors.partId && (
                 <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.5 }}>
-                  {formErrors.buildingFloorId}
+                  {formErrors.partId}
+                </Typography>
+              )}
+              {formData.buildingId && availableParts.length === 0 && (
+                <Typography variant="caption" color="warning.main" sx={{ mt: 0.5, ml: 1.5 }}>
+                  Aucune partie trouvée dans ce bâtiment. Créez d&apos;abord des parties pour pouvoir ajouter des lots.
                 </Typography>
               )}
             </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel>Étage de partie (optionnel)</InputLabel>
+            <FormControl fullWidth error={!!formErrors.partFloorId}>
+              <InputLabel>Étage de partie *</InputLabel>
               <Select
-                value={formData.partFloorId || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, partFloorId: e.target.value ? Number(e.target.value) : undefined }))}
-                label="Étage de partie (optionnel)"
-                disabled={!formData.buildingFloorId}
+                value={formData.partFloorId}
+                onChange={(e) => setFormData(prev => ({ ...prev, partFloorId: Number(e.target.value) }))}
+                label="Étage de partie *"
+                disabled={!formData.partId}
               >
-                <MenuItem value="">
-                  <em>Aucun</em>
-                </MenuItem>
-                {availablePartFloors.map((partFloor) => (
-                  <MenuItem key={partFloor.id} value={partFloor.id}>
-                    {partFloor.name}
+                {availablePartFloors.length === 0 ? (
+                  <MenuItem disabled>
+                    <em>Aucun étage disponible dans cette partie</em>
                   </MenuItem>
-                ))}
+                ) : (
+                  availablePartFloors.map((partFloor) => (
+                    <MenuItem key={partFloor.id} value={partFloor.id}>
+                      {partFloor.name}
+                    </MenuItem>
+                  ))
+                )}
               </Select>
+              {formErrors.partFloorId && (
+                <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.5 }}>
+                  {formErrors.partFloorId}
+                </Typography>
+              )}
+              {formData.partId && availablePartFloors.length === 0 && (
+                <Typography variant="caption" color="warning.main" sx={{ mt: 0.5, ml: 1.5 }}>
+                  Aucun étage trouvé dans cette partie. Créez d&apos;abord des étages de partie pour pouvoir ajouter des lots.
+                </Typography>
+              )}
             </FormControl>
+
+            {/* Preview of hierarchy */}
+            {formData.buildingId && formData.partId && formData.partFloorId && (
+              <Card>
+                <CardContent>
+                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                    Aperçu de la hiérarchie :
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Site</strong> ({buildings.find(b => b.id === formData.buildingId)?.site.name})
+                    {' → '}
+                    <strong>{buildings.find(b => b.id === formData.buildingId)?.name}</strong>
+                    {' → '}
+                    <strong>{availableParts.find(p => p.id === formData.partId)?.name}</strong>
+                    {' → '}
+                    <strong>{availablePartFloors.find(pf => pf.id === formData.partFloorId)?.name}</strong>
+                  </Typography>
+                </CardContent>
+              </Card>
+            )}
           </Stack>
         </DialogContent>
         <DialogActions>
