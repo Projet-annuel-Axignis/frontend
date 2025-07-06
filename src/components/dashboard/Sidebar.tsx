@@ -461,53 +461,26 @@ export default function Sidebar() {
             <ListItem disablePadding sx={{ width: '100%' }}>
               <Tooltip title="Gérer les sites de l'entreprise" placement="right" arrow>
                 <Box sx={{ width: '100%' }}>
-                  <Link href="/dashboard/sites" style={{ textDecoration: 'none', color: 'inherit' }}>
-                    <StyledListItemButton
-                      isActive={isActive('/dashboard/sites')}
-                      onClick={(e) => {
-                        // Permettre la navigation vers /dashboard/sites
-                        // mais aussi gérer l'ouverture du sous-menu si on clique sur la flèche
-                        const target = e.target as HTMLElement;
-                        const isArrowClick = target.closest('.expand-arrow');
-                        if (isArrowClick) {
-                          e.preventDefault();
-                          handleSitesClick();
-                        }
+                  <StyledListItemButton
+                    onClick={handleSitesClick}
+                    isActive={isActive('/dashboard/sites')}
+                  >
+                    <BusinessIcon sx={{ mr: 1.5, color: 'var(--color-axignis-primary)' }} />
+                    <ListItemText
+                      primary={
+                        <Typography variant="body2" fontWeight="medium">
+                          Sites
+                        </Typography>
+                      }
+                    />
+                    <KeyboardArrowDownIcon
+                      sx={{
+                        transform: openSites ? 'rotate(180deg)' : 'none',
+                        transition: 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
+                        color: 'var(--color-axignis-primary)',
                       }}
-                    >
-                      <BusinessIcon sx={{ mr: 1.5, color: 'var(--color-axignis-primary)' }} />
-                      <ListItemText
-                        primary={
-                          <Typography variant="body2" fontWeight="medium">
-                            Sites
-                          </Typography>
-                        }
-                      />
-                      <Box
-                        className="expand-arrow"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleSitesClick();
-                        }}
-                        sx={{
-                          p: 0.5,
-                          borderRadius: 1,
-                          '&:hover': {
-                            backgroundColor: 'action.hover'
-                          }
-                        }}
-                      >
-                        <KeyboardArrowDownIcon
-                          sx={{
-                            transform: openSites ? 'rotate(180deg)' : 'none',
-                            transition: 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
-                            color: 'var(--color-axignis-primary)',
-                          }}
-                        />
-                      </Box>
-                    </StyledListItemButton>
-                  </Link>
+                    />
+                  </StyledListItemButton>
                 </Box>
               </Tooltip>
             </ListItem>
@@ -515,6 +488,17 @@ export default function Sidebar() {
             {/* Sous-menu Sites */}
             <Collapse in={openSites} timeout={400} unmountOnExit>
               <Box sx={{ pl: 4, py: 1 }}>
+                <Link href="/dashboard/sites" style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <StyledListItemButton
+                    sx={{ py: 0.75, mb: 0.5, width: '100%' }}
+                    isActive={isActive('/dashboard/sites')}
+                  >
+                    <BusinessIcon sx={{ mr: 1.5, fontSize: '1rem', color: 'var(--color-axignis-primary)' }} />
+                    <Typography variant="body2" color="textSecondary">
+                      Sites
+                    </Typography>
+                  </StyledListItemButton>
+                </Link>
                 <Link href="/dashboard/sites/hierarchie" style={{ textDecoration: 'none', color: 'inherit' }}>
                   <StyledListItemButton
                     sx={{ py: 0.75, mb: 0.5, width: '100%' }}

@@ -6,7 +6,7 @@ import companyService from '@/services/companyService';
 import { siteService } from '@/services/siteService';
 import { Company } from '@/types/company';
 import { CreateSiteDto, Site, UpdateSiteDto } from '@/types/site';
-import { Add as AddIcon, Business as BusinessIcon, Refresh as RefreshIcon } from '@mui/icons-material';
+import { AccountTree as AccountTreeIcon, Add as AddIcon, Business as BusinessIcon, Refresh as RefreshIcon } from '@mui/icons-material';
 import {
   Alert,
   Box,
@@ -236,7 +236,7 @@ const SitesPage = () => {
             </Box>
 
             {/* Boutons - Version Desktop */}
-            <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 1 }}>
+            <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 1, flexWrap: 'wrap' }}>
               <Button
                 variant="outlined"
                 startIcon={<RefreshIcon />}
@@ -245,6 +245,21 @@ const SitesPage = () => {
                 size="small"
               >
                 Actualiser
+              </Button>
+              {/* Bouton pour consulter la navigation hiérarchique */}
+              <Button
+                variant="contained"
+                startIcon={<AccountTreeIcon />}
+                onClick={() => router.push('/dashboard/sites/hierarchie')}
+                disabled={loading}
+                sx={{
+                  background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                  },
+                }}
+              >
+                Navigation Hiérarchique
               </Button>
               <Button
                 variant="contained"
@@ -272,6 +287,22 @@ const SitesPage = () => {
                 sx={{ minWidth: 'auto', px: 1 }}
               >
                 <RefreshIcon fontSize="small" />
+              </Button>
+              <Button
+                variant="contained"
+                onClick={() => router.push('/dashboard/sites/hierarchie')}
+                disabled={loading}
+                size="small"
+                sx={{
+                  minWidth: 'auto',
+                  px: 1,
+                  background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                  },
+                }}
+              >
+                <AccountTreeIcon fontSize="small" />
               </Button>
               <Button
                 variant="contained"
