@@ -29,11 +29,11 @@ import {
 } from '@mui/material';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
-import BuildingsTab from './components/BuildingsTab';
-import FloorsTab from './components/FloorsTab';
-import LotsTab from './components/LotsTab';
+import BuildingsTab from './_components/BuildingsTab';
+import FloorsTab from './_components/FloorsTab';
+import LotsTab from './_components/LotsTab';
 
-import PartsTab from './components/PartsTab';
+import PartsTab from './_components/PartsTab';
 
 interface TabPanelProps {
   children?: React.ReactNode;
