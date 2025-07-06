@@ -107,16 +107,19 @@ export interface BuildingFloor {
   updatedAt: string;
   deletedAt?: string;
   name: string;
+  levelNumber: number;
   building: Building;
 }
 
 export interface CreateBuildingFloorDto {
   name: string;
+  levelNumber: number;
   buildingId: number;
 }
 
 export interface UpdateBuildingFloorDto {
   name?: string;
+  levelNumber?: number;
 }
 
 // ============================================================================
