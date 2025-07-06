@@ -6,7 +6,7 @@ import { partFloorService } from '@/services/siteService';
 import { Building, BuildingFloor, CreatePartDto, LevelAssignment, Part, PartFloor, UpdatePartDto } from '@/types/site';
 import {
   Add as AddIcon,
-  Remove as RemoveIcon,
+  Delete as DeleteIcon,
 } from '@mui/icons-material';
 import {
   Box,
@@ -220,9 +220,23 @@ const PartDialog: React.FC<PartDialogProps> = ({
     setLevelAssignments(prev => [...prev, newAssignment]);
   };
 
-  const removeLevel = () => {
+  const removeSpecificLevel = (levelNumberToRemove: number) => {
     if (levelAssignments.length > 1) {
-      setLevelAssignments(prev => prev.slice(0, -1));
+      // Remove the specific level
+      const updatedAssignments = levelAssignments.filter(assignment => assignment.levelNumber !== levelNumberToRemove);
+
+      // Renumber the remaining levels to maintain sequential order
+      const renumberedAssignments = updatedAssignments.map((assignment, index) => ({
+        ...assignment,
+        levelNumber: index + 1,
+        partFloorData: assignment.partFloorData ? {
+          ...assignment.partFloorData,
+          levelNumber: index + 1,
+          name: assignment.partFloorData.name.replace(/Niveau \d+/, `Niveau ${index + 1}`)
+        } : assignment.partFloorData
+      }));
+
+      setLevelAssignments(renumberedAssignments);
     }
   };
 
@@ -425,24 +439,26 @@ const PartDialog: React.FC<PartDialogProps> = ({
               <Typography variant="h6">
                 Niveaux de la partie ({levelAssignments.length})
               </Typography>
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <IconButton
-                  onClick={addLevel}
-                  color="primary"
-                  disabled={loading || levelAssignments.length >= 20}
-                  title="Ajouter un niveau"
-                >
-                  <AddIcon />
-                </IconButton>
-                <IconButton
-                  onClick={removeLevel}
-                  color="error"
-                  disabled={loading || levelAssignments.length <= 1}
-                  title="Supprimer le dernier niveau"
-                >
-                  <RemoveIcon />
-                </IconButton>
-              </Box>
+              <IconButton
+                onClick={addLevel}
+                disabled={loading || levelAssignments.length >= 20}
+                title="Ajouter un niveau"
+                sx={{
+                  backgroundColor: 'primary.main',
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: 'primary.dark',
+                  },
+                  '&:disabled': {
+                    backgroundColor: 'action.disabled',
+                    color: 'action.disabled',
+                  },
+                  width: 40,
+                  height: 40,
+                }}
+              >
+                <AddIcon />
+              </IconButton>
             </Box>
 
             {/* Desktop View */}
@@ -450,9 +466,22 @@ const PartDialog: React.FC<PartDialogProps> = ({
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {levelAssignments.map((assignment) => (
                   <Paper key={assignment.levelNumber} variant="outlined" sx={{ p: 2 }}>
-                    <Typography variant="subtitle1" fontWeight="medium" sx={{ mb: 2 }}>
-                      Niveau {assignment.levelNumber}
-                    </Typography>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                      <Typography variant="subtitle1" fontWeight="medium">
+                        Niveau {assignment.levelNumber}
+                      </Typography>
+                      {levelAssignments.length > 1 && (
+                        <IconButton
+                          onClick={() => removeSpecificLevel(assignment.levelNumber)}
+                          color="error"
+                          size="small"
+                          disabled={loading}
+                          title={`Supprimer le niveau ${assignment.levelNumber}`}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      )}
+                    </Box>
 
                     <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 2 }}>
                       <FormControl size="small" fullWidth disabled={loading}>
@@ -605,9 +634,22 @@ const PartDialog: React.FC<PartDialogProps> = ({
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {levelAssignments.map((assignment) => (
                   <Paper key={assignment.levelNumber} variant="outlined" sx={{ p: 2 }}>
-                    <Typography variant="subtitle1" fontWeight="medium" sx={{ mb: 2 }}>
-                      Niveau {assignment.levelNumber}
-                    </Typography>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                      <Typography variant="subtitle1" fontWeight="medium">
+                        Niveau {assignment.levelNumber}
+                      </Typography>
+                      {levelAssignments.length > 1 && (
+                        <IconButton
+                          onClick={() => removeSpecificLevel(assignment.levelNumber)}
+                          color="error"
+                          size="small"
+                          disabled={loading}
+                          title={`Supprimer le niveau ${assignment.levelNumber}`}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      )}
+                    </Box>
 
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                       <FormControl size="small" fullWidth disabled={loading}>
