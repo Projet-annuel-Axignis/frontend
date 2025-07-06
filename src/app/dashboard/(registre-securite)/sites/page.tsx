@@ -24,10 +24,10 @@ import {
 } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import SiteCard from './components/SiteCard';
-import SiteDialog from './components/SiteDialog';
-import SiteFilters from './components/SiteFilters';
-import SiteTable from './components/SiteTable';
+import SiteCard from './_components/SiteCard';
+import SiteDialog from './_components/SiteDialog';
+import SiteFilters from './_components/SiteFilters';
+import SiteTable from './_components/SiteTable';
 
 const SitesPage = () => {
   const router = useRouter();
