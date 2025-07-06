@@ -31,6 +31,7 @@ import {
   TableRow,
   Typography
 } from '@mui/material';
+import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import PartDialog from './PartDialog';
 
@@ -47,6 +48,9 @@ interface Filters {
 }
 
 const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = false }) => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   // Data states
   const [parts, setParts] = useState<Part[]>([]);
   const [buildings, setBuildings] = useState<Building[]>([]);
@@ -77,6 +81,21 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
     filterParts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [parts, filters.search, filters.buildingId]);
+
+  // Check for edit parameter in URL
+  useEffect(() => {
+    const editId = searchParams.get('edit');
+    if (editId && parts.length > 0) {
+      const partToEdit = parts.find(p => p.id === parseInt(editId));
+      if (partToEdit) {
+        openEditDialog(partToEdit);
+        // Remove the edit parameter from URL
+        const url = new URL(window.location.href);
+        url.searchParams.delete('edit');
+        router.replace(url.pathname + url.search);
+      }
+    }
+  }, [parts, searchParams, router]);
 
   const loadData = async () => {
     setLoading(true);
