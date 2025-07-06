@@ -24,6 +24,7 @@ import {
   CardActions,
   CardContent,
   Chip,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -312,14 +313,16 @@ const LotsTab = ({ siteId, onNotification, disabled = false }: LotsTabProps) => 
   );
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h5" component="h2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <InventoryIcon />
-          Lots
+          Gestion des Lots
         </Typography>
+
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Button
+            variant="outlined"
             startIcon={<RefreshIcon />}
             onClick={loadData}
             disabled={loading}
@@ -332,6 +335,7 @@ const LotsTab = ({ siteId, onNotification, disabled = false }: LotsTabProps) => 
             onClick={openCreateDialog}
             disabled={disabled || buildings.filter(b => !b.deletedAt).length === 0 || parts.filter(p => !p.deletedAt).length === 0}
             sx={{
+              minWidth: 'auto',
               background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
               '&:hover': {
                 background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
@@ -343,175 +347,188 @@ const LotsTab = ({ siteId, onNotification, disabled = false }: LotsTabProps) => 
         </Box>
       </Box>
 
-      {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-          <Typography>Chargement des lots...</Typography>
-        </Box>
+      {/* Content */}
+      {buildings.filter(b => !b.deletedAt).length === 0 ? (
+        <Alert severity="info" sx={{ mb: 3 }}>
+          Aucun bâtiment actif trouvé sur ce site. Vous devez d&apos;abord créer des bâtiments et des parties pour pouvoir ajouter des lots.
+        </Alert>
+      ) : parts.filter(p => !p.deletedAt).length === 0 ? (
+        <Alert severity="warning" sx={{ mb: 3 }}>
+          Aucune partie active trouvée dans les bâtiments de ce site. Vous devez d&apos;abord créer des parties dans vos bâtiments pour pouvoir ajouter des lots.
+        </Alert>
       ) : (
         <>
-          {buildings.filter(b => !b.deletedAt).length === 0 ? (
-            <Alert severity="info" sx={{ mb: 3 }}>
-              Aucun bâtiment actif trouvé sur ce site. Vous devez d&apos;abord créer des bâtiments et des parties pour pouvoir ajouter des lots.
-            </Alert>
-          ) : parts.filter(p => !p.deletedAt).length === 0 ? (
-            <Alert severity="warning" sx={{ mb: 3 }}>
-              Aucune partie active trouvée dans les bâtiments de ce site. Vous devez d&apos;abord créer des parties dans vos bâtiments pour pouvoir ajouter des lots.
-            </Alert>
+          <SearchFilters
+            searchValue={filters.search}
+            onSearchChange={(value) => setFilters(prev => ({ ...prev, search: value }))}
+            searchPlaceholder="Rechercher un lot..."
+            selectValue={filters.buildingId}
+            onSelectChange={(value) => setFilters(prev => ({ ...prev, buildingId: value as number | '' }))}
+            selectLabel="Bâtiment"
+            selectOptions={buildings
+              .filter(building => filters.includeDeleted || !building.deletedAt)
+              .map(building => ({
+                value: building.id,
+                label: building.name
+              }))}
+            selectAllLabel="Tous les bâtiments"
+            includeDeleted={filters.includeDeleted}
+            onIncludeDeletedChange={(value) => setFilters(prev => ({ ...prev, includeDeleted: value }))}
+            resultsCount={filteredLots.length}
+            resultsLabel="lot(s)"
+          />
+
+          {!loading && filteredLots.length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <Typography variant="h6" color="text.secondary">
+                Aucun lot trouvé
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {filters.search || filters.buildingId
+                  ? 'Aucun lot ne correspond aux critères de recherche'
+                  : 'Aucun lot créé pour ce site'}
+              </Typography>
+            </Box>
           ) : (
             <>
-              <SearchFilters
-                searchValue={filters.search}
-                onSearchChange={(value) => setFilters(prev => ({ ...prev, search: value }))}
-                searchPlaceholder="Rechercher un lot..."
-                selectValue={filters.buildingId}
-                onSelectChange={(value) => setFilters(prev => ({ ...prev, buildingId: value as number | '' }))}
-                selectLabel="Bâtiment"
-                selectOptions={buildings
-                  .filter(building => filters.includeDeleted || !building.deletedAt)
-                  .map(building => ({
-                    value: building.id,
-                    label: building.name
-                  }))}
-                selectAllLabel="Tous les bâtiments"
-                includeDeleted={filters.includeDeleted}
-                onIncludeDeletedChange={(value) => setFilters(prev => ({ ...prev, includeDeleted: value }))}
-                resultsCount={filteredLots.length}
-                resultsLabel="lot(s)"
-              />
-
-              {filteredLots.length === 0 ? (
-                <Box sx={{ textAlign: 'center', py: 4 }}>
-                  <Typography variant="h6" color="text.secondary">
-                    Aucun lot trouvé
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {filters.search || filters.buildingId
-                      ? 'Aucun lot ne correspond aux critères de recherche'
-                      : 'Aucun lot créé pour ce site'}
-                  </Typography>
-                </Box>
-              ) : (
-                <>
-                  {/* Desktop Table View */}
-                  <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-                    <TableContainer component={Paper}>
-                      <Table>
-                        <TableHead>
-                          <TableRow>
-                            <TableCell>Nom</TableCell>
-                            <TableCell>Bâtiment</TableCell>
-                            <TableCell>Partie</TableCell>
-                            <TableCell>Étage de partie</TableCell>
-                            <TableCell>Étage de bâtiment</TableCell>
-                            <TableCell>Date de création</TableCell>
-                            <TableCell>Statut</TableCell>
-                            <TableCell align="right">Actions</TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {filteredLots.map((lot) => (
-                            <TableRow key={lot.id} sx={{ opacity: lot.deletedAt ? 0.6 : 1 }}>
-                              <TableCell>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                  <InventoryIcon fontSize="small" color="action" />
-                                  <Typography variant="body2" fontWeight="medium">
-                                    {lot.name}
-                                  </Typography>
-                                </Box>
-                              </TableCell>
-                              <TableCell>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                  <BuildingIcon fontSize="small" color="action" />
-                                  <Typography variant="body2">
-                                    {lot.building?.name}
-                                  </Typography>
-                                </Box>
-                              </TableCell>
-                              <TableCell>
-                                {lot.partFloor ? (
-                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    <ViewModuleIcon fontSize="small" color="action" />
-                                    <Typography variant="body2">
-                                      {findPartForPartFloor(lot.partFloor.id)?.name || 'Inconnue'}
-                                    </Typography>
-                                  </Box>
-                                ) : (
-                                  <Typography variant="body2" color="text.secondary">
-                                    Aucune
-                                  </Typography>
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                {lot.partFloor ? (
-                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    <ViewModuleIcon fontSize="small" color="action" />
-                                    <Typography variant="body2">
-                                      {lot.partFloor.name}
-                                    </Typography>
-                                  </Box>
-                                ) : (
-                                  <Typography variant="body2" color="text.secondary">
-                                    Aucun
-                                  </Typography>
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                  <LayersIcon fontSize="small" color="action" />
-                                  <Typography variant="body2">
-                                    {lot.buildingFloor.name}
-                                  </Typography>
-                                </Box>
-                              </TableCell>
-                              <TableCell>
-                                <Typography variant="body2">
-                                  {new Date(lot.createdAt).toLocaleDateString('fr-FR')}
+              {/* Desktop Table View */}
+              <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                <TableContainer component={Paper}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Nom</TableCell>
+                        <TableCell>Bâtiment</TableCell>
+                        <TableCell>Partie</TableCell>
+                        <TableCell>Étage de partie</TableCell>
+                        <TableCell>Étage de bâtiment</TableCell>
+                        <TableCell>Date de création</TableCell>
+                        <TableCell>Statut</TableCell>
+                        <TableCell align="right">Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {loading ? (
+                        <TableRow>
+                          <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
+                            <CircularProgress size={24} />
+                            <Typography variant="body2" sx={{ mt: 1 }}>
+                              Chargement des lots...
+                            </Typography>
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        filteredLots.map((lot) => (
+                          <TableRow key={lot.id} sx={{ opacity: lot.deletedAt ? 0.6 : 1 }}>
+                            <TableCell>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <InventoryIcon fontSize="small" color="action" />
+                                <Typography variant="body2" fontWeight="medium">
+                                  {lot.name}
                                 </Typography>
-                              </TableCell>
-                              <TableCell>
-                                <Chip
-                                  size="small"
-                                  label={lot.deletedAt ? 'Supprimé' : 'Actif'}
-                                  color={lot.deletedAt ? 'error' : 'success'}
-                                  variant="outlined"
-                                />
-                              </TableCell>
-                              <TableCell align="right">
-                                <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
-                                  <Tooltip title="Modifier">
-                                    <IconButton
-                                      size="small"
-                                      onClick={() => openEditDialog(lot)}
-                                      disabled={disabled || !!lot.deletedAt}
-                                    >
-                                      <EditIcon />
-                                    </IconButton>
-                                  </Tooltip>
-                                  <Tooltip title="Supprimer">
-                                    <IconButton
-                                      size="small"
-                                      onClick={() => handleDelete(lot)}
-                                      disabled={disabled || !!lot.deletedAt}
-                                      color="error"
-                                    >
-                                      <DeleteIcon />
-                                    </IconButton>
-                                  </Tooltip>
+                              </Box>
+                            </TableCell>
+                            <TableCell>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <BuildingIcon fontSize="small" color="action" />
+                                <Typography variant="body2">
+                                  {lot.building?.name}
+                                </Typography>
+                              </Box>
+                            </TableCell>
+                            <TableCell>
+                              {lot.partFloor ? (
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <ViewModuleIcon fontSize="small" color="action" />
+                                  <Typography variant="body2">
+                                    {findPartForPartFloor(lot.partFloor.id)?.name || 'Inconnue'}
+                                  </Typography>
                                 </Box>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
-                  </Box>
+                              ) : (
+                                <Typography variant="body2" color="text.secondary">
+                                  Aucune
+                                </Typography>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {lot.partFloor ? (
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <ViewModuleIcon fontSize="small" color="action" />
+                                  <Typography variant="body2">
+                                    {lot.partFloor.name}
+                                  </Typography>
+                                </Box>
+                              ) : (
+                                <Typography variant="body2" color="text.secondary">
+                                  Aucun
+                                </Typography>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <LayersIcon fontSize="small" color="action" />
+                                <Typography variant="body2">
+                                  {lot.buildingFloor.name}
+                                </Typography>
+                              </Box>
+                            </TableCell>
+                            <TableCell>
+                              <Typography variant="body2">
+                                {new Date(lot.createdAt).toLocaleDateString('fr-FR')}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Chip
+                                size="small"
+                                label={lot.deletedAt ? 'Supprimé' : 'Actif'}
+                                color={lot.deletedAt ? 'error' : 'success'}
+                                variant="outlined"
+                              />
+                            </TableCell>
+                            <TableCell align="right">
+                              <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
+                                <Tooltip title="Modifier">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => openEditDialog(lot)}
+                                    disabled={disabled || !!lot.deletedAt}
+                                  >
+                                    <EditIcon />
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Supprimer">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handleDelete(lot)}
+                                    disabled={disabled || !!lot.deletedAt}
+                                    color="error"
+                                  >
+                                    <DeleteIcon />
+                                  </IconButton>
+                                </Tooltip>
+                              </Box>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Box>
 
-                  {/* Mobile Card View */}
-                  <Box sx={{ display: { xs: 'block', md: 'none' } }}>
-                    {filteredLots.map(renderCard)}
+              {/* Mobile Card View */}
+              <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+                {loading ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+                    <CircularProgress size={24} />
+                    <Typography variant="body2" sx={{ ml: 2 }}>
+                      Chargement des lots...
+                    </Typography>
                   </Box>
-                </>
-              )}
+                ) : (
+                  filteredLots.map(renderCard)
+                )}
+              </Box>
             </>
           )}
         </>
