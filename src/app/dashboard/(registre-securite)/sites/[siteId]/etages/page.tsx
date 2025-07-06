@@ -1,8 +1,8 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import FloorsTab from '../_components/FloorsTab';
 import { useSiteContext } from '../_providers/SiteProvider';
+import FloorsTab from './FloorsTab';
 
 export default function EtagesPage() {
   const params = useParams();

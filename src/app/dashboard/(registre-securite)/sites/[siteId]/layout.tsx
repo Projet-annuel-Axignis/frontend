@@ -260,7 +260,7 @@ export default function SiteDetailLayout({
                 justifyContent: 'flex-start',
               },
               '& .MuiTab-root': {
-                fontWeight: 600,
+                fontWeight: '300',
                 textTransform: 'none',
                 fontSize: '1rem',
                 transition: 'var(--transition-normal)',
@@ -288,7 +288,7 @@ export default function SiteDetailLayout({
           </Tabs>
 
           {/* Contenu de la page */}
-          <Box sx={{ py: 3 }}>
+          <Box sx={{ p: 3 }}>
             {children}
           </Box>
         </Paper>
