@@ -2,6 +2,7 @@
 'use client';
 
 import {
+  AccountTree as AccountTreeIcon,
   Apartment as BuildingIcon,
   Business as BusinessIcon,
   LocationOn as LocationIcon,
@@ -13,6 +14,7 @@ import {
   Breadcrumbs,
   Button,
   Card,
+  CardContent,
   FormControlLabel,
   Grid,
   Link,
@@ -23,6 +25,8 @@ import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
 import { useToast } from '@/app/_providers/ToastProvider';
+import DashBoardHeader from '@/components/dashboard/DashBoardHeader';
+import { useBreadcrumbTitle } from '@/hooks/useBreadcrumbTitle';
 import { Company } from '@/types/company';
 import { Building, BuildingFloor, Lot, Part, PartFloor, Site } from '@/types/site';
 import HierarchyTree from './components/HierarchyTree';
@@ -32,6 +36,9 @@ const HierarchyPage = () => {
   const { showToast } = useToast();
   // Par défaut, n'afficher que les éléments non supprimés
   const [includeDeleted, setIncludeDeleted] = useState(false);
+
+  // Définir le titre personnalisé pour le breadcrumb
+  useBreadcrumbTitle("hierarchie", "Navigation Hiérarchique");
 
   // Selection states - filtrer les éléments supprimés
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
@@ -236,283 +243,336 @@ const HierarchyPage = () => {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box>
       {/* Header */}
-      <Box sx={{ mb: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-          <Typography variant="h4" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <BusinessIcon />
-            Navigation Hiérarchique
-          </Typography>
+      <DashBoardHeader
+        title="Navigation Hiérarchique"
+        icon={<AccountTreeIcon />}
+      >
+      </DashBoardHeader>
+      <Card>
+        <CardContent>
+          {/* Header */}
+          <Box sx={{ mb: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+              <Typography variant="h4" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <BusinessIcon />
+                Navigation Hiérarchique
+              </Typography>
 
-          <FormControlLabel
-            control={
-              <Switch
-                checked={includeDeleted}
-                onChange={handleIncludeDeletedChange}
-                color="secondary"
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={includeDeleted}
+                    onChange={handleIncludeDeletedChange}
+                    color="secondary"
+                  />
+                }
+                label="Inclure les éléments supprimés"
               />
-            }
-            label="Inclure les éléments supprimés"
-          />
-        </Box>
+            </Box>
 
-        <Typography component="div" variant="body1" color="text.secondary">
-          Explorez et gérez la hiérarchie complète : Entreprises → Sites → Bâtiments → Parties & Étages
-          {!includeDeleted && (
-            <Typography component="p" variant="body2" color="warning.main" sx={{ mt: 1 }}>
-              ⚠️ Seuls les éléments actifs (non supprimés) sont affichés
+            <Typography component="div" variant="body1" color="text.secondary">
+              Explorez et gérez la hiérarchie complète : Entreprises → Sites → Bâtiments → Parties & Étages
+              {!includeDeleted && (
+                <Typography component="p" variant="body2" color="warning.main" sx={{ mt: 1 }}>
+                  ⚠️ Seuls les éléments actifs (non supprimés) sont affichés
+                </Typography>
+              )}
             </Typography>
+          </Box>
+
+          {/* Breadcrumbs */}
+          {(selectedCompany || selectedSite || selectedBuilding) && (
+            <Card sx={{ p: 2, mb: 3 }}>
+              <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />}>
+                {getBreadcrumbs().map((breadcrumb, index) => (
+                  <Link
+                    key={index}
+                    href={breadcrumb.href}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      textDecoration: 'none',
+                      color: 'primary.main',
+                      '&:hover': {
+                        textDecoration: 'underline',
+                      },
+                    }}
+                  >
+                    {breadcrumb.icon}
+                    {breadcrumb.label}
+                  </Link>
+                ))}
+              </Breadcrumbs>
+            </Card>
           )}
-        </Typography>
-      </Box>
 
-      {/* Breadcrumbs */}
-      {(selectedCompany || selectedSite || selectedBuilding) && (
-        <Card sx={{ p: 2, mb: 3 }}>
-          <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />}>
-            {getBreadcrumbs().map((breadcrumb, index) => (
-              <Link
-                key={index}
-                href={breadcrumb.href}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 0.5,
-                  textDecoration: 'none',
-                  color: 'primary.main',
-                  '&:hover': {
-                    textDecoration: 'underline',
-                  },
-                }}
-              >
-                {breadcrumb.icon}
-                {breadcrumb.label}
-              </Link>
-            ))}
-          </Breadcrumbs>
-        </Card>
-      )}
+          <Grid container spacing={3}>
+            {/* Navigation Tree */}
+            <Grid size={{ xs: 12, xl: 7 }}>
+              <HierarchyTree
+                onSelectCompany={handleSelectCompany}
+                onSelectSite={handleSelectSite}
+                onSelectBuilding={handleSelectBuilding}
+                onSelectPart={handleSelectPart}
+                onSelectFloor={handleSelectFloor}
+                onSelectLot={handleSelectLot}
+                onAddEntity={handleAddEntity}
+                onEditEntity={handleEditEntity}
+                onDeleteEntity={handleDeleteEntity}
+                includeDeleted={includeDeleted}
+              />
+            </Grid>
 
-      <Grid container spacing={3}>
-        {/* Navigation Tree */}
-        <Grid size={{ xs: 12, xl: 6 }}>
-          <HierarchyTree
-            onSelectCompany={handleSelectCompany}
-            onSelectSite={handleSelectSite}
-            onSelectBuilding={handleSelectBuilding}
-            onSelectPart={handleSelectPart}
-            onSelectFloor={handleSelectFloor}
-            onSelectLot={handleSelectLot}
-            onAddEntity={handleAddEntity}
-            onEditEntity={handleEditEntity}
-            onDeleteEntity={handleDeleteEntity}
-            includeDeleted={includeDeleted}
-          />
-        </Grid>
+            {/* Details Panel */}
+            <Grid size={{ xs: 12, xl: 5 }}>
+              <Card sx={{ p: 3, height: '100%' }}>
+                {!selectedCompany && !selectedSite && !selectedBuilding && (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      height: '300px',
+                      color: 'text.secondary',
+                    }}
+                  >
+                    <BusinessIcon sx={{ fontSize: 64, mb: 2, opacity: 0.5 }} />
+                    <Typography variant="h6" align="center">
+                      Sélectionnez un élément
+                    </Typography>
+                    <Typography variant="body2" align="center" sx={{ mt: 1 }}>
+                      Cliquez sur un élément dans la navigation pour voir ses détails
+                    </Typography>
+                  </Box>
+                )}
 
-        {/* Details Panel */}
-        <Grid size={{ xs: 12, xl: 6 }}>
-          <Card sx={{ p: 3, height: '100%' }}>
-            {!selectedCompany && !selectedSite && !selectedBuilding && (
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  height: '300px',
-                  color: 'text.secondary',
-                }}
-              >
-                <BusinessIcon sx={{ fontSize: 64, mb: 2, opacity: 0.5 }} />
-                <Typography variant="h6" align="center">
-                  Sélectionnez un élément
-                </Typography>
-                <Typography variant="body2" align="center" sx={{ mt: 1 }}>
-                  Cliquez sur un élément dans la navigation pour voir ses détails
-                </Typography>
-              </Box>
-            )}
+                {selectedLot && (
+                  <Box>
+                    <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <BusinessIcon />
+                      Lot Sélectionné
+                      {isDeleted(selectedLot) && (
+                        <Typography variant="caption" color="error" sx={{ ml: 1 }}>
+                          (Supprimé)
+                        </Typography>
+                      )}
+                    </Typography>
+                    <Alert severity={isDeleted(selectedLot) ? "warning" : "info"} sx={{ mb: 2 }}>
+                      Lot : {selectedLot.name}
+                      {isDeleted(selectedLot) && (
+                        <Typography variant="body2" sx={{ mt: 1 }}>
+                          Cet élément a été supprimé le {new Date(selectedLot.deletedAt!).toLocaleDateString('fr-FR')}
+                        </Typography>
+                      )}
+                    </Alert>
+                    <Button
+                      variant="contained"
+                      disabled={isDeleted(selectedLot)}
+                      onClick={() => showToast('Gestion des lots en cours de développement', 'info')}
+                      sx={{
+                        background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+                        '&:hover': {
+                          background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                        },
+                      }}
+                    >
+                      Gérer ce lot
+                    </Button>
+                  </Box>
+                )}
 
-            {selectedLot && (
-              <Box>
-                <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <BusinessIcon />
-                  Lot Sélectionné
-                  {isDeleted(selectedLot) && (
-                    <Typography variant="caption" color="error" sx={{ ml: 1 }}>
-                      (Supprimé)
+                {selectedFloor && !selectedLot && (
+                  <Box>
+                    <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <BusinessIcon />
+                      Étage Sélectionné
+                      {isDeleted(selectedFloor) && (
+                        <Typography variant="caption" color="error" sx={{ ml: 1 }}>
+                          (Supprimé)
+                        </Typography>
+                      )}
                     </Typography>
-                  )}
-                </Typography>
-                <Alert severity={isDeleted(selectedLot) ? "warning" : "info"} sx={{ mb: 2 }}>
-                  Lot : {selectedLot.name}
-                  {isDeleted(selectedLot) && (
-                    <Typography variant="body2" sx={{ mt: 1 }}>
-                      Cet élément a été supprimé le {new Date(selectedLot.deletedAt!).toLocaleDateString('fr-FR')}
-                    </Typography>
-                  )}
-                </Alert>
-                <Button
-                  variant="contained"
-                  disabled={isDeleted(selectedLot)}
-                  onClick={() => showToast('Gestion des lots en cours de développement', 'info')}
-                >
-                  Gérer ce lot
-                </Button>
-              </Box>
-            )}
+                    <Alert severity={isDeleted(selectedFloor) ? "warning" : "info"} sx={{ mb: 2 }}>
+                      Étage : {selectedFloor.name}
+                      {isDeleted(selectedFloor) && (
+                        <Typography variant="body2" sx={{ mt: 1 }}>
+                          Cet élément a été supprimé le {new Date(selectedFloor.deletedAt!).toLocaleDateString('fr-FR')}
+                        </Typography>
+                      )}
+                    </Alert>
+                    <Button
+                      variant="contained"
+                      disabled={isDeleted(selectedFloor)}
+                      onClick={() => showToast('Gestion des étages en cours de développement', 'info')}
+                      sx={{
+                        background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+                        '&:hover': {
+                          background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                        },
+                      }}
+                    >
+                      Gérer cet étage
+                    </Button>
+                  </Box>
+                )}
 
-            {selectedFloor && !selectedLot && (
-              <Box>
-                <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <BusinessIcon />
-                  Étage Sélectionné
-                  {isDeleted(selectedFloor) && (
-                    <Typography variant="caption" color="error" sx={{ ml: 1 }}>
-                      (Supprimé)
+                {selectedPart && !selectedFloor && !selectedLot && (
+                  <Box>
+                    <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <BusinessIcon />
+                      Partie Sélectionnée
+                      {isDeleted(selectedPart) && (
+                        <Typography variant="caption" color="error" sx={{ ml: 1 }}>
+                          (Supprimé)
+                        </Typography>
+                      )}
                     </Typography>
-                  )}
-                </Typography>
-                <Alert severity={isDeleted(selectedFloor) ? "warning" : "info"} sx={{ mb: 2 }}>
-                  Étage : {selectedFloor.name}
-                  {isDeleted(selectedFloor) && (
-                    <Typography variant="body2" sx={{ mt: 1 }}>
-                      Cet élément a été supprimé le {new Date(selectedFloor.deletedAt!).toLocaleDateString('fr-FR')}
-                    </Typography>
-                  )}
-                </Alert>
-                <Button
-                  variant="contained"
-                  disabled={isDeleted(selectedFloor)}
-                  onClick={() => showToast('Gestion des étages en cours de développement', 'info')}
-                >
-                  Gérer cet étage
-                </Button>
-              </Box>
-            )}
+                    <Alert severity={isDeleted(selectedPart) ? "warning" : "info"} sx={{ mb: 2 }}>
+                      Partie : {selectedPart.name}
+                      <br />
+                      Type : {selectedPart.type === "PRIVATE" ? "Privée" : "Commune"}
+                      <br />
+                      ICPE ? : {selectedPart.isIcpe ? "Oui" : "Non"}
+                      <br />
+                      Type d&apos;ERP : {selectedPart.erpTypes ? selectedPart.erpTypes.map((erpType: string) => erpType).join(', ') : "Non défini"}
 
-            {selectedPart && !selectedFloor && !selectedLot && (
-              <Box>
-                <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <BusinessIcon />
-                  Partie Sélectionnée
-                  {isDeleted(selectedPart) && (
-                    <Typography variant="caption" color="error" sx={{ ml: 1 }}>
-                      (Supprimé)
-                    </Typography>
-                  )}
-                </Typography>
-                <Alert severity={isDeleted(selectedPart) ? "warning" : "info"} sx={{ mb: 2 }}>
-                  Partie : {selectedPart.name}
-                  {isDeleted(selectedPart) && (
-                    <Typography variant="body2" sx={{ mt: 1 }}>
-                      Cet élément a été supprimé le {new Date(selectedPart.deletedAt!).toLocaleDateString('fr-FR')}
-                    </Typography>
-                  )}
-                </Alert>
-                <Button
-                  variant="contained"
-                  disabled={isDeleted(selectedPart)}
-                  onClick={() => selectedSite && router.push(`/dashboard/sites/${selectedSite.id}?tab=parts`)}
-                >
-                  Gérer cette partie
-                </Button>
-              </Box>
-            )}
+                      {isDeleted(selectedPart) && (
+                        <Typography variant="body2" sx={{ mt: 1 }}>
+                          Cet élément a été supprimé le {new Date(selectedPart.deletedAt!).toLocaleDateString('fr-FR')}
+                        </Typography>
+                      )}
+                    </Alert>
+                    <Button
+                      variant="contained"
+                      disabled={isDeleted(selectedPart)}
+                      onClick={() => selectedSite && router.push(`/dashboard/sites/${selectedSite.id}?tab=parties`)}
+                      sx={{
+                        background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+                        '&:hover': {
+                          background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                        },
+                      }}
+                    >
+                      Gérer cette partie
+                    </Button>
+                  </Box>
+                )}
 
-            {selectedBuilding && !selectedPart && !selectedFloor && !selectedLot && (
-              <Box>
-                <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <BuildingIcon />
-                  Bâtiment Sélectionné
-                  {isDeleted(selectedBuilding) && (
-                    <Typography variant="caption" color="error" sx={{ ml: 1 }}>
-                      (Supprimé)
+                {selectedBuilding && !selectedPart && !selectedFloor && !selectedLot && (
+                  <Box>
+                    <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <BuildingIcon />
+                      Bâtiment Sélectionné
+                      {isDeleted(selectedBuilding) && (
+                        <Typography variant="caption" color="error" sx={{ ml: 1 }}>
+                          (Supprimé)
+                        </Typography>
+                      )}
                     </Typography>
-                  )}
-                </Typography>
-                <Alert severity={isDeleted(selectedBuilding) ? "warning" : "info"} sx={{ mb: 2 }}>
-                  Bâtiment : {selectedBuilding.name}
-                  {isDeleted(selectedBuilding) && (
-                    <Typography variant="body2" sx={{ mt: 1 }}>
-                      Cet élément a été supprimé le {new Date(selectedBuilding.deletedAt!).toLocaleDateString('fr-FR')}
-                    </Typography>
-                  )}
-                </Alert>
-                <Button
-                  variant="contained"
-                  disabled={isDeleted(selectedBuilding)}
-                  onClick={() => selectedSite && router.push(`/dashboard/sites/${selectedSite.id}?tab=buildings`)}
-                >
-                  Gérer ce bâtiment
-                </Button>
-              </Box>
-            )}
+                    <Alert severity={isDeleted(selectedBuilding) ? "warning" : "info"} sx={{ mb: 2 }}>
+                      Bâtiment : {selectedBuilding.name}
+                      {isDeleted(selectedBuilding) && (
+                        <Typography variant="body2" sx={{ mt: 1 }}>
+                          Cet élément a été supprimé le {new Date(selectedBuilding.deletedAt!).toLocaleDateString('fr-FR')}
+                        </Typography>
+                      )}
+                    </Alert>
+                    <Button
+                      variant="contained"
+                      disabled={isDeleted(selectedBuilding)}
+                      onClick={() => selectedSite && router.push(`/dashboard/sites/${selectedSite.id}?tab=buildings`)}
+                      sx={{
+                        background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+                        '&:hover': {
+                          background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                        },
+                      }}
+                    >
+                      Gérer ce bâtiment
+                    </Button>
+                  </Box>
+                )}
 
-            {selectedSite && !selectedBuilding && (
-              <Box>
-                <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <LocationIcon />
-                  Site Sélectionné
-                  {isDeleted(selectedSite) && (
-                    <Typography variant="caption" color="error" sx={{ ml: 1 }}>
-                      (Supprimé)
+                {selectedSite && !selectedBuilding && (
+                  <Box>
+                    <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <LocationIcon />
+                      Site Sélectionné
+                      {isDeleted(selectedSite) && (
+                        <Typography variant="caption" color="error" sx={{ ml: 1 }}>
+                          (Supprimé)
+                        </Typography>
+                      )}
                     </Typography>
-                  )}
-                </Typography>
-                <Alert severity={isDeleted(selectedSite) ? "warning" : "info"} sx={{ mb: 2 }}>
-                  Site : {selectedSite.name}<br />
-                  Adresse : {selectedSite.streetNumber} {selectedSite.street}, {selectedSite.postalCode} {selectedSite.city}
-                  {isDeleted(selectedSite) && (
-                    <Typography variant="body2" sx={{ mt: 1 }}>
-                      Cet élément a été supprimé le {new Date(selectedSite.deletedAt!).toLocaleDateString('fr-FR')}
-                    </Typography>
-                  )}
-                </Alert>
-                <Button
-                  variant="contained"
-                  disabled={isDeleted(selectedSite)}
-                  onClick={() => router.push(`/dashboard/sites/${selectedSite.id}`)}
-                >
-                  Gérer ce site
-                </Button>
-              </Box>
-            )}
+                    <Alert severity={isDeleted(selectedSite) ? "warning" : "info"} sx={{ mb: 2 }}>
+                      Site : {selectedSite.name}<br />
+                      Adresse : {selectedSite.streetNumber} {selectedSite.street}, {selectedSite.postalCode} {selectedSite.city}
+                      {isDeleted(selectedSite) && (
+                        <Typography variant="body2" sx={{ mt: 1 }}>
+                          Cet élément a été supprimé le {new Date(selectedSite.deletedAt!).toLocaleDateString('fr-FR')}
+                        </Typography>
+                      )}
+                    </Alert>
+                    <Button
+                      variant="contained"
+                      disabled={isDeleted(selectedSite)}
+                      onClick={() => router.push(`/dashboard/sites/${selectedSite.id}`)}
+                      sx={{
+                        background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+                        '&:hover': {
+                          background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                        },
+                      }}
+                    >
+                      Gérer ce site
+                    </Button>
+                  </Box>
+                )}
 
-            {selectedCompany && !selectedSite && (
-              <Box>
-                <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <BusinessIcon />
-                  Entreprise Sélectionnée
-                  {isDeleted(selectedCompany) && (
-                    <Typography variant="caption" color="error" sx={{ ml: 1 }}>
-                      (Supprimé)
+                {selectedCompany && !selectedSite && (
+                  <Box>
+                    <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <BusinessIcon />
+                      Entreprise Sélectionnée
+                      {isDeleted(selectedCompany) && (
+                        <Typography variant="caption" color="error" sx={{ ml: 1 }}>
+                          (Supprimé)
+                        </Typography>
+                      )}
                     </Typography>
-                  )}
-                </Typography>
-                <Alert severity={isDeleted(selectedCompany) ? "warning" : "info"} sx={{ mb: 2 }}>
-                  Entreprise : {selectedCompany.name}<br />
-                  SIRET : {selectedCompany.siretNumber}
-                  {isDeleted(selectedCompany) && (
-                    <Typography variant="body2" sx={{ mt: 1 }}>
-                      Cet élément a été supprimé le {new Date(selectedCompany.deletedAt!).toLocaleDateString('fr-FR')}
-                    </Typography>
-                  )}
-                </Alert>
-                <Button
-                  variant="contained"
-                  disabled={isDeleted(selectedCompany)}
-                  onClick={() => router.push('/dashboard/administration/entreprises')}
-                >
-                  Gérer cette entreprise
-                </Button>
-              </Box>
-            )}
-          </Card>
-        </Grid>
-      </Grid>
+                    <Alert severity={isDeleted(selectedCompany) ? "warning" : "info"} sx={{ mb: 2 }}>
+                      Entreprise : {selectedCompany.name}<br />
+                      SIRET : {selectedCompany.siretNumber}
+                      {isDeleted(selectedCompany) && (
+                        <Typography variant="body2" sx={{ mt: 1 }}>
+                          Cet élément a été supprimé le {new Date(selectedCompany.deletedAt!).toLocaleDateString('fr-FR')}
+                        </Typography>
+                      )}
+                    </Alert>
+                    <Button
+                      variant="contained"
+                      disabled={isDeleted(selectedCompany)}
+                      onClick={() => router.push('/dashboard/administration/entreprises')}
+                      sx={{
+                        background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+                        '&:hover': {
+                          background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                        },
+                      }}
+                    >
+                      Gérer cette entreprise
+                    </Button>
+                  </Box>
+                )}
+              </Card>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
     </Box>
   );
 };
