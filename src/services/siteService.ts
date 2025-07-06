@@ -239,8 +239,8 @@ export const partService = {
       parts = parts.filter(part =>
         part.name.toLowerCase().includes(searchLower) ||
         part.type?.toLowerCase().includes(searchLower) ||
-        part.habFamily?.toLowerCase().includes(searchLower) ||
-        part.erpTypes?.some(erpType => erpType.toLowerCase().includes(searchLower))
+        part.habFamily?.description?.includes(searchLower) ||
+        part.erpTypes?.some(erpType => erpType.code.toLowerCase().includes(searchLower))
       );
     }
 
@@ -252,6 +252,7 @@ export const partService = {
 
   async getPart(id: number): Promise<Part> {
     const response = await api.get<Part>(`/parts/${id}`);
+    console.log(response.data);
     return response.data;
   },
 

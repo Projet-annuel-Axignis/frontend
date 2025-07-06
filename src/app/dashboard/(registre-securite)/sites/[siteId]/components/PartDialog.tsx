@@ -2,7 +2,8 @@
 // @ts-nocheck
 'use client';
 
-import { Building, BuildingFloor, CreatePartDto, LevelAssignment, Part, UpdatePartDto } from '@/types/site';
+import { partFloorService } from '@/services/siteService';
+import { Building, BuildingFloor, CreatePartDto, LevelAssignment, Part, PartFloor, UpdatePartDto } from '@/types/site';
 import {
   Add as AddIcon,
   Remove as RemoveIcon,
@@ -62,6 +63,7 @@ const PartDialog: React.FC<PartDialogProps> = ({
   // Level assignment states
   const [levelAssignments, setLevelAssignments] = useState<LevelAssignment[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingPartFloors, setLoadingPartFloors] = useState(false);
 
   // Helper function to get selected building
   const getSelectedBuilding = () => {
@@ -72,6 +74,25 @@ const PartDialog: React.FC<PartDialogProps> = ({
   const hasTypology = (typologyCode: string) => {
     const building = getSelectedBuilding();
     return building?.typologies?.some(t => t.code === typologyCode) || false;
+  };
+
+  // Load complete part floors data for editing
+  const loadCompletePartFloors = async (partId: number): Promise<PartFloor[]> => {
+    try {
+      setLoadingPartFloors(true);
+      const response = await partFloorService.getPartFloors({
+        filterField: 'partId',
+        filterOp: "equals",
+        filter: partId,
+        includeDeleted: true, // Include deleted to get complete data
+      });
+      return response.partFloors;
+    } catch (error) {
+      console.error('Error loading part floors:', error);
+      return [];
+    } finally {
+      setLoadingPartFloors(false);
+    }
   };
 
   // Initialize form data when dialog opens or part changes
@@ -90,22 +111,36 @@ const PartDialog: React.FC<PartDialogProps> = ({
         // Start with one level by default
         initializeLevelAssignments(1);
       } else if (part) {
+        console.log('Part data:', part);
         setFormData({
           name: part.name,
           buildingId: part.building?.id || 0,
           type: part.type || 'PRIVATE',
           isIcpe: part.isIcpe,
-          erpTypeCodes: part.erpTypes || ['J'],
-          habFamilyName: part.habFamily,
+          erpTypeCodes: part.erpTypes?.length > 0 ? part.erpTypes.map(erpType => erpType.code) : ['J'],
+          habFamilyName: part.habFamily?.name,
         });
-        initializeLevelAssignments(part.partFloors?.length || 1, part);
+
+        // Load complete part floors data for editing
+        if (part.id) {
+          loadCompletePartFloors(part.id).then((completePartFloors) => {
+            console.log('Complete part floors:', completePartFloors);
+            initializeLevelAssignments(completePartFloors.length || 1, part, completePartFloors);
+          });
+        } else {
+          initializeLevelAssignments(part.partFloors?.length || 1, part);
+        }
       }
     }
   }, [open, mode, part, buildings]);
 
   // Initialize level assignments
-  const initializeLevelAssignments = (levelCount: number, existingPart?: Part) => {
+  const initializeLevelAssignments = (levelCount: number, existingPart?: Part, completePartFloors?: PartFloor[]) => {
     const assignments: LevelAssignment[] = [];
+
+    // Use complete part floors data if available, otherwise fallback to part.partFloors
+    const partFloorsToUse = completePartFloors || existingPart?.partFloors || [];
+
     for (let i = 1; i <= levelCount; i++) {
       assignments.push({
         levelNumber: i,
@@ -122,11 +157,16 @@ const PartDialog: React.FC<PartDialogProps> = ({
       });
     }
 
-    // If editing, try to populate with existing data
-    if (existingPart?.partFloors) {
-      existingPart.partFloors.forEach((partFloor, index) => {
+    // If editing, populate with existing data
+    if (partFloorsToUse.length > 0) {
+      console.log('Populating with existing part floors:', partFloorsToUse);
+
+      partFloorsToUse.forEach((partFloor, index) => {
         if (assignments[index]) {
-          assignments[index].buildingFloorId = partFloor.buildingFloor?.id || null;
+          // Use buildingFloor.id from complete data if available
+          const buildingFloorId = partFloor.buildingFloor?.id || null;
+
+          assignments[index].buildingFloorId = buildingFloorId;
           assignments[index].partFloorData = {
             name: partFloor.name,
             publicCount: partFloor.publicCount,
@@ -136,10 +176,13 @@ const PartDialog: React.FC<PartDialogProps> = ({
             publicAccessSurface: partFloor.publicAccessSurface,
             levelNumber: partFloor.levelNumber,
           };
+
+          console.log(`Level ${i}: buildingFloorId = ${buildingFloorId}, partFloor:`, partFloor);
         }
       });
     }
 
+    console.log('Final level assignments:', assignments);
     setLevelAssignments(assignments);
   };
 
@@ -221,6 +264,19 @@ const PartDialog: React.FC<PartDialogProps> = ({
     }
   };
 
+  // Show loading state while loading part floors data
+  if (loadingPartFloors && mode === 'edit') {
+    return (
+      <Dialog open={open} maxWidth="sm" fullWidth>
+        <DialogContent>
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4 }}>
+            <Typography>Chargement des données de la partie...</Typography>
+          </Box>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog
       open={open}
@@ -284,8 +340,8 @@ const PartDialog: React.FC<PartDialogProps> = ({
               <FormControl fullWidth disabled={loading}>
                 <InputLabel>Code ERP</InputLabel>
                 <Select
-                  value={formData.erpTypeCodes || ''}
-                  onChange={(e) => handleFormChange('erpTypeCodes', e.target.value)}
+                  value={formData.erpTypeCodes?.[0] || ''}
+                  onChange={(e) => handleFormChange('erpTypeCodes', e.target.value ? [e.target.value] : [])}
                   label="Code ERP"
                 >
                   <MenuItem value=""></MenuItem>
