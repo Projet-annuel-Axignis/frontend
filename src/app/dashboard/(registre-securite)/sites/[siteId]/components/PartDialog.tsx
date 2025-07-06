@@ -82,9 +82,7 @@ const PartDialog: React.FC<PartDialogProps> = ({
     try {
       setLoadingPartFloors(true);
       const response = await partFloorService.getPartFloors({
-        filterField: 'partId',
-        filterOp: "equals",
-        filter: partId,
+        partId: partId,
         includeDeleted: true, // Include deleted to get complete data
       });
       return response.partFloors;

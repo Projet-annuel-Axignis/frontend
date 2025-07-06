@@ -276,6 +276,7 @@ export const partService = {
 export const partFloorService = {
   async getPartFloors(params: {
     buildingFloorId?: number;
+    partId?: number;
     includeDeleted?: boolean;
     search?: string;
   } = {}): Promise<{ partFloors: PartFloor[]; total: number }> {
@@ -289,6 +290,10 @@ export const partFloorService = {
       searchParams.append('filterField', 'buildingFloor.id');
       searchParams.append('filterOp', 'equals');
       searchParams.append('filter', params.buildingFloorId.toString());
+    } else if (params.partId) {
+      searchParams.append('filterField', 'partId');
+      searchParams.append('filterOp', 'equals');
+      searchParams.append('filter', params.partId.toString());
     }
     if (params.includeDeleted) {
       searchParams.append('includeDeleted', 'true');

@@ -4,7 +4,7 @@
 
 import SearchFilters from '@/components/dashboard/SearchFilters';
 import { buildingFloorService, buildingService, partFloorService, partService } from '@/services/siteService';
-import { Building, BuildingFloor, CreatePartDto, LevelAssignment, Part, UpdatePartDto } from '@/types/site';
+import { Building, BuildingFloor, CreatePartDto, CreatePartFloorDto, LevelAssignment, Part, PartFloor, UpdatePartDto, UpdatePartFloorDto } from '@/types/site';
 import {
   Add as AddIcon,
   Delete as DeleteIcon,
@@ -103,12 +103,19 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
       }
 
       // Load parts for buildings in this site
-      const partsData = await partService.getParts({
-        filterField: 'buildingId',
-        filter: buildingsData.buildings.map(b => b.id).join(','),
-        includeDeleted: filters.includeDeleted,
-      });
-      setParts(partsData.parts);
+      if (buildingsData.buildings.length > 0) {
+        const partsPromises = buildingsData.buildings.map(building =>
+          partService.getParts({
+            buildingId: building.id,
+            includeDeleted: filters.includeDeleted,
+          })
+        );
+        const partsResponses = await Promise.all(partsPromises);
+        const allParts = partsResponses.flatMap(response => response.parts);
+        setParts(allParts);
+      } else {
+        setParts([]);
+      }
     } catch (error) {
       console.error('Error loading data:', error);
       onNotification('Erreur lors du chargement des données', 'error');
@@ -163,29 +170,93 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
   };
 
   const handleDialogSubmit = async (formData: CreatePartDto | UpdatePartDto, levelAssignments: LevelAssignment[], partId?: number) => {
+    console.log('=== DEBUT SOUMISSION FORMULAIRE ===');
+    console.log('Mode:', dialogMode);
+    console.log('FormData:', formData);
+    console.log('LevelAssignments:', levelAssignments);
+    console.log('PartId:', partId);
+
     try {
       if (dialogMode === 'create') {
         // Create the part first and get the created part with its ID
         const createdPart = await partService.createPart(formData as CreatePartDto);
+        console.log('Partie créée:', createdPart);
 
         // Create part floors for each level assignment
         for (const assignment of levelAssignments) {
           if (assignment.buildingFloorId && assignment.partFloorData) {
-            await partFloorService.createPartFloor({
+            const partFloorData = {
               ...assignment.partFloorData,
               buildingFloorId: assignment.buildingFloorId,
               partId: createdPart.id, // Use the ID from the created part
-            });
+            };
+            console.log('Création partFloor:', partFloorData);
+            await partFloorService.createPartFloor(partFloorData);
           }
         }
 
         onNotification('Partie créée avec succès', 'success');
       } else if (partId) {
         // Update the part
+        console.log('Mise à jour de la partie:', partId, formData);
         await partService.updatePart(partId, formData as UpdatePartDto);
 
-        // TODO: Handle updating part floors - this requires more complex logic
-        // to determine which ones to create, update, or delete
+        // Handle updating part floors
+        console.log('Gestion des partFloors pour la modification...');
+
+        // Get existing part floors
+        const existingPartFloors = await partFloorService.getPartFloors({
+          partId: partId,
+          includeDeleted: true
+        });
+        console.log('PartFloors existants:', existingPartFloors.partFloors);
+
+        // Create maps for easier lookup
+        const existingPartFloorsMap = new Map<number, PartFloor>();
+        existingPartFloors.partFloors.forEach(pf => {
+          existingPartFloorsMap.set(pf.levelNumber, pf);
+        });
+
+        // Process each level assignment
+        for (const assignment of levelAssignments) {
+          if (assignment.buildingFloorId && assignment.partFloorData) {
+            const existingPartFloor = existingPartFloorsMap.get(assignment.levelNumber);
+
+            if (existingPartFloor) {
+              // Update existing part floor
+              const updateData: UpdatePartFloorDto = {
+                name: assignment.partFloorData.name,
+                publicCount: assignment.partFloorData.publicCount,
+                staffCount: assignment.partFloorData.staffCount,
+                exploitationSurface: assignment.partFloorData.exploitationSurface,
+                glaSurface: assignment.partFloorData.glaSurface,
+                publicAccessSurface: assignment.partFloorData.publicAccessSurface,
+                buildingFloorId: assignment.buildingFloorId,
+                levelNumber: assignment.partFloorData.levelNumber,
+              };
+              console.log(`Mise à jour partFloor ${existingPartFloor.id}:`, updateData);
+              await partFloorService.updatePartFloor(existingPartFloor.id, updateData);
+            } else {
+              // Create new part floor
+              const createData: CreatePartFloorDto = {
+                ...assignment.partFloorData,
+                buildingFloorId: assignment.buildingFloorId,
+                partId: partId,
+              };
+              console.log('Création nouveau partFloor:', createData);
+              await partFloorService.createPartFloor(createData);
+            }
+          }
+        }
+
+        // Delete part floors that are no longer in the assignments
+        const assignmentLevelNumbers = new Set(levelAssignments.map(a => a.levelNumber));
+        for (const existingPartFloor of existingPartFloors.partFloors) {
+          if (!assignmentLevelNumbers.has(existingPartFloor.levelNumber)) {
+            console.log(`Suppression partFloor ${existingPartFloor.id} (niveau ${existingPartFloor.levelNumber})`);
+            await partFloorService.deletePartFloor(existingPartFloor.id);
+          }
+        }
 
         onNotification('Partie modifiée avec succès', 'success');
       }
