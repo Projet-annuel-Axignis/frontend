@@ -125,8 +125,7 @@ const BuildingsTab: React.FC<BuildingsTabProps> = ({
   const handleRestoreBuilding = async (building: Building) => {
     await withLoading(async () => {
       try {
-        // Note: Assuming there's a restore endpoint, otherwise use update
-        await buildingService.updateBuilding(building.id, {});
+        await buildingService.updateBuilding(building.id, { deletedAt: undefined });
         await loadBuildings();
         onNotification('Bâtiment restauré avec succès', 'success');
       } catch (error) {
@@ -359,14 +358,14 @@ interface BuildingCardProps {
   disabled?: boolean;
 }
 
-const BuildingCard: React.FC<BuildingCardProps> = ({
+const BuildingCard = ({
   building,
   onEdit,
   onDelete,
   onRestore,
   disabled = false,
-}) => {
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+}: BuildingCardProps) => {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
   console.log(building);
