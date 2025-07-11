@@ -112,7 +112,7 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
         const floorsPromises = buildingsData.buildings.map(building =>
           buildingFloorService.getBuildingFloors({
             buildingId: building.id,
-            includeDeleted: true,
+            includeDeleted: true, // Keep all data for PartsTab display
           })
         );
         const floorsResponses = await Promise.all(floorsPromises);
@@ -560,7 +560,6 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
         part={selectedPart}
         buildings={buildings}
         buildingFloors={buildingFloors}
-        includeDeleted={filters.includeDeleted}
         onSubmit={handleDialogSubmit}
       />
     </Box>

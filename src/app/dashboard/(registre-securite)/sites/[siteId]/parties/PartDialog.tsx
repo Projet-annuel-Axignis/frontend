@@ -28,7 +28,7 @@ import {
   TextField,
   Typography
 } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface PartDialogProps {
   open: boolean;
@@ -37,20 +37,18 @@ interface PartDialogProps {
   part?: Part | null;
   buildings: Building[];
   buildingFloors: BuildingFloor[];
-  includeDeleted: boolean;
   onSubmit: (formData: CreatePartDto | UpdatePartDto, levelAssignments: LevelAssignment[], partId?: number) => Promise<void>;
 }
 
-const PartDialog: React.FC<PartDialogProps> = ({
+const PartDialog = ({
   open,
   onClose,
   mode,
   part,
   buildings,
   buildingFloors,
-  includeDeleted,
   onSubmit,
-}) => {
+}: PartDialogProps) => {
   // Form states
   const [formData, setFormData] = useState<CreatePartDto>({
     name: '',
@@ -77,18 +75,34 @@ const PartDialog: React.FC<PartDialogProps> = ({
     return building?.typologies?.some(t => t.code === typologyCode) || false;
   };
 
-  // Load complete part floors data for editing
-  const loadCompletePartFloors = async (partId: number): Promise<PartFloor[]> => {
+  // Load fresh part data from API to avoid using potentially stale data with deleted items
+  const loadFreshPartData = async (partId: number) => {
     try {
       setLoadingPartFloors(true);
+
+      // Load fresh part floors data (without deleted items)
       const response = await partFloorService.getPartFloors({
         partId: partId,
-        includeDeleted: true, // Include deleted to get complete data
+        includeDeleted: false, // Only get active part floors
       });
-      return response.partFloors;
+
+      // We need to get the part data again to have fresh data
+      // For now, we'll use the existing part data but we should ideally fetch it fresh
+      if (part) {
+        console.log('Fresh part floors loaded:', response.partFloors);
+        setFormData({
+          name: part.name,
+          buildingId: part.building?.id || 0,
+          type: part.type || 'PRIVATE',
+          isIcpe: part.isIcpe,
+          erpTypeCodes: part.erpTypes?.length > 0 ? part.erpTypes.map(erpType => erpType.code) : ['J'],
+          habFamilyName: part.habFamily?.name,
+        });
+
+        initializeLevelAssignments(response.partFloors.length || 1, part, response.partFloors);
+      }
     } catch (error) {
-      console.error('Error loading part floors:', error);
-      return [];
+      console.error('Error loading fresh part data:', error);
     } finally {
       setLoadingPartFloors(false);
     }
@@ -109,26 +123,9 @@ const PartDialog: React.FC<PartDialogProps> = ({
         });
         // Start with one level by default
         initializeLevelAssignments(1);
-      } else if (part) {
-        console.log('Part data:', part);
-        setFormData({
-          name: part.name,
-          buildingId: part.building?.id || 0,
-          type: part.type || 'PRIVATE',
-          isIcpe: part.isIcpe,
-          erpTypeCodes: part.erpTypes?.length > 0 ? part.erpTypes.map(erpType => erpType.code) : ['J'],
-          habFamilyName: part.habFamily?.name,
-        });
-
-        // Load complete part floors data for editing
-        if (part.id) {
-          loadCompletePartFloors(part.id).then((completePartFloors) => {
-            console.log('Complete part floors:', completePartFloors);
-            initializeLevelAssignments(completePartFloors.length || 1, part, completePartFloors);
-          });
-        } else {
-          initializeLevelAssignments(part.partFloors?.length || 1, part);
-        }
+      } else if (part && part.id) {
+        // Load fresh part data from API to avoid using potentially stale data with deleted items
+        loadFreshPartData(part.id);
       }
     }
   }, [open, mode, part, buildings]);
@@ -269,7 +266,7 @@ const PartDialog: React.FC<PartDialogProps> = ({
   const getAvailableBuildingFloors = (selectedBuildingId: number) => {
     return buildingFloors
       .filter(floor => floor.building.id === selectedBuildingId)
-      .filter(floor => includeDeleted || !floor.deletedAt);
+      .filter(floor => !floor.deletedAt); // Never show deleted floors in dialog
   };
 
   const handleSubmit = async () => {
@@ -339,7 +336,7 @@ const PartDialog: React.FC<PartDialogProps> = ({
                 label="Bâtiment"
               >
                 {buildings
-                  .filter(building => includeDeleted || !building.deletedAt)
+                  .filter(building => !building.deletedAt) // Never show deleted buildings in dialog
                   .map((building) => (
                     <MenuItem key={building.id} value={building.id}>
                       {building.name}

@@ -78,6 +78,7 @@ export interface UpdateBuildingDto {
   ighClassCodes?: string[];
   erpCategory?: number;
   authorizedUserIds?: string[];
+  deletedAt?: string;
 }
 
 // Types de classification des bâtiments
