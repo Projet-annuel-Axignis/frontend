@@ -117,14 +117,14 @@ const LotDialog = ({
   };
 
   const updateAvailableParts = () => {
-    if (formData.buildingId) {
+    if (formData.buildingId > 0) {
       const partsForBuilding = parts.filter(
         part => part.building?.id === formData.buildingId && !part.deletedAt
       );
       setAvailableParts(partsForBuilding);
 
       // Reset part selection if current selection is not available
-      if (formData.partId && !partsForBuilding.find(p => p.id === formData.partId)) {
+      if (formData.partId > 0 && !partsForBuilding.find(p => p.id === formData.partId)) {
         setFormData(prev => ({ ...prev, partId: 0, partFloorId: 0 }));
       }
     } else {
@@ -136,13 +136,13 @@ const LotDialog = ({
   };
 
   const updateAvailablePartFloors = () => {
-    if (formData.partId) {
+    if (formData.partId > 0) {
       const partFloors = partFloorsMap.get(formData.partId) || [];
       const activePartFloors = partFloors.filter(pf => !pf.deletedAt);
       setAvailablePartFloors(activePartFloors);
 
       // Reset part floor selection if current selection is not available
-      if (formData.partFloorId && !activePartFloors.find(pf => pf.id === formData.partFloorId)) {
+      if (formData.partFloorId > 0 && !activePartFloors.find(pf => pf.id === formData.partFloorId)) {
         setFormData(prev => ({ ...prev, partFloorId: 0 }));
       }
     } else {
@@ -160,15 +160,15 @@ const LotDialog = ({
       errors.name = 'Le nom du lot est obligatoire';
     }
 
-    if (!formData.buildingId) {
+    if (!formData.buildingId || formData.buildingId === 0) {
       errors.buildingId = 'Le bâtiment est obligatoire';
     }
 
-    if (!formData.partId) {
+    if (!formData.partId || formData.partId === 0) {
       errors.partId = 'La partie est obligatoire';
     }
 
-    if (!formData.partFloorId) {
+    if (!formData.partFloorId || formData.partFloorId === 0) {
       errors.partFloorId = 'L\'étage de partie est obligatoire';
     }
 
@@ -244,13 +244,13 @@ const LotDialog = ({
               <InputLabel>Bâtiment *</InputLabel>
               <Select
                 value={
-                  formData.buildingId && buildings.some(b => b.id === formData.buildingId)
+                  formData.buildingId > 0 && buildings.some(b => b.id === formData.buildingId)
                     ? formData.buildingId
                     : ''
                 }
                 onChange={(e) => setFormData(prev => ({
                   ...prev,
-                  buildingId: Number(e.target.value),
+                  buildingId: Number(e.target.value) || 0,
                   partId: 0,
                   partFloorId: 0
                 }))}
@@ -276,17 +276,17 @@ const LotDialog = ({
               <InputLabel>Partie *</InputLabel>
               <Select
                 value={
-                  formData.partId && availableParts.some(p => p.id === formData.partId)
+                  formData.partId > 0 && availableParts.some(p => p.id === formData.partId)
                     ? formData.partId
                     : ''
                 }
                 onChange={(e) => setFormData(prev => ({
                   ...prev,
-                  partId: Number(e.target.value),
+                  partId: Number(e.target.value) || 0,
                   partFloorId: 0
                 }))}
                 label="Partie *"
-                disabled={!formData.buildingId || (!!editingLot) || isSubmitting} // Can't change part when editing
+                disabled={!formData.buildingId || formData.buildingId === 0 || (!!editingLot) || isSubmitting} // Can't change part when editing
               >
                 {availableParts.length === 0 ? (
                   <MenuItem disabled>
@@ -305,7 +305,7 @@ const LotDialog = ({
                   {formErrors.partId}
                 </Typography>
               )}
-              {formData.buildingId && availableParts.length === 0 && (
+              {formData.buildingId > 0 && availableParts.length === 0 && (
                 <Typography variant="caption" color="warning.main" sx={{ mt: 0.5, ml: 1.5 }}>
                   Aucune partie trouvée dans ce bâtiment. Créez d&apos;abord des parties pour pouvoir ajouter des lots.
                 </Typography>
@@ -316,13 +316,13 @@ const LotDialog = ({
               <InputLabel>Étage de partie *</InputLabel>
               <Select
                 value={
-                  formData.partFloorId && availablePartFloors.some(pf => pf.id === formData.partFloorId)
+                  formData.partFloorId > 0 && availablePartFloors.some(pf => pf.id === formData.partFloorId)
                     ? formData.partFloorId
                     : ''
                 }
-                onChange={(e) => setFormData(prev => ({ ...prev, partFloorId: Number(e.target.value) }))}
+                onChange={(e) => setFormData(prev => ({ ...prev, partFloorId: Number(e.target.value) || 0 }))}
                 label="Étage de partie *"
-                disabled={!formData.partId || isSubmitting}
+                disabled={!formData.partId || formData.partId === 0 || isSubmitting}
               >
                 {availablePartFloors.length === 0 ? (
                   <MenuItem disabled>
@@ -341,7 +341,7 @@ const LotDialog = ({
                   {formErrors.partFloorId}
                 </Typography>
               )}
-              {formData.partId && availablePartFloors.length === 0 && (
+              {formData.partId > 0 && availablePartFloors.length === 0 && (
                 <Typography variant="caption" color="warning.main" sx={{ mt: 0.5, ml: 1.5 }}>
                   Aucun étage trouvé dans cette partie. Créez d&apos;abord des étages de partie pour pouvoir ajouter des lots.
                 </Typography>
@@ -349,7 +349,7 @@ const LotDialog = ({
             </FormControl>
 
             {/* Preview of hierarchy */}
-            {formData.buildingId && formData.partId && formData.partFloorId && (
+            {formData.buildingId > 0 && formData.partId > 0 && formData.partFloorId > 0 && (
               <Card>
                 <CardContent>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
