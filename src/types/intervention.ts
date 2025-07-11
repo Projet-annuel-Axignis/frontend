@@ -35,6 +35,7 @@ export interface Intervention {
   endedAt: string;
   type: string;
   terminatedBy: User;
+  periodicity: Periodicity;
 }
 
 export interface CreateInterventionDto {
