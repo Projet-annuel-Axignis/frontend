@@ -1,46 +1,46 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Paper, 
-  Button, 
-  TextField, 
+import { equipmentService } from '@/services/equipmentService';
+import { CreateEquipmentDomainRequest, EquipmentDomain, UpdateEquipmentDomainRequest } from '@/types/equipment';
+import {
+  Add as AddIcon,
+  Delete as DeleteIcon,
+  Edit as EditIcon,
+  Folder as FolderIcon,
+  Refresh as RefreshIcon,
+  Search as SearchIcon,
+  Visibility as ViewIcon
+} from '@mui/icons-material';
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Fab,
   IconButton,
+  Paper,
+  Snackbar,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
-  TableRow,
   TablePagination,
-  Chip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Alert,
-  Snackbar,
-  CircularProgress,
+  TableRow,
+  TextField,
   Tooltip,
-  Card,
-  CardContent,
-  Fab
+  Typography
 } from '@mui/material';
-import {
-  Add as AddIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Search as SearchIcon,
-  Refresh as RefreshIcon,
-  Folder as FolderIcon,
-  Visibility as ViewIcon
-} from '@mui/icons-material';
-import { equipmentService } from '@/services/equipmentService';
-import { EquipmentDomain, CreateEquipmentDomainRequest, UpdateEquipmentDomainRequest } from '@/types/equipment';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useEffect, useState } from 'react';
 
 export default function DomainesPage() {
   const [domains, setDomains] = useState<EquipmentDomain[]>([]);
@@ -79,6 +79,7 @@ export default function DomainesPage() {
 
   useEffect(() => {
     loadDomains();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, rowsPerPage, searchTerm]);
 
   // Gestion des formulaires
@@ -163,7 +164,7 @@ export default function DomainesPage() {
     <Box sx={{ p: 3 }}>
       {/* Header */}
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom sx={{ 
+        <Typography variant="h4" component="h1" gutterBottom sx={{
           fontWeight: 600,
           background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
           backgroundClip: 'text',
@@ -180,7 +181,7 @@ export default function DomainesPage() {
       {/* Statistiques */}
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 4 }}>
         <Box sx={{ flex: '1 1 280px', minWidth: 0 }}>
-          <Card sx={{ 
+          <Card sx={{
             background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
             color: 'white'
           }}>
@@ -214,15 +215,15 @@ export default function DomainesPage() {
             }}
             sx={{ minWidth: 250 }}
           />
-          
+
           <Box sx={{ flexGrow: 1 }} />
-          
+
           <Tooltip title="Actualiser">
             <IconButton onClick={loadDomains} disabled={loading}>
               <RefreshIcon />
             </IconButton>
           </Tooltip>
-          
+
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -279,9 +280,9 @@ export default function DomainesPage() {
                       </Box>
                     </TableCell>
                     <TableCell>
-                      <Chip 
-                        label={domain.serialNumber} 
-                        size="small" 
+                      <Chip
+                        label={domain.serialNumber}
+                        size="small"
                         variant="outlined"
                         sx={{ fontFamily: 'monospace' }}
                       />
@@ -300,8 +301,8 @@ export default function DomainesPage() {
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Modifier">
-                          <IconButton 
-                            size="small" 
+                          <IconButton
+                            size="small"
                             color="primary"
                             onClick={() => handleEdit(domain)}
                           >
@@ -309,8 +310,8 @@ export default function DomainesPage() {
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Supprimer">
-                          <IconButton 
-                            size="small" 
+                          <IconButton
+                            size="small"
                             color="error"
                             onClick={() => handleDelete(domain.id)}
                           >
@@ -325,7 +326,7 @@ export default function DomainesPage() {
             </TableBody>
           </Table>
         </TableContainer>
-        
+
         <TablePagination
           rowsPerPageOptions={[5, 10, 25, 50]}
           component="div"
@@ -358,8 +359,8 @@ export default function DomainesPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog}>Annuler</Button>
-          <Button 
-            onClick={handleSubmit} 
+          <Button
+            onClick={handleSubmit}
             variant="contained"
             disabled={!formData.name.trim()}
             sx={{
@@ -380,8 +381,8 @@ export default function DomainesPage() {
         autoHideDuration={6000}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
       >
-        <Alert 
-          onClose={() => setSnackbar({ ...snackbar, open: false })} 
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
           severity={snackbar.severity}
           sx={{ width: '100%' }}
         >
