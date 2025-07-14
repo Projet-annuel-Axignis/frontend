@@ -128,6 +128,7 @@ const PartDialog = ({
         loadFreshPartData(part.id);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, mode, part, buildings]);
 
   // Initialize level assignments
