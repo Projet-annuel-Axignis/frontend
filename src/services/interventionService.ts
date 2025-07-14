@@ -33,13 +33,13 @@ export const interventionService = {
         intervention.label.toLowerCase().includes(searchLower) ||
         intervention.companyName.toLowerCase().includes(searchLower) ||
         intervention.employeeName.toLowerCase().includes(searchLower) ||
-        intervention.type.toLowerCase().includes(searchLower)
+        intervention.type.name.toLowerCase().includes(searchLower)
       );
     }
 
     if (params.type) {
       interventions = interventions.filter(intervention =>
-        intervention.type === params.type
+        intervention.type.code === params.type
       );
     }
 
