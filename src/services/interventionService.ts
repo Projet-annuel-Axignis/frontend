@@ -1,40 +1,86 @@
+import { api } from '@/lib/api';
 import { CreateInterventionDto, Intervention, UpdateInterventionDto } from '@/types/intervention';
-import axios from 'axios';
 
-const API_URL = '/api/v1/interventions';
+export const interventionService = {
+  async getInterventions(params: {
+    status?: string;
+    type?: string;
+    includeDeleted?: boolean;
+    search?: string;
+  } = {}): Promise<{ interventions: Intervention[]; total: number }> {
+    const searchParams = new URLSearchParams();
+    searchParams.append('limit', '1000');
+    searchParams.append('offset', '0');
+    searchParams.append('sortOrder', 'desc');
+    searchParams.append('sortField', 'createdAt');
 
-const interventionService = {
-  async getAll() {
-    const { data } = await axios.get<Intervention[]>(API_URL);
-    return data;
+    if (params.status) {
+      searchParams.append('filterField', 'status');
+      searchParams.append('filterOp', 'equals');
+      searchParams.append('filter', params.status);
+    }
+    if (params.includeDeleted) {
+      searchParams.append('includeDeleted', 'true');
+    }
+
+    const response = await api.get<{ results: Intervention[]; total: number }>(`/interventions?${searchParams}`);
+    let interventions = response.data.results;
+
+    // Client-side filtering
+    if (params.search) {
+      const searchLower = params.search.toLowerCase();
+      interventions = interventions.filter(intervention =>
+        intervention.label.toLowerCase().includes(searchLower) ||
+        intervention.companyName.toLowerCase().includes(searchLower) ||
+        intervention.employeeName.toLowerCase().includes(searchLower) ||
+        intervention.type.toLowerCase().includes(searchLower)
+      );
+    }
+
+    if (params.type) {
+      interventions = interventions.filter(intervention =>
+        intervention.type === params.type
+      );
+    }
+
+    return {
+      interventions,
+      total: interventions.length,
+    };
   },
-  async getById(id: number) {
-    const { data } = await axios.get<Intervention>(`${API_URL}/${id}`);
-    return data;
+
+  async getIntervention(id: number): Promise<Intervention> {
+    const response = await api.get<Intervention>(`/interventions/${id}`);
+    return response.data;
   },
-  async create(payload: CreateInterventionDto) {
-    const { data } = await axios.post<Intervention>(API_URL, payload);
-    return data;
+
+  async createIntervention(data: CreateInterventionDto): Promise<Intervention> {
+    const response = await api.post<Intervention>('/interventions', data);
+    return response.data;
   },
-  async update(id: number, payload: UpdateInterventionDto) {
-    const { data } = await axios.patch<Intervention>(`${API_URL}/${id}`, payload);
-    return data;
+
+  async updateIntervention(id: number, data: UpdateInterventionDto): Promise<Intervention> {
+    const response = await api.patch<Intervention>(`/interventions/${id}`, data);
+    return response.data;
   },
-  async remove(id: number) {
-    const { data } = await axios.delete(`${API_URL}/${id}`);
-    return data;
+
+  async deleteIntervention(id: number): Promise<void> {
+    await api.delete(`/interventions/${id}`);
   },
-  async start(id: number) {
-    const { data } = await axios.patch<Intervention>(`${API_URL}/${id}/start`);
-    return data;
+
+  async startIntervention(id: number): Promise<Intervention> {
+    const response = await api.patch<Intervention>(`/interventions/${id}/start`);
+    return response.data;
   },
-  async terminate(id: number) {
-    const { data } = await axios.patch<Intervention>(`${API_URL}/${id}/terminate`);
-    return data;
+
+  async terminateIntervention(id: number): Promise<Intervention> {
+    const response = await api.patch<Intervention>(`/interventions/${id}/terminate`);
+    return response.data;
   },
-  async restore(id: number) {
-    const { data } = await axios.patch<Intervention>(`${API_URL}/${id}/restore`);
-    return data;
+
+  async restoreIntervention(id: number): Promise<Intervention> {
+    const response = await api.patch<Intervention>(`/interventions/${id}/restore`);
+    return response.data;
   },
 };
 

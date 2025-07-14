@@ -33,7 +33,7 @@ export interface Intervention {
   plannedAt: string;
   startedAt: string;
   endedAt: string;
-  type: string;
+  type: InterventionType;
   terminatedBy: User;
   periodicity: Periodicity;
 }
