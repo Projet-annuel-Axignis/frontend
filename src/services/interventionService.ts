@@ -73,8 +73,10 @@ export const interventionService = {
     return response.data;
   },
 
-  async terminateIntervention(id: number): Promise<Intervention> {
-    const response = await api.patch<Intervention>(`/interventions/${id}/terminate`);
+  async terminateIntervention(id: number, terminatedById: number): Promise<Intervention> {
+    const response = await api.patch<Intervention>(`/interventions/${id}/terminate`, {
+      terminatedById
+    });
     return response.data;
   },
 
