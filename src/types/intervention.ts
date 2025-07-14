@@ -64,6 +64,7 @@ export interface UpdateInterventionDto {
   terminatedById?: number;
 }
 
+
 export interface InterventionType {
   id: number;
   name: string;
