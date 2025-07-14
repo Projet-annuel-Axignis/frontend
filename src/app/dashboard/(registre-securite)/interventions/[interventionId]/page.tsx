@@ -1,5 +1,6 @@
 'use client';
 
+import { useUser } from '@/app/_providers/UserProvider';
 import { useLoading } from '@/hooks/useLoading';
 import interventionService from '@/services/interventionService';
 import { Intervention, InterventionStatus } from '@/types/intervention';
@@ -37,6 +38,7 @@ const statusLabels: Record<InterventionStatus, string> = {
 
 export default function InterventionDetailPage() {
   const params = useParams();
+  const { user } = useUser();
   const { withLoading } = useLoading();
 
   const interventionId = parseInt(params.interventionId as string);
@@ -73,7 +75,7 @@ export default function InterventionDetailPage() {
   const handleTerminate = async () => {
     if (!intervention) return;
     try {
-      await interventionService.terminateIntervention(intervention.id);
+      await interventionService.terminateIntervention(intervention.id, user?.id ?? 0);
       await loadIntervention();
     } catch (error) {
       console.error('Erreur lors de la terminaison:', error);
@@ -296,4 +298,4 @@ export default function InterventionDetailPage() {
       </Box>
     </Box>
   );
-} 
+}
