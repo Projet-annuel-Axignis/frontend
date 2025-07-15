@@ -14,6 +14,9 @@ import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
 import StorageIcon from '@mui/icons-material/Storage';
 import SupportRoundedIcon from '@mui/icons-material/SupportRounded';
+import InventoryIcon from '@mui/icons-material/Inventory';
+import DescriptionIcon from '@mui/icons-material/Description';
+import ArticleIcon from '@mui/icons-material/Article';
 import {
   Badge,
   Box,
@@ -423,8 +426,9 @@ export default function Sidebar() {
                     sx={{ py: 0.75, mb: 0.5, width: '100%' }}
                     isActive={isActive('/dashboard/produits')}
                   >
+                    <InventoryIcon sx={{ mr: 1.5, fontSize: '1rem', color: 'var(--color-axignis-primary)' }} />
                     <Typography variant="body2" color="textSecondary">
-                      📦 Produits
+                      Produits
                     </Typography>
                   </StyledListItemButton>
                 </Link>
@@ -433,8 +437,9 @@ export default function Sidebar() {
                     sx={{ py: 0.75, mb: 0.5, width: '100%' }}
                     isActive={isActive('/dashboard/types-documents')}
                   >
+                    <DescriptionIcon sx={{ mr: 1.5, fontSize: '1rem', color: 'var(--color-axignis-primary)' }} />
                     <Typography variant="body2" color="textSecondary">
-                      📄 Types de documents
+                      Types de documents
                     </Typography>
                   </StyledListItemButton>
                 </Link>
@@ -443,8 +448,9 @@ export default function Sidebar() {
                     sx={{ py: 0.75, mb: 0.5, width: '100%' }}
                     isActive={isActive('/dashboard/documents')}
                   >
+                    <ArticleIcon sx={{ mr: 1.5, fontSize: '1rem', color: 'var(--color-axignis-primary)' }} />
                     <Typography variant="body2" color="textSecondary">
-                      📋 Documents
+                      Documents
                     </Typography>
                   </StyledListItemButton>
                 </Link>
