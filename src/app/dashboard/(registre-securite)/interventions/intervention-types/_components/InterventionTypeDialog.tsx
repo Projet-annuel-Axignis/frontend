@@ -4,7 +4,7 @@ import {
   CreateInterventionTypeDto,
   InterventionType,
   UpdateInterventionTypeDto
-} from '@/services/interventionTypeService';
+} from '@/types/intervention';
 import {
   Button,
   Dialog,
