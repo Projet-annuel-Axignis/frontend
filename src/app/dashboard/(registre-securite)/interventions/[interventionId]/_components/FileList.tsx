@@ -94,10 +94,8 @@ const FileList: React.FC<FileListProps> = ({
         // Utiliser le service pour récupérer les fichiers d'un rapport
         filesData = await fileService.getReportFiles(entityId);
       } else {
-        // Pour les observations, utiliser une route similaire
-        const response = await fetch(`/api/v1/observations/${entityId}/files`);
-        if (!response.ok) throw new Error('Erreur lors du chargement des fichiers');
-        filesData = await response.json();
+        // Utiliser le service pour récupérer les fichiers d'une observation
+        filesData = await fileService.getObservationFiles(entityId);
       }
       setFiles(filesData || []);
     } catch (error) {
@@ -131,10 +129,7 @@ const FileList: React.FC<FileListProps> = ({
       if (entityType === 'report') {
         await fileService.removeFileFromReport(entityId, file.id);
       } else {
-        const response = await fetch(`/api/v1/observations/${entityId}/files/${file.id}`, {
-          method: 'DELETE'
-        });
-        if (!response.ok) throw new Error('Erreur lors de la suppression');
+        await fileService.removeFileFromObservation(entityId, file.id);
       }
 
       await loadFiles();

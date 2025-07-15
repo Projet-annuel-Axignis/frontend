@@ -41,20 +41,8 @@ const FileUpload: React.FC<FileUploadProps> = ({
           // Upload direct vers le rapport
           await fileService.uploadReportFile(entityId, file);
         } else {
-          // Pour les observations, garder l'ancien processus
-          // 1. Upload du fichier physique
-          const formData = new FormData();
-          formData.append('file', file);
-
-          const uploadResponse = await fileService.uploadFile(formData);
-
-          // 2. Attacher le fichier à l'entité
-          const response = await fetch(`/api/v1/observations/${entityId}/files`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ fileId: uploadResponse.id })
-          });
-          if (!response.ok) throw new Error('Erreur lors de l\'attachement du fichier');
+          // Upload direct vers l'observation
+          await fileService.uploadObservationFile(entityId, file);
         }
       }
 

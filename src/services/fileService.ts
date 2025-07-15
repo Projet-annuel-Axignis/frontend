@@ -8,6 +8,12 @@ export const fileService = {
     return response.data;
   },
 
+  // Obtenir tous les fichiers attachés à une observation
+  async getObservationFiles(observationId: number): Promise<File[]> {
+    const response = await api.get<File[]>(`/observations/${observationId}/files`);
+    return response.data;
+  },
+
   // Obtenir un fichier spécifique
   async getFile(id: number): Promise<File> {
     const response = await api.get<File>(`/files/${id}`);
@@ -17,6 +23,12 @@ export const fileService = {
   // Attacher un fichier à un rapport
   async attachFileToReport(reportId: number, fileId: number): Promise<File> {
     const response = await api.post<File>(`/reports/${reportId}/files`, { fileId });
+    return response.data;
+  },
+
+  // Attacher un fichier à une observation
+  async attachFileToObservation(observationId: number, fileId: number): Promise<File> {
+    const response = await api.post<File>(`/observations/${observationId}/files`, { fileId });
     return response.data;
   },
 
@@ -31,9 +43,25 @@ export const fileService = {
     return response.data;
   },
 
+  // Uploader un fichier directement vers une observation
+  async uploadObservationFile(observationId: number, file: globalThis.File): Promise<File> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await api.post<File>(`/observations/${observationId}/files`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
+
   // Supprimer un fichier d'un rapport
   async removeFileFromReport(reportId: number, fileId: number): Promise<void> {
     await api.delete(`/reports/${reportId}/files/${fileId}`);
+  },
+
+  // Supprimer un fichier d'une observation
+  async removeFileFromObservation(observationId: number, fileId: number): Promise<void> {
+    await api.delete(`/observations/${observationId}/files/${fileId}`);
   },
 
   // Uploader un fichier
