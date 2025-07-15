@@ -238,162 +238,181 @@ const InterventionDialog = ({
           </Alert>
         )}
 
-        <Grid container spacing={2} sx={{ mt: 1 }}>
-          {/* Libellé */}
-          <Grid size={{ xs: 12 }}>
-            <TextField
-              fullWidth
-              label="Libellé *"
-              value={formData.label}
-              onChange={(e) => handleFieldChange('label', e.target.value)}
-              error={!!errors.label}
-              helperText={errors.label}
-              placeholder="ex: Contrôle annuel des ascenseurs"
-            />
-          </Grid>
+        <Box sx={{ mt: 2 }}>
+          {/* Section : Informations générales */}
+          <Typography variant="h6" gutterBottom sx={{ color: 'primary.main', mb: 2 }}>
+            Informations générales
+          </Typography>
 
-          {/* Entreprise et Employé */}
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextField
-              fullWidth
-              label="Entreprise *"
-              value={formData.companyName}
-              onChange={(e) => handleFieldChange('companyName', e.target.value)}
-              error={!!errors.companyName}
-              helperText={errors.companyName}
-              placeholder="Nom de l'entreprise"
-            />
-          </Grid>
+          <Grid container spacing={2} sx={{ mb: 4 }}>
+            {/* Libellé */}
+            <Grid size={{ xs: 12 }}>
+              <TextField
+                fullWidth
+                label="Libellé *"
+                value={formData.label}
+                onChange={(e) => handleFieldChange('label', e.target.value)}
+                error={!!errors.label}
+                helperText={errors.label}
+                placeholder="ex: Contrôle annuel des ascenseurs"
+              />
+            </Grid>
 
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextField
-              fullWidth
-              label="Employé *"
-              value={formData.employeeName}
-              onChange={(e) => handleFieldChange('employeeName', e.target.value)}
-              error={!!errors.employeeName}
-              helperText={errors.employeeName}
-              placeholder="Nom de l'employé"
-            />
-          </Grid>
-
-          {/* Type d'intervention */}
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <Autocomplete
-              options={interventionTypes}
-              getOptionLabel={(option) => `${option.name} (${option.code})`}
-              value={selectedType}
-              onChange={(_, newValue) => handleFieldChange('typeId', newValue?.id || null)}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Type d'intervention *"
-                  error={!!errors.typeId}
-                  helperText={errors.typeId}
-                />
-              )}
-              renderOption={(props, option) => (
-                <Box component="li" {...props}>
-                  <Box>
-                    <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                      {option.name}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Code: {option.code}
-                    </Typography>
+            {/* Type d'intervention */}
+            <Grid size={{ xs: 12 }}>
+              <Autocomplete
+                options={interventionTypes}
+                getOptionLabel={(option) => `${option.name} (${option.code})`}
+                value={selectedType}
+                onChange={(_, newValue) => handleFieldChange('typeId', newValue?.id || null)}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Type d'intervention *"
+                    error={!!errors.typeId}
+                    helperText={errors.typeId}
+                  />
+                )}
+                renderOption={(props, option) => (
+                  <Box component="li" {...props}>
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                        {option.name}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Code: {option.code}
+                      </Typography>
+                    </Box>
                   </Box>
-                </Box>
-              )}
-            />
+                )}
+              />
+            </Grid>
+
+            {/* Statut et Périodicité */}
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <FormControl fullWidth error={!!errors.status}>
+                <InputLabel>Statut *</InputLabel>
+                <Select
+                  value={formData.status}
+                  onChange={(e) => handleFieldChange('status', e.target.value as InterventionStatus)}
+                  label="Statut *"
+                >
+                  {Object.entries(statusLabels).map(([key, label]) => (
+                    <MenuItem key={key} value={key}>
+                      {label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <FormControl fullWidth error={!!errors.periodicity}>
+                <InputLabel>Périodicité *</InputLabel>
+                <Select
+                  value={formData.periodicity}
+                  onChange={(e) => handleFieldChange('periodicity', e.target.value as Periodicity)}
+                  label="Périodicité *"
+                >
+                  {Object.entries(periodicityLabels).map(([key, label]) => (
+                    <MenuItem key={key} value={key}>
+                      {label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
           </Grid>
 
-          {/* Statut et Périodicité */}
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <FormControl fullWidth error={!!errors.status}>
-              <InputLabel>Statut *</InputLabel>
-              <Select
-                value={formData.status}
-                onChange={(e) => handleFieldChange('status', e.target.value as InterventionStatus)}
-                label="Statut *"
-              >
-                {Object.entries(statusLabels).map(([key, label]) => (
-                  <MenuItem key={key} value={key}>
-                    {label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+          {/* Section : Intervenants */}
+          <Typography variant="h6" gutterBottom sx={{ color: 'primary.main', mb: 2 }}>
+            Intervenants
+          </Typography>
+
+          <Grid container spacing={2} sx={{ mb: 4 }}>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField
+                fullWidth
+                label="Entreprise *"
+                value={formData.companyName}
+                onChange={(e) => handleFieldChange('companyName', e.target.value)}
+                error={!!errors.companyName}
+                helperText={errors.companyName}
+                placeholder="Nom de l'entreprise"
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField
+                fullWidth
+                label="Employé *"
+                value={formData.employeeName}
+                onChange={(e) => handleFieldChange('employeeName', e.target.value)}
+                error={!!errors.employeeName}
+                helperText={errors.employeeName}
+                placeholder="Nom de l'employé"
+              />
+            </Grid>
           </Grid>
 
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <FormControl fullWidth error={!!errors.periodicity}>
-              <InputLabel>Périodicité *</InputLabel>
-              <Select
-                value={formData.periodicity}
-                onChange={(e) => handleFieldChange('periodicity', e.target.value as Periodicity)}
-                label="Périodicité *"
-              >
-                {Object.entries(periodicityLabels).map(([key, label]) => (
-                  <MenuItem key={key} value={key}>
-                    {label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
+          {/* Section : Planning */}
+          <Typography variant="h6" gutterBottom sx={{ color: 'primary.main', mb: 2 }}>
+            Planning
+          </Typography>
 
-          {/* Dates */}
-          <Grid size={{ xs: 12, sm: 4 }}>
-            <TextField
-              fullWidth
-              type="date"
-              label="Date prévue"
-              value={formData.plannedAt}
-              onChange={(e) => handleFieldChange('plannedAt', e.target.value)}
-              error={!!errors.plannedAt}
-              helperText={errors.plannedAt}
-              slotProps={{
-                inputLabel: {
-                  shrink: true,
-                },
-              }}
-            />
-          </Grid>
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12, sm: 4 }}>
+              <TextField
+                fullWidth
+                type="date"
+                label="Date prévue"
+                value={formData.plannedAt}
+                onChange={(e) => handleFieldChange('plannedAt', e.target.value)}
+                error={!!errors.plannedAt}
+                helperText={errors.plannedAt}
+                slotProps={{
+                  inputLabel: {
+                    shrink: true,
+                  },
+                }}
+              />
+            </Grid>
 
-          <Grid size={{ xs: 12, sm: 4 }}>
-            <TextField
-              fullWidth
-              type="date"
-              label="Date de début"
-              value={formData.startedAt}
-              onChange={(e) => handleFieldChange('startedAt', e.target.value)}
-              error={!!errors.startedAt}
-              helperText={errors.startedAt}
-              slotProps={{
-                inputLabel: {
-                  shrink: true,
-                },
-              }}
-            />
-          </Grid>
+            <Grid size={{ xs: 12, sm: 4 }}>
+              <TextField
+                fullWidth
+                type="date"
+                label="Date de début"
+                value={formData.startedAt}
+                onChange={(e) => handleFieldChange('startedAt', e.target.value)}
+                error={!!errors.startedAt}
+                helperText={errors.startedAt}
+                slotProps={{
+                  inputLabel: {
+                    shrink: true,
+                  },
+                }}
+              />
+            </Grid>
 
-          <Grid size={{ xs: 12, sm: 4 }}>
-            <TextField
-              fullWidth
-              type="date"
-              label="Date de fin"
-              value={formData.endedAt}
-              onChange={(e) => handleFieldChange('endedAt', e.target.value)}
-              error={!!errors.endedAt}
-              helperText={errors.endedAt}
-              slotProps={{
-                inputLabel: {
-                  shrink: true,
-                },
-              }}
-            />
+            <Grid size={{ xs: 12, sm: 4 }}>
+              <TextField
+                fullWidth
+                type="date"
+                label="Date de fin"
+                value={formData.endedAt}
+                onChange={(e) => handleFieldChange('endedAt', e.target.value)}
+                error={!!errors.endedAt}
+                helperText={errors.endedAt}
+                slotProps={{
+                  inputLabel: {
+                    shrink: true,
+                  },
+                }}
+              />
+            </Grid>
           </Grid>
-        </Grid>
+        </Box>
       </DialogContent>
 
       <DialogActions sx={{ p: 2.5 }}>
