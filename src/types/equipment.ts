@@ -6,6 +6,7 @@ export interface EquipmentDomain {
   serialNumber: string;
   createdAt: string;
   updatedAt: string;
+  deletedAt: string | null;
 }
 
 export interface EquipmentFamily {

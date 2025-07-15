@@ -10,7 +10,7 @@ import {
 
 export const equipmentService = {
   // Domaines d'équipements
-  async getDomains(page: number = 1, limit: number = 10, search?: string): Promise<ServerPaginatedResponse<EquipmentDomain>> {
+  async getDomains(page: number = 1, limit: number = 10, search?: string, showDeleted: boolean = false): Promise<ServerPaginatedResponse<EquipmentDomain>> {
     const params = new URLSearchParams();
     
     if (page) {
@@ -23,6 +23,10 @@ export const equipmentService = {
     
     if (search) {
       params.append('search', search);
+    }
+    
+    if (showDeleted) {
+      params.append('includeDeleted', 'true');
     }
     
     const queryString = params.toString() ? `?${params.toString()}` : '';
@@ -51,8 +55,13 @@ export const equipmentService = {
   },
 
   async deleteDomain(id: string): Promise<ApiResponse<void>> {
-    const response = await api.delete(`/equipments/domains/${id}`);
-    return response.data;
+    try {
+      const response = await api.delete(`/equipments/domains/${id}`);
+      return response.data;
+    } catch (error) {
+      // Relancer l'erreur pour que le composant puisse la gérer
+      throw error;
+    }
   },
   
   async restoreDomain(id: string): Promise<ApiResponse<EquipmentDomain>> {

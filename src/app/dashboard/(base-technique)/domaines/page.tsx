@@ -26,7 +26,8 @@ import {
   Tooltip,
   Card,
   CardContent,
-  Fab
+  Fab,
+  Switch
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -46,12 +47,15 @@ export default function DomainesPage() {
   const [domains, setDomains] = useState<EquipmentDomain[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showDeleted, setShowDeleted] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [total, setTotal] = useState(0);
   const [openDialog, setOpenDialog] = useState(false);
   const [editingDomain, setEditingDomain] = useState<EquipmentDomain | null>(null);
   const [formData, setFormData] = useState<CreateEquipmentDomainRequest>({ name: '', serialNumber: '' });
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [domainToDelete, setDomainToDelete] = useState<string | null>(null);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
     open: false,
     message: '',
@@ -62,11 +66,11 @@ export default function DomainesPage() {
   const loadDomains = async () => {
     try {
       setLoading(true);
-      const response = await equipmentService.getDomains(page + 1, rowsPerPage, searchTerm);
+      const response = await equipmentService.getDomains(page + 1, rowsPerPage, searchTerm, showDeleted);
       console.log(response);
       // Adapter la structure de réponse
-      setDomains(response.results);
-      setTotal(response.totalResults);
+      setDomains(response.results || []);
+      setTotal(response.totalResults || 0);
     } catch (error) {
       console.error('Erreur lors du chargement des domaines:', error);
       setSnackbar({
@@ -82,7 +86,7 @@ export default function DomainesPage() {
   useEffect(() => {
     loadDomains();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, rowsPerPage, searchTerm]);
+  }, [page, rowsPerPage, searchTerm, showDeleted]);
 
   // Vérifier si les données sont chargées au montage
   useEffect(() => {
@@ -120,24 +124,84 @@ export default function DomainesPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce domaine ?')) {
-      try {
-        await equipmentService.deleteDomain(id);
-        setSnackbar({
-          open: true,
-          message: 'Domaine supprimé avec succès',
-          severity: 'success'
-        });
-        loadDomains();
-      } catch (error) {
-        console.error('Erreur lors de la suppression:', error);
-        setSnackbar({
-          open: true,
-          message: 'Erreur lors de la suppression',
-          severity: 'error'
-        });
+  const openDeleteDialog = (id: string) => {
+    setDomainToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const closeDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setDomainToDelete(null);
+  };
+
+  const handleDelete = async () => {
+    if (!domainToDelete) return;
+    
+    try {
+      setLoading(true);
+      await equipmentService.deleteDomain(domainToDelete);
+      setSnackbar({
+        open: true,
+        message: 'Domaine supprimé avec succès',
+        severity: 'success'
+      });
+      loadDomains();
+    } catch (error: any) {
+      console.error('Erreur lors de la suppression:', error);
+      // Gestion des erreurs spécifiques
+      let errorMessage = 'Erreur lors de la suppression';
+      
+      if (error.response) {
+        if (error.response.status === 409) {
+          errorMessage = 'Ce domaine est utilisé par d\'autres éléments et ne peut pas être supprimé';
+        } else if (error.response.status === 404) {
+          errorMessage = 'Domaine introuvable';
+        } else if (error.response.data && error.response.data.message) {
+          errorMessage = error.response.data.message;
+        }
       }
+      
+      setSnackbar({
+        open: true,
+        message: errorMessage,
+        severity: 'error'
+      });
+    } finally {
+      setLoading(false);
+      closeDeleteDialog();
+    }
+  };
+
+  const handleRestore = async (id: string) => {
+    try {
+      setLoading(true);
+      await equipmentService.restoreDomain(id);
+      setSnackbar({
+        open: true,
+        message: 'Domaine restauré avec succès',
+        severity: 'success'
+      });
+      loadDomains();
+    } catch (error: any) {
+      console.error('Erreur lors de la restauration:', error);
+      // Gestion des erreurs spécifiques
+      let errorMessage = 'Erreur lors de la restauration';
+      
+      if (error.response) {
+        if (error.response.status === 404) {
+          errorMessage = 'Domaine introuvable';
+        } else if (error.response.data && error.response.data.message) {
+          errorMessage = error.response.data.message;
+        }
+      }
+      
+      setSnackbar({
+        open: true,
+        message: errorMessage,
+        severity: 'error'
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -227,6 +291,29 @@ export default function DomainesPage() {
             sx={{ minWidth: 250 }}
           />
           
+          <Box 
+            sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 1,
+              ml: 2,
+              border: '1px solid',
+              borderColor: 'divider',
+              borderRadius: 1,
+              px: 2,
+              py: 0.5
+            }}
+          >
+            <Typography variant="body2" color="text.secondary">
+              Inclure les supprimés
+            </Typography>
+            <Switch
+              checked={showDeleted}
+              onChange={(e) => setShowDeleted(e.target.checked)}
+              size="small"
+            />
+          </Box>
+          
           <Box sx={{ flexGrow: 1 }} />
           
           <Tooltip title="Actualiser">
@@ -281,12 +368,37 @@ export default function DomainesPage() {
                 </TableRow>
               ) : (
                 domains.map((domain) => (
-                  <TableRow key={domain.id} hover>
+                  <TableRow 
+                    key={domain.id} 
+                    hover
+                    sx={{ 
+                      opacity: domain.deletedAt ? 0.6 : 1,
+                      backgroundColor: domain.deletedAt ? 'rgba(244, 67, 54, 0.05)' : 'inherit'
+                    }}
+                  >
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <FolderIcon sx={{ color: 'var(--color-axignis-primary)' }} />
-                        <Typography variant="body1" fontWeight={500}>
+                        <FolderIcon sx={{ color: domain.deletedAt ? 'text.disabled' : 'var(--color-axignis-primary)' }} />
+                        <Typography 
+                          variant="body1" 
+                          fontWeight={500}
+                          sx={{ 
+                            textDecoration: domain.deletedAt ? 'line-through' : 'none',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1
+                          }}
+                        >
                           {domain.name}
+                          {domain.deletedAt && (
+                            <Chip 
+                              label="Supprimé" 
+                              size="small" 
+                              color="error" 
+                              variant="outlined" 
+                              sx={{ fontSize: '0.7rem', height: 20 }} 
+                            />
+                          )}
                         </Typography>
                       </Box>
                     </TableCell>
@@ -306,29 +418,43 @@ export default function DomainesPage() {
                     </TableCell>
                     <TableCell align="center">
                       <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-                        <Tooltip title="Voir les détails">
-                          <IconButton size="small" color="primary">
-                            <ViewIcon />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Modifier">
-                          <IconButton 
-                            size="small" 
-                            color="primary"
-                            onClick={() => handleEdit(domain)}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Supprimer">
-                          <IconButton 
-                            size="small" 
-                            color="error"
-                            onClick={() => handleDelete(domain.id)}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Tooltip>
+                        {domain.deletedAt ? (
+                          <Tooltip title="Restaurer">
+                            <IconButton 
+                              size="small" 
+                              color="success"
+                              onClick={() => handleRestore(domain.id)}
+                            >
+                              <RefreshIcon />
+                            </IconButton>
+                          </Tooltip>
+                        ) : (
+                          <>
+                            <Tooltip title="Voir les détails">
+                              <IconButton size="small" color="primary">
+                                <ViewIcon />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Modifier">
+                              <IconButton 
+                                size="small" 
+                                color="primary"
+                                onClick={() => handleEdit(domain)}
+                              >
+                                <EditIcon />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Supprimer">
+                              <IconButton 
+                                size="small" 
+                                color="error"
+                                onClick={() => openDeleteDialog(domain.id)}
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            </Tooltip>
+                          </>
+                        )}
                       </Box>
                     </TableCell>
                   </TableRow>
@@ -397,6 +523,60 @@ export default function DomainesPage() {
         </DialogActions>
       </Dialog>
 
+      {/* Dialog pour confirmer la suppression */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={closeDeleteDialog}
+        maxWidth="sm"
+        PaperProps={{
+          sx: {
+            borderTop: '4px solid #f44336',
+            borderRadius: '4px',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+          }
+        }}
+      >
+        <DialogTitle sx={{ 
+          pb: 1,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1
+        }}>
+          <DeleteIcon color="error" /> Confirmation de suppression
+        </DialogTitle>
+        <DialogContent sx={{ pt: 2 }}>
+          <Typography variant="body1">
+            Êtes-vous sûr de vouloir supprimer ce domaine d&apos;équipement ?
+          </Typography>
+          <Box sx={{ mt: 2, bgcolor: 'rgba(244, 67, 54, 0.08)', p: 2, borderRadius: 1 }}>
+            <Typography variant="body2" color="text.secondary">
+              <strong>Note :</strong> Cette action effectuera une suppression réversible. Le domaine pourra être restauré ultérieurement en activant l&apos;option &quot;Inclure les supprimés&quot;.
+            </Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 3, justifyContent: 'space-between' }}>
+          <Button 
+            onClick={closeDeleteDialog} 
+            variant="outlined"
+            startIcon={<RefreshIcon />}
+          >
+            Annuler
+          </Button>
+          <Button 
+            onClick={handleDelete} 
+            variant="contained"
+            color="error"
+            startIcon={<DeleteIcon />}
+            sx={{ 
+              bgcolor: 'error.main',
+              '&:hover': { bgcolor: 'error.dark' }
+            }}
+          >
+            Confirmer la suppression
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/* Snackbar pour les notifications */}
       <Snackbar
         open={snackbar.open}
@@ -432,4 +612,4 @@ export default function DomainesPage() {
       </Fab>
     </Box>
   );
-} 
+}
