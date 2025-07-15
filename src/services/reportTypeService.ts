@@ -1,27 +1,10 @@
 import { api } from '@/lib/api';
 import { PaginatedResponseDto } from '@/types/apiTypes';
-
-// Utiliser les types de intervention.ts
-export type Periodicity = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY';
-
-export interface ReportType {
-  id: number;
-  name: string;
-  code: string;
-  periodicity: Periodicity;
-}
-
-export interface CreateReportTypeDto {
-  name: string;
-  code: string;
-  periodicity: Periodicity;
-}
-
-export interface UpdateReportTypeDto {
-  name?: string;
-  code?: string;
-  periodicity?: Periodicity;
-}
+import {
+  CreateReportTypeDto,
+  ReportType,
+  UpdateReportTypeDto
+} from '@/types/intervention';
 
 export interface ReportTypeFilters {
   search?: string;

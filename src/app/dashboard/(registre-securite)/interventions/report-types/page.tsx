@@ -1,10 +1,12 @@
 'use client';
 
 import DashBoardHeader from '@/components/dashboard/DashBoardHeader';
-import reportTypeService, { CreateReportTypeDto, ReportType, UpdateReportTypeDto } from '@/services/reportTypeService';
+import reportTypeService from '@/services/reportTypeService';
+import { CreateReportTypeDto, ReportType, UpdateReportTypeDto } from '@/types/intervention';
 import {
   Add as AddIcon,
-  Description as DescriptionIcon
+  Description as DescriptionIcon,
+  Search as SearchIcon
 } from '@mui/icons-material';
 import {
   Alert,
@@ -19,7 +21,9 @@ import {
   DialogTitle,
   Divider,
   Grid,
+  InputAdornment,
   Snackbar,
+  TextField,
   Typography,
   useMediaQuery,
   useTheme
@@ -27,7 +31,6 @@ import {
 import { useEffect, useState } from 'react';
 import ReportTypeCard from './_components/ReportTypeCard';
 import ReportTypeDialog from './_components/ReportTypeDialog';
-import ReportTypeFilters from './_components/ReportTypeFilters';
 import ReportTypeTable from './_components/ReportTypeTable';
 
 export default function ReportTypesPage() {
@@ -39,11 +42,8 @@ export default function ReportTypesPage() {
   const [allReportTypes, setAllReportTypes] = useState<ReportType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // État des filtres
+  // État du filtre de recherche
   const [search, setSearch] = useState('');
-  const [isActive, setIsActive] = useState<boolean | undefined>(undefined);
-  const [sortBy, setSortBy] = useState('name');
-  const [sortOrder, setSortOrder] = useState('asc');
 
   // État des dialogues
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -69,6 +69,12 @@ export default function ReportTypesPage() {
 
   // Filtrage côté client
   useEffect(() => {
+    // Vérification de sécurité pour s'assurer qu'allReportTypes est un tableau
+    if (!Array.isArray(allReportTypes)) {
+      setReportTypes([]);
+      return;
+    }
+
     let filtered = [...allReportTypes];
 
     // Filtre par recherche
@@ -78,36 +84,12 @@ export default function ReportTypesPage() {
         (reportType) =>
           reportType.name.toLowerCase().includes(searchLower) ||
           reportType.code.toLowerCase().includes(searchLower) ||
-          (reportType.description && reportType.description.toLowerCase().includes(searchLower))
+          reportType.periodicity.toLowerCase().includes(searchLower)
       );
     }
 
-    // Filtre par statut
-    if (isActive !== undefined) {
-      filtered = filtered.filter((reportType) => reportType.isActive === isActive);
-    }
-
-    // Tri
-    filtered.sort((a, b) => {
-      let aValue: any = a[sortBy as keyof ReportType];
-      let bValue: any = b[sortBy as keyof ReportType];
-
-      // Gestion des valeurs nulles/undefined
-      if (aValue == null) aValue = '';
-      if (bValue == null) bValue = '';
-
-      if (typeof aValue === 'string') aValue = aValue.toLowerCase();
-      if (typeof bValue === 'string') bValue = bValue.toLowerCase();
-
-      if (sortOrder === 'asc') {
-        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
-      } else {
-        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
-      }
-    });
-
     setReportTypes(filtered);
-  }, [allReportTypes, search, isActive, sortBy, sortOrder]);
+  }, [allReportTypes, search]);
 
   const loadReportTypes = async () => {
     try {
@@ -116,13 +98,15 @@ export default function ReportTypesPage() {
         limit: 1000,
         page: 1,
         search: '',
-        isActive: undefined,
         sortBy: 'name',
         sortOrder: 'asc'
       });
-      setAllReportTypes(response.data);
-    } catch {
+      // response est déjà de type ReportTypeResponse avec { data, total, page, limit }
+      setAllReportTypes(response.data || []);
+    } catch (error) {
+      console.error('Erreur lors du chargement des types de rapport:', error);
       showNotification('Erreur lors du chargement des types de rapport', 'error');
+      setAllReportTypes([]); // S'assurer qu'on a toujours un tableau
     } finally {
       setIsLoading(false);
     }
@@ -173,16 +157,9 @@ export default function ReportTypesPage() {
     setEditDialogOpen(true);
   };
 
-  const handleToggleStatus = (reportType: ReportType) => {
+  const handleDelete = (reportType: ReportType) => {
     setSelectedReportType(reportType);
     setDeleteDialogOpen(true);
-  };
-
-  const resetFilters = () => {
-    setSearch('');
-    setIsActive(undefined);
-    setSortBy('name');
-    setSortOrder('asc');
   };
 
   return (
@@ -229,18 +206,24 @@ export default function ReportTypesPage() {
 
           <Divider sx={{ mb: 3 }} />
 
-          {/* Filtres */}
-          <ReportTypeFilters
-            search={search}
-            onSearchChange={setSearch}
-            isActive={isActive}
-            onIsActiveChange={setIsActive}
-            sortBy={sortBy}
-            onSortByChange={setSortBy}
-            sortOrder={sortOrder}
-            onSortOrderChange={setSortOrder}
-            onReset={resetFilters}
-          />
+          {/* Champ de recherche simplifié */}
+          <Box sx={{ mb: 3, maxWidth: 400 }}>
+            <TextField
+              label="Rechercher"
+              placeholder="Code, nom ou périodicité..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              fullWidth
+              variant="outlined"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon color="action" />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Box>
 
           {/* Vue conditionnelle desktop/mobile */}
           {isMobile ? (
@@ -250,7 +233,7 @@ export default function ReportTypesPage() {
                   <ReportTypeCard
                     reportType={reportType}
                     onEdit={handleEdit}
-                    onToggleStatus={handleToggleStatus}
+                    onDelete={handleDelete}
                   />
                 </Grid>
               ))}
@@ -259,7 +242,7 @@ export default function ReportTypesPage() {
             <ReportTypeTable
               reportTypes={reportTypes}
               onEdit={handleEdit}
-              onToggleStatus={handleToggleStatus}
+              onDelete={handleDelete}
             />
           )}
         </CardContent>
