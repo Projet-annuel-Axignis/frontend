@@ -641,11 +641,13 @@ export default function InterventionReportsPage() {
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
-        PaperProps={{
-          sx: {
-            boxShadow: 3,
-            borderRadius: 2,
-            minWidth: 180,
+        slotProps={{
+          paper: {
+            sx: {
+              boxShadow: 3,
+              borderRadius: 2,
+              minWidth: 180,
+            },
           },
         }}
       >
