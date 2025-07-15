@@ -6,12 +6,22 @@ import interventionService from '@/services/interventionService';
 import interventionTypeService from '@/services/interventionTypeService';
 import { Intervention, InterventionStatus, InterventionType, UpdateInterventionDto } from '@/types/intervention';
 import {
+  CheckCircle as CheckCircleIcon,
   Delete as DeleteIcon,
   Edit as EditIcon,
   PlayArrow as PlayArrowIcon,
   Restore as RestoreIcon,
+  Schedule as ScheduleIcon,
   Stop as StopIcon
 } from '@mui/icons-material';
+import {
+  Timeline,
+  TimelineConnector,
+  TimelineContent,
+  TimelineDot,
+  TimelineItem,
+  TimelineSeparator
+} from '@mui/lab';
 import {
   Box,
   Button,
@@ -257,63 +267,95 @@ export default function InterventionDetailPage() {
           </Card>
         </Box>
 
-        {/* Dates et planning */}
+        {/* Timeline des dates */}
         <Card>
           <CardContent>
             <Typography variant="h6" gutterBottom color="primary">
-              Planning et dates
+              Timeline de l&apos;intervention
             </Typography>
 
-            <Box sx={{
-              display: 'grid',
-              gridTemplateColumns: {
-                xs: '1fr',
-                sm: 'repeat(2, 1fr)',
-                md: 'repeat(4, 1fr)'
-              },
-              gap: 3
-            }}>
-              <Box>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Date prévue
-                </Typography>
-                <Typography variant="body1" fontWeight={500}>
-                  {format(new Date(intervention.plannedAt), 'dd/MM/yyyy à HH:mm', { locale: fr })}
-                </Typography>
-              </Box>
+            <Timeline position="alternate" sx={{ mt: 2 }}>
+              {/* Étape 1: Planification */}
+              <TimelineItem>
+                <TimelineSeparator>
+                  <TimelineDot color="primary">
+                    <ScheduleIcon />
+                  </TimelineDot>
+                  <TimelineConnector />
+                </TimelineSeparator>
+                <TimelineContent sx={{ py: '12px', px: 2 }}>
+                  <Typography variant="h6" component="span">
+                    Planification
+                  </Typography>
+                  <Typography color="text.secondary" display="block">
+                    {intervention.plannedAt ?
+                      format(new Date(intervention.plannedAt), 'dd/MM/yyyy à HH:mm', { locale: fr }) :
+                      'Date non définie'
+                    }
+                  </Typography>
+                </TimelineContent>
+              </TimelineItem>
 
-              <Box>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Date de début
-                </Typography>
-                <Typography variant="body1">
-                  {intervention.startedAt ?
-                    format(new Date(intervention.startedAt), 'dd/MM/yyyy à HH:mm', { locale: fr }) :
-                    'Non démarrée'
-                  }
-                </Typography>
-              </Box>
+              {/* Étape 2: Début d'intervention */}
+              <TimelineItem>
+                <TimelineSeparator>
+                  <TimelineDot color={intervention.startedAt ? "warning" : "grey"}>
+                    <PlayArrowIcon />
+                  </TimelineDot>
+                  {intervention.endedAt && <TimelineConnector />}
+                </TimelineSeparator>
+                <TimelineContent sx={{ py: '12px', px: 2 }}>
+                  <Typography
+                    variant="h6"
+                    component="span"
+                    color={intervention.startedAt ? 'inherit' : 'text.secondary'}
+                  >
+                    Début d&apos;intervention
+                  </Typography>
+                  <Typography color="text.secondary" display="block">
+                    {intervention.startedAt ?
+                      format(new Date(intervention.startedAt), 'dd/MM/yyyy à HH:mm', { locale: fr }) :
+                      'En attente de démarrage'
+                    }
+                  </Typography>
+                </TimelineContent>
+              </TimelineItem>
 
-              <Box>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Date de fin
-                </Typography>
-                <Typography variant="body1">
-                  {intervention.endedAt ?
-                    format(new Date(intervention.endedAt), 'dd/MM/yyyy à HH:mm', { locale: fr }) :
-                    'Non terminée'
-                  }
-                </Typography>
-              </Box>
+              {/* Étape 3: Fin d'intervention */}
+              <TimelineItem>
+                <TimelineSeparator>
+                  <TimelineDot color={intervention.endedAt ? "success" : "grey"}>
+                    <CheckCircleIcon />
+                  </TimelineDot>
+                </TimelineSeparator>
+                <TimelineContent sx={{ py: '12px', px: 2 }}>
+                  <Typography
+                    variant="h6"
+                    component="span"
+                    color={intervention.endedAt ? 'inherit' : 'text.secondary'}
+                  >
+                    Intervention terminée
+                  </Typography>
+                  <Typography color="text.secondary" display="block">
+                    {intervention.endedAt ?
+                      format(new Date(intervention.endedAt), 'dd/MM/yyyy à HH:mm', { locale: fr }) :
+                      'En cours...'
+                    }
+                  </Typography>
+                  {intervention.terminatedBy && intervention.endedAt && (
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                      Terminée par: {intervention.terminatedBy.firstName} {intervention.terminatedBy.lastName}
+                    </Typography>
+                  )}
+                </TimelineContent>
+              </TimelineItem>
+            </Timeline>
 
-              <Box>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Dernière modification
-                </Typography>
-                <Typography variant="body1">
-                  {format(new Date(intervention.updatedAt), 'dd/MM/yyyy à HH:mm', { locale: fr })}
-                </Typography>
-              </Box>
+            {/* Informations complémentaires */}
+            <Box sx={{ mt: 3, pt: 2, borderTop: 1, borderColor: 'divider' }}>
+              <Typography variant="body2" color="text.secondary">
+                Dernière modification: {format(new Date(intervention.updatedAt), 'dd/MM/yyyy à HH:mm', { locale: fr })}
+              </Typography>
             </Box>
           </CardContent>
         </Card>
