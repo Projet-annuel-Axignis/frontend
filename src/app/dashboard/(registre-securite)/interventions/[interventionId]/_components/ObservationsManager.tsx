@@ -255,8 +255,11 @@ const ObservationsManager: React.FC<ObservationsManagerProps> = ({
       ) : (
         <List sx={{ p: 0 }}>
           {observations.map((observation) => (
-            <React.Fragment key={observation.id}>
+            <div
+              key={`observation-${observation.id}`}
+            >
               <ListItem
+
                 divider
                 sx={{
                   opacity: observation.deletedAt ? 0.6 : 1,
@@ -266,13 +269,13 @@ const ObservationsManager: React.FC<ObservationsManagerProps> = ({
                 }}
                 onClick={() => toggleExpanded(observation.id)}
               >
-                <ListItemIcon sx={{ minWidth: 40 }}>
-                  <ViewIcon color="primary" fontSize="small" />
+                <ListItemIcon sx={{ minWidth: 40, mr: 1, ml: 3 }}>
+                  <ViewIcon color="primary" fontSize="medium" />
                 </ListItemIcon>
 
                 <ListItemText
                   primary={
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box id="observation-title" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Typography variant="body2" fontWeight="medium">
                         {observation.title}
                       </Typography>
@@ -285,14 +288,14 @@ const ObservationsManager: React.FC<ObservationsManagerProps> = ({
                     </Box>
                   }
                   secondary={
-                    <Box>
+                    <>
                       <Typography variant="caption" color="text.secondary">
                         Référence: {observation.reference} | Localisation: {observation.location}
                       </Typography>
                       <Typography variant="caption" color="text.secondary" display="block">
                         Priorité: {observation.priority} | Créée le: {format(new Date(observation.createdAt), 'dd/MM/yyyy à HH:mm', { locale: fr })}
                       </Typography>
-                    </Box>
+                    </>
                   }
                 />
 
@@ -362,7 +365,7 @@ const ObservationsManager: React.FC<ObservationsManagerProps> = ({
                   />
                 </Box>
               )}
-            </React.Fragment>
+            </div>
           ))}
         </List>
       )}
