@@ -356,6 +356,8 @@ export default function InterventionDetailLayout({
                             fontSize: '0.625rem',
                             height: '16px',
                             minWidth: '16px',
+                            right: '-10px',
+                            top: '2px'
                           }
                         }}
                       >
