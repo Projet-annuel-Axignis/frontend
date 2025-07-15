@@ -5,7 +5,7 @@ import { useLoading } from '@/hooks/useLoading';
 import organizationService from '@/services/organizationService';
 import reportService from '@/services/reportService';
 import reportTypeService from '@/services/reportTypeService';
-import { Organization, OrganizationType, Report, ReportType, UpdateReportDto } from '@/types/intervention';
+import { CreateReportDto, Organization, OrganizationType, Report, ReportType, UpdateReportDto } from '@/types/intervention';
 import {
   Add as AddIcon,
   Assignment as AssignmentIcon,
@@ -57,6 +57,7 @@ import { fr } from 'date-fns/locale';
 import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import FileManager from '../_components/FileManager';
+import ReportDialog from '../_components/ReportDialog';
 
 const organizationTypeLabels: Record<OrganizationType, string> = {
   OA: 'Organisme Agréé',
@@ -68,20 +69,7 @@ const organizationTypeColors: Record<OrganizationType, 'default' | 'primary' | '
   TC: 'secondary'
 };
 
-// Type pour les options de topologie
-type TopologyCode = {
-  code: string;
-  label: string;
-  description: string;
-};
 
-// Predefined options for typology codes
-const TOPOLOGY_CODES: TopologyCode[] = [
-  { code: 'ERP', label: 'ERP', description: 'Établissement Recevant du Public' },
-  { code: 'IGH', label: 'IGH', description: 'Immeuble de Grande Hauteur' },
-  { code: 'BUP', label: 'BUP', description: 'Bâtiment à Utilisation Professionnelle' },
-  { code: 'HAB', label: 'HAB', description: 'Bâtiment d\'Habitation' },
-];
 
 export default function InterventionReportsPage() {
   const params = useParams();
@@ -120,6 +108,7 @@ export default function InterventionReportsPage() {
   // Dialog states
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [reportToDelete, setReportToDelete] = useState<Report | null>(null);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   // Notification states
   const [notification, setNotification] = useState<{
@@ -243,8 +232,6 @@ export default function InterventionReportsPage() {
     setSelectedReport(null);
   };
 
-
-
   const handleDelete = () => {
     if (selectedReport) {
       setReportToDelete(selectedReport);
@@ -287,8 +274,13 @@ export default function InterventionReportsPage() {
   };
 
   const handleCreateReport = () => {
-    // TODO: Ouvrir dialogue de création
-    showNotification('Création de rapport - Fonctionnalité en cours de développement', 'info');
+    setCreateDialogOpen(true);
+  };
+
+  const handleCreateSubmit = async (data: CreateReportDto) => {
+    await reportService.createReport(data);
+    showNotification('Rapport créé avec succès', 'success');
+    await loadReports();
   };
 
   const handleResetFilters = () => {
@@ -576,31 +568,14 @@ export default function InterventionReportsPage() {
                                   )}
                                 />
 
-                                <Autocomplete<TopologyCode>
-                                  options={TOPOLOGY_CODES || []}
-                                  getOptionLabel={(option: TopologyCode) => `${option.code} - ${option.description}`}
-                                  value={TOPOLOGY_CODES?.find(typo => typo.code === editForm.typologyCode) || null}
-                                  onChange={(_, newValue: TopologyCode | null) => handleFormChange('typologyCode', newValue?.code || '')}
-                                  renderInput={(params: any) => (
-                                    <TextField
-                                      {...params}
-                                      label="Typologie"
-                                      size="small"
-                                      variant="outlined"
-                                    />
-                                  )}
-                                  renderOption={(props: any, option: TopologyCode) => (
-                                    <Box component="li" {...props}>
-                                      <Box>
-                                        <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                                          {option.code}
-                                        </Typography>
-                                        <Typography variant="caption" color="text.secondary">
-                                          {option.description}
-                                        </Typography>
-                                      </Box>
-                                    </Box>
-                                  )}
+                                <TextField
+                                  label="Typologie"
+                                  value={editForm.typologyCode}
+                                  onChange={(e) => handleFormChange('typologyCode', e.target.value)}
+                                  fullWidth
+                                  variant="outlined"
+                                  size="small"
+                                  placeholder="ERP, IGH, BUP, HAB..."
                                 />
 
                                 <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
@@ -725,6 +700,16 @@ export default function InterventionReportsPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Modal de création de rapport */}
+      <ReportDialog
+        open={createDialogOpen}
+        onClose={() => setCreateDialogOpen(false)}
+        onSubmit={handleCreateSubmit}
+        reportTypes={reportTypes}
+        organizations={organizations}
+        interventionId={interventionId}
+      />
 
       {/* Notification Snackbar */}
       <Snackbar
