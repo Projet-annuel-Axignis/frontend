@@ -104,16 +104,16 @@ const InterventionDialog = ({
       if (intervention) {
         // Edit mode
         setFormData({
-          label: intervention.label,
-          companyName: intervention.companyName,
-          employeeName: intervention.employeeName,
-          status: intervention.status,
-          periodicity: intervention.periodicity,
-          plannedAt: intervention.plannedAt.split('T')[0], // Format date for input
-          startedAt: intervention.startedAt.split('T')[0],
-          endedAt: intervention.endedAt.split('T')[0],
-          typeId: intervention.type.id,
-          terminatedById: intervention.terminatedBy?.id || 1,
+          label: intervention.label || '',
+          companyName: intervention.companyName || '',
+          employeeName: intervention.employeeName || '',
+          status: intervention.status || 'PLANNED',
+          periodicity: intervention.periodicity || 'MONTHLY',
+          plannedAt: intervention.plannedAt ? intervention.plannedAt.split('T')[0] : '',
+          startedAt: intervention.startedAt ? intervention.startedAt.split('T')[0] : '',
+          endedAt: intervention.endedAt ? intervention.endedAt.split('T')[0] : '',
+          typeId: intervention.type?.id || null,
+          terminatedById: intervention.terminatedBy?.id || user?.id || 1,
         });
       } else {
         // Create mode
@@ -128,13 +128,13 @@ const InterventionDialog = ({
           startedAt: today,
           endedAt: today,
           typeId: null,
-          terminatedById: 1, // TODO: Récupérer l'utilisateur courant
+          terminatedById: user?.id || 1,
         });
       }
       setErrors({});
       setSubmitError('');
     }
-  }, [open, intervention]);
+  }, [open, intervention, user?.id]);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -357,7 +357,11 @@ const InterventionDialog = ({
               onChange={(e) => handleFieldChange('plannedAt', e.target.value)}
               error={!!errors.plannedAt}
               helperText={errors.plannedAt}
-              InputLabelProps={{ shrink: true }}
+              slotProps={{
+                inputLabel: {
+                  shrink: true,
+                },
+              }}
             />
           </Grid>
 
@@ -370,7 +374,11 @@ const InterventionDialog = ({
               onChange={(e) => handleFieldChange('startedAt', e.target.value)}
               error={!!errors.startedAt}
               helperText={errors.startedAt}
-              InputLabelProps={{ shrink: true }}
+              slotProps={{
+                inputLabel: {
+                  shrink: true,
+                },
+              }}
             />
           </Grid>
 
@@ -383,7 +391,11 @@ const InterventionDialog = ({
               onChange={(e) => handleFieldChange('endedAt', e.target.value)}
               error={!!errors.endedAt}
               helperText={errors.endedAt}
-              InputLabelProps={{ shrink: true }}
+              slotProps={{
+                inputLabel: {
+                  shrink: true,
+                },
+              }}
             />
           </Grid>
         </Grid>
