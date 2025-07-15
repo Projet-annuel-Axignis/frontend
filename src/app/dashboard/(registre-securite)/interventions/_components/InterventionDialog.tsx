@@ -117,16 +117,15 @@ const InterventionDialog = ({
         });
       } else {
         // Create mode
-        const today = new Date().toISOString().split('T')[0];
         setFormData({
           label: '',
           companyName: '',
           employeeName: '',
           status: 'PLANNED',
           periodicity: 'MONTHLY',
-          plannedAt: today,
-          startedAt: today,
-          endedAt: today,
+          plannedAt: '',
+          startedAt: '',
+          endedAt: '',
           typeId: null,
           terminatedById: user?.id || 1,
         });
@@ -149,18 +148,6 @@ const InterventionDialog = ({
 
     if (!formData.employeeName.trim()) {
       newErrors.employeeName = 'Le nom de l\'employé est requis';
-    }
-
-    if (!formData.plannedAt) {
-      newErrors.plannedAt = 'La date prévue est requise';
-    }
-
-    if (!formData.startedAt) {
-      newErrors.startedAt = 'La date de début est requise';
-    }
-
-    if (!formData.endedAt) {
-      newErrors.endedAt = 'La date de fin est requise';
     }
 
     if (!formData.typeId) {
@@ -195,12 +182,20 @@ const InterventionDialog = ({
         employeeName: formData.employeeName.trim(),
         status: formData.status,
         periodicity: formData.periodicity,
-        plannedAt: formData.plannedAt,
-        startedAt: formData.startedAt,
-        endedAt: formData.endedAt,
         typeId: formData.typeId!,
         terminatedById: formData.terminatedById,
       };
+
+      // Ajouter les dates seulement si elles ne sont pas vides
+      if (formData.plannedAt.trim()) {
+        submitData.plannedAt = formData.plannedAt;
+      }
+      if (formData.startedAt.trim()) {
+        submitData.startedAt = formData.startedAt;
+      }
+      if (formData.endedAt.trim()) {
+        submitData.endedAt = formData.endedAt;
+      }
 
       await onSubmit(submitData);
       onClose();
@@ -352,7 +347,7 @@ const InterventionDialog = ({
             <TextField
               fullWidth
               type="date"
-              label="Date prévue *"
+              label="Date prévue"
               value={formData.plannedAt}
               onChange={(e) => handleFieldChange('plannedAt', e.target.value)}
               error={!!errors.plannedAt}
@@ -369,7 +364,7 @@ const InterventionDialog = ({
             <TextField
               fullWidth
               type="date"
-              label="Date de début *"
+              label="Date de début"
               value={formData.startedAt}
               onChange={(e) => handleFieldChange('startedAt', e.target.value)}
               error={!!errors.startedAt}
@@ -386,7 +381,7 @@ const InterventionDialog = ({
             <TextField
               fullWidth
               type="date"
-              label="Date de fin *"
+              label="Date de fin"
               value={formData.endedAt}
               onChange={(e) => handleFieldChange('endedAt', e.target.value)}
               error={!!errors.endedAt}
