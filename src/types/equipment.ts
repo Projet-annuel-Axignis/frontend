@@ -85,16 +85,40 @@ export interface UpdateDocumentTypeRequest {
 
 export interface ProductDocument {
   id: string;
-  name: string;
+  reference: string;
   serialNumber: string;
+  fileName: string;
+  filePath: string;
+  size: number;
+  issueDate: string;
+  expiryDate: string;
+  version: number;
+  mimeType: string;
+  checksum: string;
+  status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+  uploadedBy?: number;
   productId: string;
   product?: Product;
   documentTypeId: string;
   documentType?: DocumentType;
-  fileUrl: string;
-  fileSize: number;
   createdAt: string;
   updatedAt: string;
+  deletedAt: string | null;
+}
+
+export interface UploadProductDocumentRequest {
+  reference: string;
+  serialNumber: string;
+  productId: string;
+  documentTypeId: string;
+  issueDate: string;
+  expiryDate?: string;
+  version: number;
+  file: File;
+}
+
+export interface UpdateProductDocumentStatusRequest {
+  status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
 }
 
 export interface InventoryItem {

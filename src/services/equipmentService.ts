@@ -17,7 +17,10 @@ import {
   UpdateBrandRequest,
   DocumentType,
   CreateDocumentTypeRequest,
-  UpdateDocumentTypeRequest
+  UpdateDocumentTypeRequest,
+  ProductDocument,
+  UploadProductDocumentRequest,
+  UpdateProductDocumentStatusRequest
 } from '@/types/equipment';
 
 export const equipmentService = {
@@ -426,6 +429,127 @@ export const equipmentService = {
   
   async restoreDocumentType(id: string): Promise<ApiResponse<DocumentType>> {
     const response = await api.post(`/product-document-types/${id}/restore`);
+    return response.data;
+  },
+
+  // Documents de produit
+  async getProductDocuments(page: number = 1, limit: number = 10, productId?: string, documentTypeId?: string, status?: string, search?: string, showDeleted: boolean = false): Promise<ServerPaginatedResponse<ProductDocument>> {
+    const params = new URLSearchParams();
+    
+    if (page) {
+      params.append('page', page.toString());
+    }
+    
+    if (limit) {
+      params.append('limit', limit.toString());
+    }
+    
+    if (productId) {
+      params.append('productId', productId);
+    }
+    
+    if (documentTypeId) {
+      params.append('documentTypeId', documentTypeId);
+    }
+    
+    if (status) {
+      params.append('status', status);
+    }
+    
+    if (search) {
+      params.append('search', search);
+    }
+    
+    if (showDeleted) {
+      params.append('includeDeleted', 'true');
+    }
+    
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+    const response = await api.get(`/product-documents${queryString}`);
+    return response.data;
+  },
+  
+  async getProductDocumentById(id: string): Promise<ApiResponse<ProductDocument>> {
+    const response = await api.get(`/product-documents/${id}`);
+    return response.data;
+  },
+  
+  async getProductDocumentBySerialNumber(serialNumber: string): Promise<ApiResponse<ProductDocument>> {
+    const response = await api.get(`/product-documents/serial/${serialNumber}`);
+    return response.data;
+  },
+
+  async getProductDocumentsByProductId(productId: string, page: number = 1, limit: number = 10): Promise<ServerPaginatedResponse<ProductDocument>> {
+    const params = new URLSearchParams();
+    
+    if (page) {
+      params.append('page', page.toString());
+    }
+    
+    if (limit) {
+      params.append('limit', limit.toString());
+    }
+    
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+    const response = await api.get(`/products/${productId}/documents${queryString}`);
+    return response.data;
+  },
+  
+  async uploadProductDocument(data: UploadProductDocumentRequest): Promise<ApiResponse<ProductDocument>> {
+    console.log("Données pour upload de document:", data);
+    
+    // Création d'un FormData pour l'upload du fichier
+    const formData = new FormData();
+    formData.append('file', data.file);
+    formData.append('reference', data.reference);
+    formData.append('serialNumber', data.serialNumber);
+    formData.append('productId', data.productId);
+    formData.append('documentTypeId', data.documentTypeId);
+    formData.append('issueDate', data.issueDate);
+    formData.append('version', data.version.toString());
+    
+    if (data.expiryDate) {
+      formData.append('expiryDate', data.expiryDate);
+    }
+    
+    const response = await api.post('/product-documents/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    
+    return response.data;
+  },
+  
+  async updateProductDocumentStatus(id: string, data: UpdateProductDocumentStatusRequest): Promise<ApiResponse<ProductDocument>> {
+    console.log(`Mise à jour du statut du document (ID: ${id})`, data);
+    const response = await api.patch(`/product-documents/${id}/status`, data);
+    return response.data;
+  },
+  
+  async downloadProductDocument(id: string): Promise<Blob> {
+    const response = await api.get(`/product-documents/${id}/file`, {
+      responseType: 'blob'
+    });
+    return response.data;
+  },
+  
+  async validateProductDocumentChecksum(id: string, checksum: string): Promise<ApiResponse<{ valid: boolean }>> {
+    const response = await api.post(`/product-documents/${id}/validate-checksum`, { checksum });
+    return response.data;
+  },
+  
+  async deleteProductDocument(id: string): Promise<ApiResponse<void>> {
+    try {
+      const response = await api.delete(`/product-documents/${id}`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+  
+  async restoreProductDocument(id: string): Promise<ApiResponse<ProductDocument>> {
+    const response = await api.patch(`/product-documents/${id}/restore`);
     return response.data;
   }
 };
