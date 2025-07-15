@@ -5,29 +5,20 @@ export interface InterventionType {
   id: number;
   code: string;
   name: string;
-  description?: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface CreateInterventionTypeDto {
   code: string;
   name: string;
-  description?: string;
-  isActive?: boolean;
 }
 
 export interface UpdateInterventionTypeDto {
   name?: string;
-  description?: string;
-  isActive?: boolean;
 }
 
 export interface InterventionTypeFilters {
   search?: string;
-  isActive?: boolean;
-  sortBy?: 'code' | 'name' | 'createdAt' | 'updatedAt';
+  sortBy?: 'code' | 'name';
   sortOrder?: 'asc' | 'desc';
   page?: number;
   limit?: number;
@@ -46,7 +37,6 @@ const interventionTypeService = {
     const params = new URLSearchParams();
 
     if (filters.search) params.append('search', filters.search);
-    if (filters.isActive !== undefined) params.append('includeDeleted', (!filters.isActive).toString());
     if (filters.sortBy) params.append('sortField', filters.sortBy);
     if (filters.sortOrder) params.append('sortOrder', filters.sortOrder);
 
@@ -98,13 +88,8 @@ const interventionTypeService = {
       const searchLower = filters.search.toLowerCase();
       filtered = filtered.filter(type =>
         type.code.toLowerCase().includes(searchLower) ||
-        type.name.toLowerCase().includes(searchLower) ||
-        (type.description && type.description.toLowerCase().includes(searchLower))
+        type.name.toLowerCase().includes(searchLower)
       );
-    }
-
-    if (filters.isActive !== undefined) {
-      filtered = filtered.filter(type => type.isActive === filters.isActive);
     }
 
     // Tri côté client
@@ -121,14 +106,6 @@ const interventionTypeService = {
           case 'name':
             aValue = a.name;
             bValue = b.name;
-            break;
-          case 'createdAt':
-            aValue = new Date(a.createdAt);
-            bValue = new Date(b.createdAt);
-            break;
-          case 'updatedAt':
-            aValue = new Date(a.updatedAt);
-            bValue = new Date(b.updatedAt);
             break;
           default:
             return 0;

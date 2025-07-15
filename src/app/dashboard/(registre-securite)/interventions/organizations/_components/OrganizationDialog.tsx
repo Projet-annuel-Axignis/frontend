@@ -1,21 +1,26 @@
 'use client';
 
-import { CreateOrganizationDto, Organization, UpdateOrganizationDto } from '@/services/organizationService';
 import {
-  Alert,
-  Box,
+  CreateOrganizationDto,
+  Organization,
+  OrganizationType,
+  UpdateOrganizationDto
+} from '@/services/organizationService';
+import {
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Divider,
-  FormControlLabel,
-  Switch,
+  FormControl,
+  Grid,
+  InputLabel,
+  MenuItem,
+  Select,
   TextField,
   Typography
 } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface OrganizationDialogProps {
   open: boolean;
@@ -25,74 +30,54 @@ interface OrganizationDialogProps {
   isLoading?: boolean;
 }
 
-const OrganizationDialog: React.FC<OrganizationDialogProps> = ({
+const typeOptions: { value: OrganizationType; label: string }[] = [
+  { value: 'OA', label: 'Organisme Agréé' },
+  { value: 'TC', label: 'Tiers de Contrôle' }
+];
+
+export default function OrganizationDialog({
   open,
   onClose,
   onSubmit,
   organization,
   isLoading = false
-}) => {
-  const [formData, setFormData] = useState({
+}: OrganizationDialogProps) {
+  const [formData, setFormData] = useState<CreateOrganizationDto>({
     name: '',
-    code: '',
-    description: '',
-    isActive: true,
-    contactInfo: {
-      email: '',
-      phone: '',
-      address: ''
-    }
+    type: 'OA'
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [submitError, setSubmitError] = useState<string>('');
 
   const isEditing = !!organization;
 
   useEffect(() => {
     if (open) {
-      if (isEditing && organization) {
+      if (organization) {
         setFormData({
           name: organization.name,
-          code: organization.code,
-          description: organization.description || '',
-          isActive: organization.isActive,
-          contactInfo: {
-            email: organization.contactInfo?.email || '',
-            phone: organization.contactInfo?.phone || '',
-            address: organization.contactInfo?.address || ''
-          }
+          type: organization.type
         });
       } else {
         setFormData({
           name: '',
-          code: '',
-          description: '',
-          isActive: true,
-          contactInfo: {
-            email: '',
-            phone: '',
-            address: ''
-          }
+          type: 'OA'
         });
       }
       setErrors({});
-      setSubmitError('');
     }
-  }, [open, isEditing, organization]);
+  }, [open, organization]);
 
-  const validateForm = () => {
+  const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Le nom est obligatoire';
-    }
-    if (!formData.code.trim()) {
-      newErrors.code = 'Le code est obligatoire';
+      newErrors.name = 'Le nom est requis';
+    } else if (formData.name.trim().length < 3) {
+      newErrors.name = 'Le nom doit contenir au moins 3 caractères';
     }
 
-    // Validation email si fourni
-    if (formData.contactInfo.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.contactInfo.email)) {
-      newErrors.email = 'Format d\'email invalide';
+    if (!formData.type) {
+      newErrors.type = 'Le type est requis';
     }
 
     setErrors(newErrors);
@@ -103,32 +88,27 @@ const OrganizationDialog: React.FC<OrganizationDialogProps> = ({
     if (!validateForm()) return;
 
     try {
-      setSubmitError('');
-      const submitData = {
-        ...formData,
-        contactInfo: Object.values(formData.contactInfo).some(v => v.trim()) ? formData.contactInfo : undefined
-      };
+      const submitData = isEditing
+        ? {
+          name: formData.name,
+          type: formData.type
+        } as UpdateOrganizationDto
+        : formData as CreateOrganizationDto;
+
       await onSubmit(submitData);
       onClose();
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : 'Une erreur est survenue');
+      console.error('Erreur lors de la soumission:', error);
     }
   };
 
-  const handleFieldChange = (field: string, value: any) => {
-    if (field.startsWith('contactInfo.')) {
-      const contactField = field.split('.')[1];
-      setFormData(prev => ({
-        ...prev,
-        contactInfo: {
-          ...prev.contactInfo,
-          [contactField]: value
-        }
-      }));
-    } else {
-      setFormData(prev => ({ ...prev, [field]: value }));
-    }
+  const handleChange = (field: keyof CreateOrganizationDto) => (
+    event: React.ChangeEvent<HTMLInputElement | { value: unknown }>
+  ) => {
+    const value = event.target.value as string;
+    setFormData(prev => ({ ...prev, [field]: value }));
 
+    // Nettoyer l'erreur du champ modifié
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
@@ -138,184 +118,81 @@ const OrganizationDialog: React.FC<OrganizationDialogProps> = ({
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth="md"
+      maxWidth="sm"
       fullWidth
       PaperProps={{
-        sx: {
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          color: 'white'
-        }
+        sx: { borderRadius: 2 }
       }}
     >
-      <DialogTitle sx={{ color: 'white', fontWeight: 'bold' }}>
+      <DialogTitle>
         {isEditing ? 'Modifier l\'organisme' : 'Créer un organisme'}
       </DialogTitle>
 
       <DialogContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 2 }}>
-          {submitError && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {submitError}
-            </Alert>
-          )}
+        <Grid container spacing={3} sx={{ mt: 1 }}>
+          <Grid size={{ xs: 12 }}>
+            <TextField
+              label="Nom"
+              value={formData.name}
+              onChange={handleChange('name')}
+              error={!!errors.name}
+              helperText={errors.name || 'Nom de l\'organisme'}
+              fullWidth
+              variant="outlined"
+              required
+            />
+          </Grid>
 
-          {/* Informations générales */}
-          <Typography variant="h6" sx={{ color: 'white', mb: 1 }}>
-            Informations générales
-          </Typography>
-
-          <TextField
-            label="Code"
-            value={formData.code}
-            onChange={(e) => handleFieldChange('code', e.target.value)}
-            disabled={isEditing}
-            error={!!errors.code}
-            helperText={errors.code || (isEditing ? 'Le code ne peut pas être modifié' : '')}
-            fullWidth
-            InputProps={{
-              sx: { backgroundColor: 'rgba(255, 255, 255, 0.9)' }
-            }}
-            InputLabelProps={{
-              sx: { color: 'rgba(0, 0, 0, 0.6)' }
-            }}
-          />
-
-          <TextField
-            label="Nom"
-            value={formData.name}
-            onChange={(e) => handleFieldChange('name', e.target.value)}
-            error={!!errors.name}
-            helperText={errors.name}
-            fullWidth
-            InputProps={{
-              sx: { backgroundColor: 'rgba(255, 255, 255, 0.9)' }
-            }}
-            InputLabelProps={{
-              sx: { color: 'rgba(0, 0, 0, 0.6)' }
-            }}
-          />
-
-          <TextField
-            label="Description"
-            value={formData.description}
-            onChange={(e) => handleFieldChange('description', e.target.value)}
-            error={!!errors.description}
-            helperText={errors.description}
-            fullWidth
-            multiline
-            rows={3}
-            InputProps={{
-              sx: { backgroundColor: 'rgba(255, 255, 255, 0.9)' }
-            }}
-            InputLabelProps={{
-              sx: { color: 'rgba(0, 0, 0, 0.6)' }
-            }}
-          />
-
-          <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.3)' }} />
-
-          {/* Informations de contact */}
-          <Typography variant="h6" sx={{ color: 'white', mb: 1 }}>
-            Informations de contact
-          </Typography>
-
-          <TextField
-            label="Email"
-            value={formData.contactInfo.email}
-            onChange={(e) => handleFieldChange('contactInfo.email', e.target.value)}
-            error={!!errors.email}
-            helperText={errors.email}
-            fullWidth
-            type="email"
-            InputProps={{
-              sx: { backgroundColor: 'rgba(255, 255, 255, 0.9)' }
-            }}
-            InputLabelProps={{
-              sx: { color: 'rgba(0, 0, 0, 0.6)' }
-            }}
-          />
-
-          <TextField
-            label="Téléphone"
-            value={formData.contactInfo.phone}
-            onChange={(e) => handleFieldChange('contactInfo.phone', e.target.value)}
-            fullWidth
-            InputProps={{
-              sx: { backgroundColor: 'rgba(255, 255, 255, 0.9)' }
-            }}
-            InputLabelProps={{
-              sx: { color: 'rgba(0, 0, 0, 0.6)' }
-            }}
-          />
-
-          <TextField
-            label="Adresse"
-            value={formData.contactInfo.address}
-            onChange={(e) => handleFieldChange('contactInfo.address', e.target.value)}
-            fullWidth
-            multiline
-            rows={2}
-            InputProps={{
-              sx: { backgroundColor: 'rgba(255, 255, 255, 0.9)' }
-            }}
-            InputLabelProps={{
-              sx: { color: 'rgba(0, 0, 0, 0.6)' }
-            }}
-          />
-
-          <FormControlLabel
-            control={
-              <Switch
-                checked={formData.isActive}
-                onChange={(e) => handleFieldChange('isActive', e.target.checked)}
-                sx={{
-                  '& .MuiSwitch-thumb': {
-                    backgroundColor: 'white'
-                  },
-                  '& .MuiSwitch-track': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.3)'
-                  }
-                }}
-              />
-            }
-            label="Organisme actif"
-            sx={{ color: 'white' }}
-          />
-        </Box>
+          <Grid size={{ xs: 12 }}>
+            <FormControl
+              fullWidth
+              variant="outlined"
+              error={!!errors.type}
+              required
+            >
+              <InputLabel>Type</InputLabel>
+              <Select
+                value={formData.type}
+                onChange={handleChange('type')}
+                label="Type"
+              >
+                {typeOptions.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </Select>
+              {errors.type && (
+                <Typography variant="caption" color="error" sx={{ mt: 0.5, mx: 1.75 }}>
+                  {errors.type}
+                </Typography>
+              )}
+            </FormControl>
+          </Grid>
+        </Grid>
       </DialogContent>
 
-      <DialogActions sx={{ p: 3 }}>
+      <DialogActions sx={{ px: 3, pb: 3 }}>
         <Button
           onClick={onClose}
           disabled={isLoading}
-          sx={{
-            color: 'white',
-            borderColor: 'white',
-            '&:hover': {
-              borderColor: 'rgba(255, 255, 255, 0.7)',
-              backgroundColor: 'rgba(255, 255, 255, 0.1)'
-            }
-          }}
-          variant="outlined"
         >
           Annuler
         </Button>
         <Button
           onClick={handleSubmit}
-          disabled={isLoading}
           variant="contained"
+          disabled={isLoading}
           sx={{
-            background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+            background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
             '&:hover': {
-              background: 'linear-gradient(45deg, #FE6B8B 60%, #FF8E53 100%)',
+              background: 'linear-gradient(45deg, #667eea 60%, #764ba2 100%)',
             }
           }}
         >
-          {isLoading ? 'Chargement...' : (isEditing ? 'Modifier' : 'Créer')}
+          {isLoading ? 'En cours...' : (isEditing ? 'Modifier' : 'Créer')}
         </Button>
       </DialogActions>
     </Dialog>
   );
-};
-
-export default OrganizationDialog; 
+} 

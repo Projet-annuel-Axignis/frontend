@@ -1,65 +1,58 @@
-import { CreateInterventionTypeDto, InterventionType, UpdateInterventionTypeDto } from '@/services/interventionTypeService';
+'use client';
+
 import {
-  Alert,
-  Box,
+  CreateInterventionTypeDto,
+  InterventionType,
+  UpdateInterventionTypeDto
+} from '@/services/interventionTypeService';
+import {
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControlLabel,
-  Switch,
-  TextField,
-  Typography
+  Grid,
+  TextField
 } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface InterventionTypeDialogProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (data: CreateInterventionTypeDto | UpdateInterventionTypeDto) => Promise<void>;
-  interventionType?: InterventionType | null;
-  loading?: boolean;
+  interventionType?: InterventionType;
+  isLoading?: boolean;
 }
 
-const InterventionTypeDialog: React.FC<InterventionTypeDialogProps> = ({
+export default function InterventionTypeDialog({
   open,
   onClose,
   onSubmit,
   interventionType,
-  loading = false,
-}) => {
+  isLoading = false
+}: InterventionTypeDialogProps) {
   const [formData, setFormData] = useState<CreateInterventionTypeDto>({
     code: '',
-    name: '',
-    description: '',
-    isActive: true,
+    name: ''
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [submitError, setSubmitError] = useState<string>('');
 
   const isEditing = !!interventionType;
 
-  // Reset form when dialog opens/closes or when editing different type
   useEffect(() => {
     if (open) {
       if (interventionType) {
         setFormData({
           code: interventionType.code,
-          name: interventionType.name,
-          description: interventionType.description || '',
-          isActive: interventionType.isActive,
+          name: interventionType.name
         });
       } else {
         setFormData({
           code: '',
-          name: '',
-          description: '',
-          isActive: true,
+          name: ''
         });
       }
       setErrors({});
-      setSubmitError('');
     }
   }, [open, interventionType]);
 
@@ -67,11 +60,15 @@ const InterventionTypeDialog: React.FC<InterventionTypeDialogProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (!formData.code.trim()) {
-      newErrors.code = 'Le code est obligatoire';
+      newErrors.code = 'Le code est requis';
+    } else if (formData.code.trim().length < 2) {
+      newErrors.code = 'Le code doit contenir au moins 2 caractères';
     }
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Le nom est obligatoire';
+      newErrors.name = 'Le nom est requis';
+    } else if (formData.name.trim().length < 3) {
+      newErrors.name = 'Le nom doit contenir au moins 3 caractères';
     }
 
     setErrors(newErrors);
@@ -82,28 +79,33 @@ const InterventionTypeDialog: React.FC<InterventionTypeDialogProps> = ({
     if (!validateForm()) return;
 
     try {
-      setSubmitError('');
-      await onSubmit(formData);
-    } catch (error: any) {
-      console.error('Error submitting intervention type:', error);
-      setSubmitError(
-        error.response?.data?.message ||
-        error.message ||
-        'Une erreur est survenue lors de la sauvegarde'
-      );
+      const submitData = isEditing
+        ? { name: formData.name } as UpdateInterventionTypeDto
+        : formData as CreateInterventionTypeDto;
+
+      await onSubmit(submitData);
+      onClose();
+    } catch (error) {
+      console.error('Erreur lors de la soumission:', error);
     }
   };
 
-  const handleClose = () => {
-    if (!loading) {
-      onClose();
+  const handleChange = (field: keyof CreateInterventionTypeDto) => (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const value = event.target.value;
+    setFormData(prev => ({ ...prev, [field]: value }));
+
+    // Nettoyer l'erreur du champ modifié
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
     }
   };
 
   return (
     <Dialog
       open={open}
-      onClose={handleClose}
+      onClose={onClose}
       maxWidth="sm"
       fullWidth
       PaperProps={{
@@ -111,93 +113,61 @@ const InterventionTypeDialog: React.FC<InterventionTypeDialogProps> = ({
       }}
     >
       <DialogTitle>
-        <Typography variant="h6" component="h2">
-          {isEditing ? 'Modifier le type d\'intervention' : 'Nouveau type d\'intervention'}
-        </Typography>
+        {isEditing ? 'Modifier le type d\'intervention' : 'Créer un type d\'intervention'}
       </DialogTitle>
 
-      <DialogContent dividers>
-        {submitError && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {submitError}
-          </Alert>
-        )}
+      <DialogContent>
+        <Grid container spacing={3} sx={{ mt: 1 }}>
+          <Grid size={{ xs: 12 }}>
+            <TextField
+              label="Code"
+              value={formData.code}
+              onChange={handleChange('code')}
+              disabled={isEditing} // Le code n'est pas modifiable en édition
+              error={!!errors.code}
+              helperText={errors.code || (isEditing ? 'Le code ne peut pas être modifié' : 'Code unique du type d\'intervention')}
+              fullWidth
+              variant="outlined"
+              required
+            />
+          </Grid>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, py: 1 }}>
-          {/* Code */}
-          <TextField
-            label="Code"
-            value={formData.code}
-            onChange={(e) => setFormData(prev => ({ ...prev, code: e.target.value }))}
-            error={!!errors.code}
-            helperText={errors.code || (isEditing ? 'Le code ne peut pas être modifié' : 'Identifiant unique du type')}
-            disabled={isEditing || loading}
-            required
-            fullWidth
-          />
-
-          {/* Nom */}
-          <TextField
-            label="Nom"
-            value={formData.name}
-            onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-            error={!!errors.name}
-            helperText={errors.name || 'Nom descriptif du type d\'intervention'}
-            disabled={loading}
-            required
-            fullWidth
-          />
-
-          {/* Description */}
-          <TextField
-            label="Description"
-            value={formData.description}
-            onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-            disabled={loading}
-            multiline
-            rows={3}
-            fullWidth
-            helperText="Description détaillée du type d'intervention (optionnel)"
-          />
-
-          {/* Statut actif */}
-          <FormControlLabel
-            control={
-              <Switch
-                checked={formData.isActive}
-                onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
-                disabled={loading}
-              />
-            }
-            label="Type actif"
-          />
-        </Box>
+          <Grid size={{ xs: 12 }}>
+            <TextField
+              label="Nom"
+              value={formData.name}
+              onChange={handleChange('name')}
+              error={!!errors.name}
+              helperText={errors.name || 'Nom descriptif du type d\'intervention'}
+              fullWidth
+              variant="outlined"
+              required
+            />
+          </Grid>
+        </Grid>
       </DialogContent>
 
-      <DialogActions sx={{ p: 2, gap: 1 }}>
+      <DialogActions sx={{ px: 3, pb: 3 }}>
         <Button
-          onClick={handleClose}
-          disabled={loading}
-          variant="outlined"
+          onClick={onClose}
+          disabled={isLoading}
         >
           Annuler
         </Button>
         <Button
           onClick={handleSubmit}
-          disabled={loading || !formData.code.trim() || !formData.name.trim()}
           variant="contained"
+          disabled={isLoading}
           sx={{
-            background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+            background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
             '&:hover': {
-              background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
-            },
+              background: 'linear-gradient(45deg, #667eea 60%, #764ba2 100%)',
+            }
           }}
         >
-          {isEditing ? 'Modifier' : 'Créer'}
+          {isLoading ? 'En cours...' : (isEditing ? 'Modifier' : 'Créer')}
         </Button>
       </DialogActions>
     </Dialog>
   );
-};
-
-export default InterventionTypeDialog; 
+} 

@@ -1,47 +1,27 @@
 import { api } from '@/lib/api';
 
+// Utiliser les types de intervention.ts
+export type OrganizationType = 'OA' | 'TC';
+
 export interface Organization {
   id: number;
-  code: string;
   name: string;
-  description?: string;
-  contactInfo?: {
-    email?: string;
-    phone?: string;
-    address?: string;
-  };
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
+  type: OrganizationType;
 }
 
 export interface CreateOrganizationDto {
-  code: string;
   name: string;
-  description?: string;
-  contactInfo?: {
-    email?: string;
-    phone?: string;
-    address?: string;
-  };
-  isActive?: boolean;
+  type: OrganizationType;
 }
 
 export interface UpdateOrganizationDto {
   name?: string;
-  description?: string;
-  contactInfo?: {
-    email?: string;
-    phone?: string;
-    address?: string;
-  };
-  isActive?: boolean;
+  type?: OrganizationType;
 }
 
 export interface OrganizationFilters {
   search?: string;
-  isActive?: boolean;
-  sortBy?: 'code' | 'name' | 'createdAt' | 'updatedAt';
+  sortBy?: 'name' | 'type';
   sortOrder?: 'asc' | 'desc';
   page?: number;
   limit?: number;
@@ -60,7 +40,6 @@ const organizationService = {
     const params = new URLSearchParams();
 
     if (filters.search) params.append('search', filters.search);
-    if (filters.isActive !== undefined) params.append('includeDeleted', (!filters.isActive).toString());
     if (filters.sortBy) params.append('sortField', filters.sortBy);
     if (filters.sortOrder) params.append('sortOrder', filters.sortOrder);
 
@@ -105,15 +84,9 @@ const organizationService = {
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
       filtered = filtered.filter(org =>
-        org.code.toLowerCase().includes(searchLower) ||
         org.name.toLowerCase().includes(searchLower) ||
-        (org.description && org.description.toLowerCase().includes(searchLower)) ||
-        (org.contactInfo?.email && org.contactInfo.email.toLowerCase().includes(searchLower))
+        org.type.toLowerCase().includes(searchLower)
       );
-    }
-
-    if (filters.isActive !== undefined) {
-      filtered = filtered.filter(org => org.isActive === filters.isActive);
     }
 
     // Tri côté client
@@ -123,21 +96,13 @@ const organizationService = {
         let bValue: any;
 
         switch (filters.sortBy) {
-          case 'code':
-            aValue = a.code;
-            bValue = b.code;
-            break;
           case 'name':
             aValue = a.name;
             bValue = b.name;
             break;
-          case 'createdAt':
-            aValue = new Date(a.createdAt);
-            bValue = new Date(b.createdAt);
-            break;
-          case 'updatedAt':
-            aValue = new Date(a.updatedAt);
-            bValue = new Date(b.updatedAt);
+          case 'type':
+            aValue = a.type;
+            bValue = b.type;
             break;
           default:
             return 0;

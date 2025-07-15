@@ -1,33 +1,31 @@
 import { api } from '@/lib/api';
 import { PaginatedResponseDto } from '@/types/apiTypes';
 
+// Utiliser les types de intervention.ts
+export type Periodicity = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY';
+
 export interface ReportType {
   id: number;
-  code: string;
   name: string;
-  description?: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
+  code: string;
+  periodicity: Periodicity;
 }
 
 export interface CreateReportTypeDto {
-  code: string;
   name: string;
-  description?: string;
-  isActive?: boolean;
+  code: string;
+  periodicity: Periodicity;
 }
 
 export interface UpdateReportTypeDto {
   name?: string;
-  description?: string;
-  isActive?: boolean;
+  code?: string;
+  periodicity?: Periodicity;
 }
 
 export interface ReportTypeFilters {
   search?: string;
-  isActive?: boolean;
-  sortBy?: 'code' | 'name' | 'createdAt' | 'updatedAt';
+  sortBy?: 'code' | 'name';
   sortOrder?: 'asc' | 'desc';
   page?: number;
   limit?: number;
@@ -46,7 +44,6 @@ const reportTypeService = {
     const params = new URLSearchParams();
 
     if (filters.search) params.append('search', filters.search);
-    if (filters.isActive !== undefined) params.append('includeDeleted', (!filters.isActive).toString());
     if (filters.sortBy) params.append('sortField', filters.sortBy);
     if (filters.sortOrder) params.append('sortOrder', filters.sortOrder);
 
@@ -58,6 +55,7 @@ const reportTypeService = {
     }
 
     const response = await api.get<PaginatedResponseDto<ReportType>>(`/report-types?${params.toString()}`);
+
     return {
       data: response.data.results,
       total: response.data.totalResults,
@@ -90,20 +88,15 @@ const reportTypeService = {
   },
 
   // Filtrage côté client pour des cas spécifiques
-  filterReportTypes(reportTypes: ReportType[], filters: Partial<ReportTypeFilters>): ReportType[] {
-    let filtered = [...reportTypes];
+  filterReportTypes(types: ReportType[], filters: Partial<ReportTypeFilters>): ReportType[] {
+    let filtered = [...types];
 
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
       filtered = filtered.filter(type =>
         type.code.toLowerCase().includes(searchLower) ||
-        type.name.toLowerCase().includes(searchLower) ||
-        (type.description && type.description.toLowerCase().includes(searchLower))
+        type.name.toLowerCase().includes(searchLower)
       );
-    }
-
-    if (filters.isActive !== undefined) {
-      filtered = filtered.filter(type => type.isActive === filters.isActive);
     }
 
     // Tri côté client
@@ -120,14 +113,6 @@ const reportTypeService = {
           case 'name':
             aValue = a.name;
             bValue = b.name;
-            break;
-          case 'createdAt':
-            aValue = new Date(a.createdAt);
-            bValue = b.createdAt;
-            break;
-          case 'updatedAt':
-            aValue = new Date(a.updatedAt);
-            bValue = new Date(b.updatedAt);
             break;
           default:
             return 0;

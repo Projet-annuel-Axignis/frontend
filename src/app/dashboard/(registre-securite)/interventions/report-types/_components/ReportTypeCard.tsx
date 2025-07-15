@@ -2,94 +2,113 @@
 
 import { ReportType } from '@/services/reportTypeService';
 import {
-  Edit as EditIcon,
-  VisibilityOff as InactiveIcon
+  Delete as DeleteIcon,
+  Edit as EditIcon
 } from '@mui/icons-material';
 import {
   Box,
   Card,
+  CardActions,
   CardContent,
   Chip,
   IconButton,
   Tooltip,
   Typography
 } from '@mui/material';
-import React from 'react';
 
 interface ReportTypeCardProps {
   reportType: ReportType;
   onEdit: (reportType: ReportType) => void;
-  onToggleStatus: (reportType: ReportType) => void;
+  onDelete: (reportType: ReportType) => void;
 }
 
-const ReportTypeCard: React.FC<ReportTypeCardProps> = ({
+const getPeriodicityLabel = (periodicity: string) => {
+  switch (periodicity) {
+    case 'DAILY': return 'Quotidien';
+    case 'WEEKLY': return 'Hebdomadaire';
+    case 'MONTHLY': return 'Mensuel';
+    case 'QUARTERLY': return 'Trimestriel';
+    case 'YEARLY': return 'Annuel';
+    default: return periodicity;
+  }
+};
+
+const getPeriodicityColor = (periodicity: string) => {
+  switch (periodicity) {
+    case 'DAILY': return 'error';
+    case 'WEEKLY': return 'warning';
+    case 'MONTHLY': return 'primary';
+    case 'QUARTERLY': return 'secondary';
+    case 'YEARLY': return 'success';
+    default: return 'default';
+  }
+};
+
+export default function ReportTypeCard({
   reportType,
   onEdit,
-  onToggleStatus
-}) => {
+  onDelete
+}: ReportTypeCardProps) {
   return (
     <Card
       sx={{
         height: '100%',
-        transition: 'all 0.3s ease',
+        display: 'flex',
+        flexDirection: 'column',
+        transition: 'all 0.2s ease-in-out',
         '&:hover': {
           transform: 'translateY(-2px)',
           boxShadow: 4
         }
       }}
     >
-      <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-        {/* Header avec code et actions */}
+      <CardContent sx={{ flexGrow: 1, pb: 1 }}>
+        {/* En-tête avec ID */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-          <Typography variant="h6" component="h3" fontWeight="bold">
-            {reportType.code}
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 0.5 }}>
-            <Chip
-              label={reportType.isActive ? 'Actif' : 'Inactif'}
-              color={reportType.isActive ? 'success' : 'default'}
-              size="small"
-              variant="outlined"
-            />
-            <Tooltip title="Modifier">
-              <IconButton
-                size="small"
-                onClick={() => onEdit(reportType)}
-              >
-                <EditIcon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title={reportType.isActive ? 'Désactiver' : 'Activer'}>
-              <IconButton
-                size="small"
-                onClick={() => onToggleStatus(reportType)}
-                color={reportType.isActive ? 'warning' : 'success'}
-              >
-                <InactiveIcon />
-              </IconButton>
-            </Tooltip>
-          </Box>
-        </Box>
-
-        {/* Corps */}
-        <Box sx={{ flex: 1 }}>
-          <Typography variant="body1" sx={{ mb: 1, fontWeight: 'medium' }}>
-            {reportType.name}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Description: {reportType.description || 'Aucune description'}
-          </Typography>
-        </Box>
-
-        {/* Footer */}
-        <Box sx={{ mt: 'auto', pt: 2, borderTop: 1, borderColor: 'divider' }}>
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant="body2" color="text.secondary">
             ID: {reportType.id}
           </Typography>
+          <Chip
+            label={getPeriodicityLabel(reportType.periodicity)}
+            color={getPeriodicityColor(reportType.periodicity) as any}
+            size="small"
+            variant="outlined"
+          />
         </Box>
+
+        {/* Code */}
+        <Typography variant="h6" component="h3" gutterBottom fontWeight="bold">
+          {reportType.code}
+        </Typography>
+
+        {/* Nom */}
+        <Typography variant="body1" color="text.primary" sx={{ mb: 2 }}>
+          {reportType.name}
+        </Typography>
       </CardContent>
+
+      <CardActions sx={{ pt: 0, px: 2, pb: 2, justifyContent: 'flex-end' }}>
+        <Tooltip title="Modifier">
+          <IconButton
+            size="small"
+            onClick={() => onEdit(reportType)}
+            color="primary"
+            sx={{ mr: 1 }}
+          >
+            <EditIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+
+        <Tooltip title="Supprimer">
+          <IconButton
+            size="small"
+            onClick={() => onDelete(reportType)}
+            color="error"
+          >
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+      </CardActions>
     </Card>
   );
-};
-
-export default ReportTypeCard; 
+} 
