@@ -5,7 +5,7 @@ import {
   Periodicity,
   ReportType,
   UpdateReportTypeDto
-} from '@/services/reportTypeService';
+} from '@/types/intervention';
 import {
   Button,
   Dialog,
@@ -31,11 +31,10 @@ interface ReportTypeDialogProps {
 }
 
 const periodicityOptions: { value: Periodicity; label: string }[] = [
-  { value: 'DAILY', label: 'Quotidien' },
-  { value: 'WEEKLY', label: 'Hebdomadaire' },
   { value: 'MONTHLY', label: 'Mensuel' },
-  { value: 'QUARTERLY', label: 'Trimestriel' },
-  { value: 'YEARLY', label: 'Annuel' }
+  { value: 'QUARTER', label: 'Trimestriel' },
+  { value: 'SEMESTER', label: 'Semestriel' },
+  { value: 'ANNUAL', label: 'Annuel' }
 ];
 
 export default function ReportTypeDialog({
@@ -116,7 +115,7 @@ export default function ReportTypeDialog({
   };
 
   const handleChange = (field: keyof CreateReportTypeDto) => (
-    event: React.ChangeEvent<HTMLInputElement | { value: unknown }>
+    event: React.ChangeEvent<HTMLInputElement> | { target: { value: unknown } }
   ) => {
     const value = event.target.value as string;
     setFormData(prev => ({ ...prev, [field]: value }));

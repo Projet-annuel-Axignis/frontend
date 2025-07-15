@@ -1,6 +1,6 @@
 'use client';
 
-import { ReportType } from '@/services/reportTypeService';
+import { ReportType } from '@/types/intervention';
 import {
   Delete as DeleteIcon,
   Edit as EditIcon
@@ -24,22 +24,20 @@ interface ReportTypeCardProps {
 
 const getPeriodicityLabel = (periodicity: string) => {
   switch (periodicity) {
-    case 'DAILY': return 'Quotidien';
-    case 'WEEKLY': return 'Hebdomadaire';
     case 'MONTHLY': return 'Mensuel';
-    case 'QUARTERLY': return 'Trimestriel';
-    case 'YEARLY': return 'Annuel';
+    case 'QUARTER': return 'Trimestriel';
+    case 'SEMESTER': return 'Semestriel';
+    case 'ANNUAL': return 'Annuel';
     default: return periodicity;
   }
 };
 
 const getPeriodicityColor = (periodicity: string) => {
   switch (periodicity) {
-    case 'DAILY': return 'error';
-    case 'WEEKLY': return 'warning';
     case 'MONTHLY': return 'primary';
-    case 'QUARTERLY': return 'secondary';
-    case 'YEARLY': return 'success';
+    case 'QUARTER': return 'secondary';
+    case 'SEMESTER': return 'warning';
+    case 'ANNUAL': return 'success';
     default: return 'default';
   }
 };
