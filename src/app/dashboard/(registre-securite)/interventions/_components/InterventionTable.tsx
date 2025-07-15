@@ -1,7 +1,8 @@
 'use client';
 
-import { Intervention, InterventionStatus, Periodicity } from '@/types/intervention';
+import { Intervention } from '@/types/intervention';
 import {
+  Build as BuildIcon,
   Delete as DeleteIcon,
   Edit as EditIcon,
   MoreVert as MoreVertIcon,
@@ -11,6 +12,8 @@ import {
   Visibility as ViewIcon,
 } from '@mui/icons-material';
 import {
+  Box,
+  Button,
   Chip,
   IconButton,
   Menu,
@@ -25,8 +28,6 @@ import {
   Tooltip,
   Typography
 } from '@mui/material';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
 import React from 'react';
 
 interface InterventionTableProps {
@@ -39,24 +40,45 @@ interface InterventionTableProps {
   onRestore?: (intervention: Intervention) => void;
 }
 
-const statusColors: Record<InterventionStatus, 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'> = {
-  PLANNED: 'info',
-  IN_PROGRESS: 'warning',
-  TERMINATED: 'success'
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'PLANNED':
+      return 'info';
+    case 'IN_PROGRESS':
+      return 'warning';
+    case 'TERMINATED':
+      return 'success';
+    default:
+      return 'default';
+  }
 };
 
-const statusLabels: Record<InterventionStatus, string> = {
-  PLANNED: 'Planifiée',
-  IN_PROGRESS: 'En cours',
-  TERMINATED: 'Terminée'
+const getStatusLabel = (status: string) => {
+  switch (status) {
+    case 'PLANNED':
+      return 'Planifiée';
+    case 'IN_PROGRESS':
+      return 'En cours';
+    case 'TERMINATED':
+      return 'Terminée';
+    default:
+      return status;
+  }
 };
 
-const periodicityLabels: Record<Periodicity, string> = {
-  DAILY: 'Quotidienne',
-  WEEKLY: 'Hebdomadaire',
-  MONTHLY: 'Mensuelle',
-  QUARTERLY: 'Trimestrielle',
-  YEARLY: 'Annuelle'
+const getPeriodicityLabel = (periodicity: string) => {
+  switch (periodicity) {
+    case 'MONTHLY':
+      return 'Mensuel';
+    case 'QUARTER':
+      return 'Trimestriel';
+    case 'SEMESTER':
+      return 'Semestriel';
+    case 'ANNUAL':
+      return 'Annuel';
+    default:
+      return periodicity;
+  }
 };
 
 const InterventionTable: React.FC<InterventionTableProps> = ({
@@ -70,23 +92,16 @@ const InterventionTable: React.FC<InterventionTableProps> = ({
 }) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [selectedIntervention, setSelectedIntervention] = React.useState<Intervention | null>(null);
+  const open = Boolean(anchorEl);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>, intervention: Intervention) => {
-    event.stopPropagation();
-    setSelectedIntervention(intervention);
     setAnchorEl(event.currentTarget);
+    setSelectedIntervention(intervention);
   };
 
   const handleClose = () => {
     setAnchorEl(null);
     setSelectedIntervention(null);
-  };
-
-  const handleView = () => {
-    if (selectedIntervention) {
-      onView(selectedIntervention);
-    }
-    handleClose();
   };
 
   const handleEdit = () => {
@@ -124,161 +139,200 @@ const InterventionTable: React.FC<InterventionTableProps> = ({
     handleClose();
   };
 
+  if (interventions.length === 0) {
+    return (
+      <Paper sx={{ p: 4, textAlign: 'center' }}>
+        <BuildIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+        <Typography variant="h6" color="text.secondary">
+          Aucune intervention trouvée
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Aucune intervention ne correspond à vos critères de recherche.
+        </Typography>
+      </Paper>
+    );
+  }
+
   return (
-    <Paper elevation={1} sx={{ borderRadius: 2 }}>
-      <TableContainer>
-        <Table>
-          <TableHead>
-            <TableRow sx={{
-              backgroundColor: 'primary.main',
-              '& .MuiTableCell-head': {
-                color: 'white',
-                fontWeight: 600
-              }
-            }}>
-              <TableCell>Libellé</TableCell>
-              <TableCell>Entreprise</TableCell>
-              <TableCell>Employé</TableCell>
-              <TableCell>Type</TableCell>
-              <TableCell>Statut</TableCell>
-              <TableCell>Périodicité</TableCell>
-              <TableCell>Date prévue</TableCell>
-              <TableCell align="center">Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {interventions.map((intervention) => (
+    <TableContainer component={Paper}>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell><strong>Libellé</strong></TableCell>
+            <TableCell><strong>Entreprise</strong></TableCell>
+            <TableCell><strong>Employé</strong></TableCell>
+            <TableCell><strong>Type</strong></TableCell>
+            <TableCell><strong>Statut</strong></TableCell>
+            <TableCell><strong>Périodicité</strong></TableCell>
+            <TableCell><strong>Date prévue</strong></TableCell>
+            <TableCell align="right"><strong>Actions</strong></TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {interventions.map((intervention) => {
+            const isDeleted = !!intervention.deletedAt;
+
+            return (
               <TableRow
                 key={intervention.id}
-                hover
-                onClick={() => onView(intervention)}
                 sx={{
-                  cursor: 'pointer',
-                  opacity: intervention.deletedAt ? 0.6 : 1,
-                  backgroundColor: intervention.deletedAt ? 'error.light' : 'inherit',
-                  '&:hover': {
-                    backgroundColor: intervention.deletedAt ? 'error.light' : 'action.hover',
-                  },
+                  opacity: isDeleted ? 0.6 : 1,
+                  '&:hover': { bgcolor: 'action.hover' },
                 }}
               >
                 <TableCell>
-                  <Typography variant="body2" fontWeight={600}>
+                  <Typography
+                    variant="body2"
+                    onClick={() => onView(intervention)}
+                    sx={{
+                      fontWeight: 'bold',
+                      textDecoration: isDeleted ? 'line-through' : 'none',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        textDecoration: 'underline',
+                      },
+                    }}
+                  >
                     {intervention.label}
                   </Typography>
                 </TableCell>
+
                 <TableCell>
                   <Typography variant="body2">
                     {intervention.companyName}
                   </Typography>
                 </TableCell>
+
                 <TableCell>
                   <Typography variant="body2">
                     {intervention.employeeName}
                   </Typography>
                 </TableCell>
+
                 <TableCell>
                   <Typography variant="body2">
-                    {intervention.type.name}
+                    {intervention.type.name} ({intervention.type.code})
                   </Typography>
                 </TableCell>
+
                 <TableCell>
-                  <Chip
-                    size="small"
-                    label={statusLabels[intervention.status]}
-                    color={statusColors[intervention.status]}
-                    variant="filled"
-                  />
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    {isDeleted ? (
+                      <Chip
+                        label="Archivée"
+                        size="small"
+                        color="error"
+                        variant="outlined"
+                      />
+                    ) : (
+                      <Chip
+                        label={getStatusLabel(intervention.status)}
+                        size="small"
+                        color={getStatusColor(intervention.status) as any}
+                        variant="outlined"
+                      />
+                    )}
+                  </Box>
                 </TableCell>
+
                 <TableCell>
                   <Typography variant="body2">
-                    {periodicityLabels[intervention.periodicity]}
+                    {getPeriodicityLabel(intervention.periodicity)}
                   </Typography>
                 </TableCell>
+
                 <TableCell>
                   <Typography variant="body2">
-                    {format(new Date(intervention.plannedAt), 'dd/MM/yyyy', { locale: fr })}
+                    {new Date(intervention.plannedAt).toLocaleDateString('fr-FR')}
                   </Typography>
                 </TableCell>
-                <TableCell align="center">
-                  <Tooltip title="Actions">
-                    <IconButton
+
+                <TableCell align="right">
+                  <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                    {/* Bouton Voir détails principal */}
+                    <Button
+                      variant="contained"
                       size="small"
-                      onClick={(e) => handleClick(e, intervention)}
+                      startIcon={<ViewIcon />}
+                      onClick={() => onView(intervention)}
                       sx={{
-                        color: 'primary.main',
+                        minWidth: 'auto',
+                        background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
                         '&:hover': {
-                          backgroundColor: 'primary.light',
+                          background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
                         },
                       }}
                     >
-                      <MoreVertIcon />
-                    </IconButton>
-                  </Tooltip>
-                </TableCell>
-              </TableRow>
-            ))}
-            {interventions.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={8} align="center" sx={{ py: 8 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    Aucune intervention trouvée
-                  </Typography>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+                      Voir détails
+                    </Button>
 
-      {/* Menu contextuel */}
+                    {/* Menu secondaire pour les autres actions */}
+                    <Tooltip title="Plus d'actions">
+                      <IconButton
+                        onClick={(e) => handleClick(e, intervention)}
+                        size="small"
+                      >
+                        <MoreVertIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+
+      {/* Menu secondaire (Modifier/Démarrer/Terminer/Supprimer/Restaurer) */}
       <Menu
         anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
+        open={open}
         onClose={handleClose}
-        PaperProps={{
-          sx: {
-            boxShadow: 3,
-            borderRadius: 2,
-            minWidth: 180,
-          },
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
         }}
       >
-        <MenuItem onClick={handleView}>
-          <ViewIcon sx={{ mr: 1 }} fontSize="small" />
-          Voir
-        </MenuItem>
-        <MenuItem onClick={handleEdit}>
-          <EditIcon sx={{ mr: 1 }} fontSize="small" />
-          Éditer
-        </MenuItem>
-        {selectedIntervention && (
+        {selectedIntervention && !selectedIntervention.deletedAt && (
           <>
+            <MenuItem onClick={handleEdit}>
+              <EditIcon sx={{ mr: 1 }} />
+              Modifier
+            </MenuItem>
+
             {selectedIntervention.status === 'PLANNED' && (
               <MenuItem onClick={handleStart}>
-                <PlayArrowIcon sx={{ mr: 1 }} fontSize="small" />
+                <PlayArrowIcon sx={{ mr: 1 }} />
                 Démarrer
               </MenuItem>
             )}
+
             {selectedIntervention.status === 'IN_PROGRESS' && (
               <MenuItem onClick={handleTerminate}>
-                <StopIcon sx={{ mr: 1 }} fontSize="small" />
+                <StopIcon sx={{ mr: 1 }} />
                 Terminer
               </MenuItem>
             )}
-            {selectedIntervention.deletedAt && onRestore && (
-              <MenuItem onClick={handleRestore}>
-                <RestoreIcon sx={{ mr: 1 }} fontSize="small" />
-                Restaurer
-              </MenuItem>
-            )}
+
             <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
-              <DeleteIcon sx={{ mr: 1 }} fontSize="small" />
-              {selectedIntervention.deletedAt ? 'Supprimer définitivement' : 'Archiver'}
+              <DeleteIcon sx={{ mr: 1 }} />
+              Archiver
             </MenuItem>
           </>
         )}
+
+        {selectedIntervention?.deletedAt && onRestore && (
+          <MenuItem onClick={handleRestore}>
+            <RestoreIcon sx={{ mr: 1 }} />
+            Restaurer
+          </MenuItem>
+        )}
       </Menu>
-    </Paper>
+    </TableContainer>
   );
 };
 
