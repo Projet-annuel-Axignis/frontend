@@ -6,6 +6,7 @@ import reportService from '@/services/reportService';
 import { Observations, ObservationStatus } from '@/types/intervention';
 import {
   Add as AddIcon,
+  Attachment as AttachmentIcon,
   Delete as DeleteIcon,
   Edit as EditIcon,
   FilterList as FilterListIcon,
@@ -52,6 +53,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
+import FileManager from '../_components/FileManager';
 
 const statusColors: Record<ObservationStatus, 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'> = {
   OPEN: 'error',
@@ -85,6 +87,9 @@ export default function InterventionObservationsPage() {
   // Menu states
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedObservation, setSelectedObservation] = useState<Observations | null>(null);
+
+  // File management state
+  const [fileManagerObservation, setFileManagerObservation] = useState<Observations | null>(null);
 
   // Dialog states
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -533,6 +538,17 @@ export default function InterventionObservationsPage() {
                   <DeleteIcon sx={{ mr: 1 }} fontSize="small" />
                   Archiver
                 </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    if (selectedObservation) {
+                      setFileManagerObservation(selectedObservation);
+                    }
+                    handleMenuClose();
+                  }}
+                >
+                  <AttachmentIcon sx={{ mr: 1 }} fontSize="small" />
+                  Gérer les fichiers
+                </MenuItem>
               </>
             )}
             {selectedObservation.deletedAt && (
@@ -544,6 +560,31 @@ export default function InterventionObservationsPage() {
           </>
         )}
       </Menu>
+
+      {/* Gestion des fichiers pour l'observation sélectionnée */}
+      {fileManagerObservation && (
+        <FileManager
+          entityType="observation"
+          entityId={fileManagerObservation.id}
+          title={`Fichiers de l'observation: ${fileManagerObservation.title}`}
+          onFilesChange={() => {
+            // Optionnel: recharger les données si nécessaire
+            loadData();
+          }}
+        />
+      )}
+
+      {/* Bouton pour fermer le gestionnaire de fichiers */}
+      {fileManagerObservation && (
+        <Box sx={{ mt: 2, textAlign: 'center' }}>
+          <Button
+            variant="outlined"
+            onClick={() => setFileManagerObservation(null)}
+          >
+            Fermer la gestion des fichiers
+          </Button>
+        </Box>
+      )}
 
       {/* Dialogue de confirmation de suppression */}
       <Dialog

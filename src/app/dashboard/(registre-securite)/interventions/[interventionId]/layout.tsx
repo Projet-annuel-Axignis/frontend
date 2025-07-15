@@ -3,7 +3,6 @@
 import DashBoardHeader from '@/components/dashboard/DashBoardHeader';
 import { useBreadcrumbTitle } from '@/hooks/useBreadcrumbTitle';
 import { useLoading } from '@/hooks/useLoading';
-import { fileService } from '@/services/fileService';
 import interventionService from '@/services/interventionService';
 import observationService from '@/services/observationService';
 import reportService from '@/services/reportService';
@@ -11,7 +10,6 @@ import { Intervention, InterventionStatus } from '@/types/intervention';
 import {
   ArrowBack as ArrowBackIcon,
   Assignment as AssignmentIcon,
-  Attachment as AttachmentIcon,
   Info as InfoIcon,
   Visibility as VisibilityIcon
 } from '@mui/icons-material';
@@ -36,8 +34,7 @@ import React, { useEffect, useState } from 'react';
 const tabs = [
   { label: "Informations", value: "", icon: <InfoIcon /> },
   { label: "Rapports", value: "reports", icon: <AssignmentIcon /> },
-  { label: "Observations", value: "observations", icon: <VisibilityIcon /> },
-  { label: "Fichiers", value: "files", icon: <AttachmentIcon /> }
+  { label: "Observations", value: "observations", icon: <VisibilityIcon /> }
 ];
 
 const statusColors: Record<InterventionStatus, 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'> = {
@@ -79,7 +76,6 @@ export default function InterventionDetailLayout({
   // États pour les compteurs
   const [reportsCount, setReportsCount] = useState<number>(0);
   const [observationsCount, setObservationsCount] = useState<number>(0);
-  const [filesCount, setFilesCount] = useState<number>(0);
 
   // Définir le titre personnalisé pour le breadcrumb
   useBreadcrumbTitle(String(interventionId), intervention?.label || `Intervention ${interventionId}`);
@@ -151,16 +147,6 @@ export default function InterventionDetailLayout({
         obs.report && reportsData.reports.some(report => report.id === obs.report.id)
       );
       setObservationsCount(interventionObservations.length);
-
-      // Charger le nombre de fichiers
-      const filesData = await fileService.getFiles({
-        includeDeleted: false
-      });
-      // Filtrer par intervention (assumant qu'il y a une relation via les rapports)
-      const interventionFiles = filesData.files.filter(file =>
-        file.report && file.report.id && reportsData.reports.some(report => report.id === file.report?.id)
-      );
-      setFilesCount(interventionFiles.length);
     } catch (error) {
       console.error('Erreur lors du chargement des compteurs:', error);
     }
@@ -340,8 +326,7 @@ export default function InterventionDetailLayout({
             {tabs.map((tab, index) => {
               let badgeContent = 0;
               if (index === 1) badgeContent = reportsCount; // Rapports
-              if (index === 2) badgeContent = observationsCount; // Observations  
-              if (index === 3) badgeContent = filesCount; // Fichiers
+              if (index === 2) badgeContent = observationsCount; // Observations
 
               return (
                 <Tab
