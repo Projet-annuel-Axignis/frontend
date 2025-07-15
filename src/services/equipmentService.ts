@@ -618,7 +618,7 @@ export const equipmentService = {
   },
 
   // Produits
-  async getProducts(page: number = 1, limit: number = 10, brandId?: number, typeId?: number, search?: string, showDeleted: boolean = false): Promise<ServerPaginatedResponse<Product>> {
+  async getProducts(page: number = 1, limit: number = 10, brandId?: number, typeId?: number, compatibilityGroupId?: number, search?: string, showDeleted: boolean = false): Promise<ServerPaginatedResponse<Product>> {
     const params = new URLSearchParams();
     
     if (page) {
@@ -635,6 +635,10 @@ export const equipmentService = {
     
     if (typeId) {
       params.append('typeId', typeId.toString());
+    }
+    
+    if (compatibilityGroupId) {
+      params.append('compatibilityGroupId', compatibilityGroupId.toString());
     }
     
     if (search) {

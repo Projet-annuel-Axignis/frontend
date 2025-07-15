@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   Box, 
   Typography, 
@@ -35,7 +35,8 @@ import {
   Grid,
   FormHelperText,
   OutlinedInput,
-  SelectChangeEvent
+  SelectChangeEvent,
+  Badge
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -64,6 +65,7 @@ export default function ProductsPage() {
   const [compatibilityGroups, setCompatibilityGroups] = useState<CompatibilityGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [showDeleted, setShowDeleted] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -74,6 +76,8 @@ export default function ProductsPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [filterBrandId, setFilterBrandId] = useState<number | null>(null);
   const [filterTypeId, setFilterTypeId] = useState<number | null>(null);
+  const [filterCompatibilityGroupId, setFilterCompatibilityGroupId] = useState<number | null>(null);
+  const [activeFiltersCount, setActiveFiltersCount] = useState<number>(0);
   
   // État du formulaire
   const [formData, setFormData] = useState<CreateProductRequest>({
@@ -90,6 +94,17 @@ export default function ProductsPage() {
     severity: 'success'
   });
 
+  // Fonction pour compter les filtres actifs
+  const updateActiveFiltersCount = useCallback(() => {
+    let count = 0;
+    if (filterBrandId) count++;
+    if (filterTypeId) count++;
+    if (filterCompatibilityGroupId) count++;
+    if (debouncedSearchTerm) count++;
+    if (showDeleted) count++;
+    setActiveFiltersCount(count);
+  }, [filterBrandId, filterTypeId, filterCompatibilityGroupId, debouncedSearchTerm, showDeleted]);
+  
   // Charger les produits
   const loadProducts = async () => {
     try {
@@ -99,7 +114,8 @@ export default function ProductsPage() {
         rowsPerPage, 
         brandId: filterBrandId || undefined,
         typeId: filterTypeId || undefined,
-        searchTerm, 
+        compatibilityGroupId: filterCompatibilityGroupId || undefined,
+        searchTerm: debouncedSearchTerm, 
         showDeleted
       });
       
@@ -108,7 +124,8 @@ export default function ProductsPage() {
         rowsPerPage, 
         filterBrandId || undefined,
         filterTypeId || undefined,
-        searchTerm, 
+        filterCompatibilityGroupId || undefined,
+        debouncedSearchTerm, 
         showDeleted
       );
       
@@ -116,13 +133,38 @@ export default function ProductsPage() {
       console.log("Structure des produits:", response.results?.[0]);
       setProducts(response.results || []);
       setTotal(response.totalResults || 0);
-    } catch (error) {
+      
+      // Si on est sur une page qui n'existe plus (après filtrage)
+      if (response.totalResults > 0 && response.results.length === 0 && page > 0) {
+        setPage(0); // Revenir à la première page
+      }
+    } catch (error: any) {
       console.error('Erreur lors du chargement des produits:', error);
+      
+      // Message d'erreur plus précis
+      let errorMessage = 'Erreur lors du chargement des produits';
+      
+      if (error.response) {
+        if (error.response.status === 400) {
+          errorMessage = 'Requête invalide. Vérifiez vos filtres.';
+          // Réinitialiser certains filtres qui pourraient causer des problèmes
+          if (filterCompatibilityGroupId) setFilterCompatibilityGroupId(null);
+        } else if (error.response.status === 404) {
+          errorMessage = 'Aucun produit trouvé avec ces critères';
+          setProducts([]);
+          setTotal(0);
+        } else if (error.response.data && error.response.data.message) {
+          errorMessage = error.response.data.message;
+        }
+      }
+      
       setSnackbar({
         open: true,
-        message: 'Erreur lors du chargement des produits',
+        message: errorMessage,
         severity: 'error'
       });
+      setProducts([]);
+      setTotal(0);
     } finally {
       setLoading(false);
     }
@@ -173,11 +215,30 @@ export default function ProductsPage() {
     }
   };
 
+  // Effet pour le debounce sur la recherche
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500); // 500ms de délai
+    
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [searchTerm]);
+
+  // Mise à jour du nombre de filtres actifs
+  useEffect(() => {
+    updateActiveFiltersCount();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterBrandId, filterTypeId, filterCompatibilityGroupId, debouncedSearchTerm, showDeleted]);
+
+  // Chargement des produits quand les filtres changent
   useEffect(() => {
     loadProducts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, rowsPerPage, filterBrandId, filterTypeId, searchTerm, showDeleted]);
+  }, [page, rowsPerPage, filterBrandId, filterTypeId, filterCompatibilityGroupId, debouncedSearchTerm, showDeleted]);
 
+  // Chargement initial des données de référence
   useEffect(() => {
     loadBrands();
     loadEquipmentTypes();
@@ -382,7 +443,10 @@ export default function ProductsPage() {
   const resetFilters = () => {
     setFilterBrandId(null);
     setFilterTypeId(null);
+    setFilterCompatibilityGroupId(null);
     setSearchTerm('');
+    setDebouncedSearchTerm('');
+    setShowDeleted(false);
     setPage(0);
   };
 
@@ -474,6 +538,22 @@ export default function ProductsPage() {
             </Select>
           </FormControl>
           
+          <FormControl size="small" sx={{ minWidth: {xs: '100%', md: 200} }}>
+            <InputLabel>Groupe de compatibilité</InputLabel>
+            <Select
+              value={filterCompatibilityGroupId || ''}
+              onChange={(e) => setFilterCompatibilityGroupId(e.target.value ? Number(e.target.value) : null)}
+              label="Groupe de compatibilité"
+            >
+              <MenuItem value="">Tous les groupes</MenuItem>
+              {compatibilityGroups.map(group => (
+                <MenuItem key={group.id} value={Number(group.id)}>
+                  {group.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          
           <Box 
             sx={{ 
               display: 'flex', 
@@ -504,7 +584,17 @@ export default function ProductsPage() {
             startIcon={<RefreshIcon />}
             sx={{ minWidth: {xs: '100%', md: 'auto'} }}
           >
-            Réinitialiser les filtres
+            <Box sx={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+              Réinitialiser les filtres
+              {activeFiltersCount > 0 && (
+                <Chip 
+                  label={activeFiltersCount} 
+                  color="primary" 
+                  size="small" 
+                  sx={{ ml: 1, height: 20, fontSize: '0.7rem' }} 
+                />
+              )}
+            </Box>
           </Button>
           
           <Box sx={{ flexGrow: 1 }} />
@@ -525,6 +615,71 @@ export default function ProductsPage() {
           </Button>
         </Box>
       </Paper>
+
+      {/* Résumé des filtres actifs */}
+      {activeFiltersCount > 0 && (
+        <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mr: 1 }}>
+            Filtres actifs:
+          </Typography>
+          
+          {filterBrandId && (
+            <Chip 
+              size="small" 
+              label={`Marque: ${brands.find(b => b.id === filterBrandId.toString())?.name || 'ID ' + filterBrandId}`}
+              onDelete={() => setFilterBrandId(null)} 
+              color="primary" 
+              variant="outlined"
+            />
+          )}
+          
+          {filterTypeId && (
+            <Chip 
+              size="small" 
+              label={`Type: ${equipmentTypes.find(t => t.id === filterTypeId.toString())?.title || 'ID ' + filterTypeId}`} 
+              onDelete={() => setFilterTypeId(null)} 
+              color="primary"
+              variant="outlined"
+            />
+          )}
+          
+          {filterCompatibilityGroupId && (
+            <Chip 
+              size="small" 
+              label={`Groupe: ${compatibilityGroups.find(g => g.id === filterCompatibilityGroupId)?.name || 'ID ' + filterCompatibilityGroupId}`} 
+              onDelete={() => setFilterCompatibilityGroupId(null)} 
+              color="primary"
+              variant="outlined"
+            />
+          )}
+          
+          {debouncedSearchTerm && (
+            <Chip 
+              size="small" 
+              label={`Recherche: "${debouncedSearchTerm}"`} 
+              onDelete={() => {setSearchTerm(''); setDebouncedSearchTerm('');}} 
+              color="primary"
+              variant="outlined"
+            />
+          )}
+          
+          {showDeleted && (
+            <Chip 
+              size="small" 
+              label="Inclut les supprimés" 
+              onDelete={() => setShowDeleted(false)} 
+              color="error"
+              variant="outlined"
+            />
+          )}
+          
+          <Box sx={{ flexGrow: 1 }} />
+          
+          <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'text.secondary' }}>
+            {total} résultat{total !== 1 ? 's' : ''} trouvé{total !== 1 ? 's' : ''}
+          </Typography>
+        </Box>
+      )}
 
       {/* Table */}
       <Paper sx={{ width: '100%', overflow: 'hidden' }}>
