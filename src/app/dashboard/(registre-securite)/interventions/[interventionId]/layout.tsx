@@ -5,14 +5,18 @@ import { useBreadcrumbTitle } from '@/hooks/useBreadcrumbTitle';
 import { useLoading } from '@/hooks/useLoading';
 import interventionService from '@/services/interventionService';
 import reportService from '@/services/reportService';
+import { partService } from '@/services/siteService';
 import { Intervention, InterventionStatus } from '@/types/intervention';
+import { Part } from '@/types/site';
 import {
   ArrowBack as ArrowBackIcon,
   Assignment as AssignmentIcon,
   Business as BusinessIcon,
+  Category as CategoryIcon,
   Info as InfoIcon,
   Person as PersonIcon,
-  Schedule as ScheduleIcon
+  Schedule as ScheduleIcon,
+  ViewModule as ViewModuleIcon
 } from '@mui/icons-material';
 import {
   Alert,
@@ -72,6 +76,7 @@ export default function InterventionDetailLayout({
   // Data states
   const [intervention, setIntervention] = useState<Intervention | null>(null);
   const [currentTab, setCurrentTab] = useState(0);
+  const [partsDetails, setPartsDetails] = useState<Part[]>([]);
 
   // États pour les compteurs
   const [reportsCount, setReportsCount] = useState<number>(0);
@@ -121,11 +126,26 @@ export default function InterventionDetailLayout({
       try {
         const data = await interventionService.getIntervention(interventionId);
         setIntervention(data);
+
+        // Charger les détails complets des parties
+        if (data.parts && data.parts.length > 0) {
+          await loadPartsDetails(data.parts.map(part => part.id));
+        }
       } catch (error) {
         console.error('Erreur lors du chargement de l&apos;intervention:', error);
         showNotification('Erreur lors du chargement de l&apos;intervention', 'error');
       }
     });
+  };
+
+  const loadPartsDetails = async (partIds: number[]) => {
+    try {
+      const partsPromises = partIds.map(partId => partService.getPart(partId));
+      const partsData = await Promise.all(partsPromises);
+      setPartsDetails(partsData);
+    } catch (error) {
+      console.error('Erreur lors du chargement des détails des parties:', error);
+    }
   };
 
   // Charger les compteurs pour les pastilles
@@ -230,9 +250,35 @@ export default function InterventionDetailLayout({
             </Box>
 
             {/* Type */}
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              <strong>Type:</strong> {intervention.type.name}
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <CategoryIcon sx={{ fontSize: 16, mr: 1, color: 'text.secondary' }} />
+              <Typography variant="body2" color="text.secondary">
+                <strong>Type:</strong> {intervention.type.name}
+              </Typography>
+            </Box>
+
+            {/* Parties */}
+            {partsDetails.length > 0 && (
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <ViewModuleIcon sx={{ fontSize: 16, mr: 1, color: 'text.secondary' }} />
+                <Box sx={{ display: 'flex', flexDirection: 'row', gap: 0.5, alignItems: 'center' }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                    <strong>Parties:</strong>
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    {partsDetails.map((part) => (
+                      <Chip
+                        key={part.id}
+                        label={part.name}
+                        size="small"
+                        variant="outlined"
+                        color="primary"
+                      />
+                    ))}
+                  </Box>
+                </Box>
+              </Box>
+            )}
 
             {/* Date prévue */}
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
