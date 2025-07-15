@@ -28,6 +28,7 @@ import {
 } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import InterventionCard from './_components/InterventionCard';
 import InterventionFilters from './_components/InterventionFilters';
 import InterventionTable from './_components/InterventionTable';
 
@@ -36,7 +37,7 @@ const InterventionsPage = () => {
   const { isLoading: loading, withLoading } = useLoading();
   const { user } = useUser();
 
-  useBreadcrumbTitle('interventions', 'Interventions')
+  useBreadcrumbTitle('interventions', 'Interventions');
 
   // Data states
   const [interventions, setInterventions] = useState<Intervention[]>([]);
@@ -310,8 +311,21 @@ const InterventionsPage = () => {
             />
           </Box>
 
-          {/* Mobile Card View - TODO: Créer InterventionCard */}
+          {/* Mobile Card View */}
           <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+            {filteredInterventions.map((intervention) => (
+              <InterventionCard
+                key={intervention.id}
+                intervention={intervention}
+                onView={handleViewIntervention}
+                onEdit={handleEditIntervention}
+                onStart={handleStartIntervention}
+                onTerminate={handleTerminateIntervention}
+                onDelete={handleDeleteIntervention}
+                onRestore={handleRestoreIntervention}
+              />
+            ))}
+
             {filteredInterventions.length === 0 && (
               <Box sx={{ textAlign: 'center', py: 8 }}>
                 <BuildIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
