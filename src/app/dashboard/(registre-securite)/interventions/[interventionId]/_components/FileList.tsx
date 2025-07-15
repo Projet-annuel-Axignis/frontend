@@ -33,7 +33,9 @@ import {
   Menu,
   MenuItem,
   Paper,
-  Typography
+  Typography,
+  useMediaQuery,
+  useTheme
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 
@@ -59,6 +61,9 @@ const FileList: React.FC<FileListProps> = ({
   title = "Fichiers",
   onFilesChange
 }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
@@ -148,6 +153,53 @@ const FileList: React.FC<FileListProps> = ({
     setFileMenu(null);
   };
 
+  const renderFileActions = (file: File) => {
+    if (isMobile) {
+      // Sur mobile : menu avec 3 points
+      return (
+        <IconButton
+          onClick={(e) => handleMenuOpen(e, file)}
+          size="small"
+        >
+          <MoreVertIcon fontSize="small" />
+        </IconButton>
+      );
+    } else {
+      // Sur desktop : boutons directs
+      return (
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          <Button
+            variant="contained"
+            size="small"
+            startIcon={<DownloadIcon />}
+            onClick={() => handleDownload(file)}
+            sx={{
+              background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+              '&:hover': {
+                background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+              },
+            }}
+          >
+            Télécharger
+          </Button>
+          <IconButton
+            size="small"
+            color="error"
+            onClick={() => setDeleteDialog(file)}
+            sx={{
+              '&:hover': {
+                backgroundColor: 'error.light',
+                color: 'error.contrastText',
+              },
+            }}
+          >
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+        </Box>
+      );
+    }
+  };
+
   return (
     <Box>
       <Typography variant="subtitle2" color="primary" gutterBottom>
@@ -176,14 +228,7 @@ const FileList: React.FC<FileListProps> = ({
               key={file.id}
               divider
               sx={{ px: 0 }}
-              secondaryAction={
-                <IconButton
-                  onClick={(e) => handleMenuOpen(e, file)}
-                  size="small"
-                >
-                  <MoreVertIcon fontSize="small" />
-                </IconButton>
-              }
+              secondaryAction={renderFileActions(file)}
             >
               <ListItemIcon sx={{ minWidth: 40 }}>
                 {getFileIcon(file.file.mimeType)}
@@ -206,7 +251,7 @@ const FileList: React.FC<FileListProps> = ({
         </List>
       )}
 
-      {/* Menu contextuel */}
+      {/* Menu contextuel (mobile uniquement) */}
       <Menu
         anchorEl={fileMenu?.anchorEl}
         open={Boolean(fileMenu)}
