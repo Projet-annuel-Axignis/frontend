@@ -23,14 +23,15 @@ export interface EquipmentFamily {
 export interface EquipmentType {
   id: string;
   title: string;
-  subtitle: string;
+  subTitle?: string;
   serialNumber: string;
   familyId: string;
   family?: EquipmentFamily;
-  customFields?: CustomField[];
+  extraSchema?: Record<string, any>;
   inventoryRequired: boolean;
   createdAt: string;
   updatedAt: string;
+  deletedAt: string | null;
 }
 
 export interface CustomField {
@@ -119,6 +120,24 @@ export interface UpdateEquipmentFamilyRequest {
   name?: string;
   serialNumber?: string;
   domainId?: string;
+}
+
+export interface CreateEquipmentTypeRequest {
+  title: string;
+  subTitle?: string;
+  serialNumber: string;
+  inventoryRequired: boolean;
+  extraSchema?: Record<string, any>;
+  familyId: string;
+}
+
+export interface UpdateEquipmentTypeRequest {
+  title?: string;
+  subTitle?: string;
+  serialNumber?: string;
+  inventoryRequired?: boolean;
+  extraSchema?: Record<string, any>;
+  familyId?: string;
 }
 
 // Types pour les réponses API

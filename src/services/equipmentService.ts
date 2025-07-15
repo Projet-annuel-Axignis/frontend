@@ -2,10 +2,13 @@ import { api } from '@/lib/api';
 import { 
   EquipmentDomain, 
   EquipmentFamily,
+  EquipmentType,
   CreateEquipmentDomainRequest, 
   UpdateEquipmentDomainRequest,
   CreateEquipmentFamilyRequest,
   UpdateEquipmentFamilyRequest,
+  CreateEquipmentTypeRequest,
+  UpdateEquipmentTypeRequest,
   ApiResponse,
   PaginatedResponse,
   ServerPaginatedResponse
@@ -136,7 +139,7 @@ export const equipmentService = {
   },
 
   // Types d'équipements
-  async getTypes(page: number = 1, limit: number = 10, familyId?: string, search?: string): Promise<ServerPaginatedResponse<any>> {
+  async getTypes(page: number = 1, limit: number = 10, familyId?: string, search?: string, showDeleted: boolean = false): Promise<ServerPaginatedResponse<EquipmentType>> {
     const params = new URLSearchParams();
     
     if (page) {
@@ -155,8 +158,46 @@ export const equipmentService = {
       params.append('search', search);
     }
     
+    if (showDeleted) {
+      params.append('includeDeleted', 'true');
+    }
+    
     const queryString = params.toString() ? `?${params.toString()}` : '';
     const response = await api.get(`/equipments/types${queryString}`);
+    return response.data;
+  },
+  
+  async getTypeById(id: string): Promise<ApiResponse<EquipmentType>> {
+    const response = await api.get(`/equipments/types/${id}`);
+    return response.data;
+  },
+  
+  async getTypeBySerialNumber(serialNumber: string): Promise<ApiResponse<EquipmentType>> {
+    const response = await api.get(`/equipments/types/serial/${serialNumber}`);
+    return response.data;
+  },
+  
+  async createType(data: CreateEquipmentTypeRequest): Promise<ApiResponse<EquipmentType>> {
+    const response = await api.post('/equipments/types', data);
+    return response.data;
+  },
+  
+  async updateType(id: string, data: UpdateEquipmentTypeRequest): Promise<ApiResponse<EquipmentType>> {
+    const response = await api.patch(`/equipments/types/${id}`, data);
+    return response.data;
+  },
+  
+  async deleteType(id: string): Promise<ApiResponse<void>> {
+    try {
+      const response = await api.delete(`/equipments/types/${id}`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+  
+  async restoreType(id: string): Promise<ApiResponse<EquipmentType>> {
+    const response = await api.patch(`/equipments/types/${id}/restore`);
     return response.data;
   },
 
