@@ -193,6 +193,7 @@ export default function Sidebar() {
   const [openProducts, setOpenProducts] = React.useState(false);
   const [openAdministration, setOpenAdministration] = React.useState(false);
   const [openSites, setOpenSites] = React.useState(false);
+  const [openEquipments, setOpenEquipments] = React.useState(false);
 
   const handleProductsClick = () => {
     setOpenProducts(!openProducts);
@@ -204,6 +205,10 @@ export default function Sidebar() {
 
   const handleSitesClick = () => {
     setOpenSites(!openSites);
+  };
+  
+  const handleEquipmentsClick = () => {
+    setOpenEquipments(!openEquipments);
   };
 
   const isActive = (path: string) => pathname === path || pathname.startsWith(path + '/');
@@ -294,62 +299,74 @@ export default function Sidebar() {
 
           {/* Navigation Menu */}
           <List dense sx={{ gap: 0.5, width: '100%', mb: 3 }}>
+            {/* Menu Équipements avec sous-menu */}
             <ListItem disablePadding sx={{ width: '100%' }}>
-              <Tooltip title="Gérer les domaines d'équipements" placement="right" arrow>
+              <Tooltip title="Gérer les équipements techniques" placement="right" arrow>
                 <Box sx={{ width: '100%' }}>
-                  <Link href="/dashboard/domaines" style={{ textDecoration: 'none', color: 'inherit' }}>
-                    <StyledListItemButton isActive={isActive('/dashboard/domaines')}>
-                      <FolderIcon sx={{ mr: 1.5, color: 'var(--color-axignis-primary)' }} />
-                      <ListItemText
-                        primary={
-                          <Typography variant="body2" fontWeight="medium">
-                            Domaines d&apos;équipements
-                          </Typography>
-                        }
-                      />
-                    </StyledListItemButton>
-                  </Link>
+                  <StyledListItemButton
+                    onClick={handleEquipmentsClick}
+                    isActive={isActive('/dashboard/domaines') || isActive('/dashboard/familles') || isActive('/dashboard/types')}
+                  >
+                    <AccountTreeIcon sx={{ mr: 1.5, color: 'var(--color-axignis-primary)' }} />
+                    <ListItemText
+                      primary={
+                        <Typography variant="body2" fontWeight="medium">
+                          Équipements
+                        </Typography>
+                      }
+                    />
+                    <KeyboardArrowDownIcon
+                      sx={{
+                        transform: openEquipments ? 'rotate(180deg)' : 'none',
+                        transition: 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
+                        color: 'var(--color-axignis-primary)',
+                      }}
+                    />
+                  </StyledListItemButton>
                 </Box>
               </Tooltip>
             </ListItem>
 
-            <ListItem disablePadding sx={{ width: '100%' }}>
-              <Tooltip title="Gérer les familles d'équipements" placement="right" arrow>
-                <Box sx={{ width: '100%' }}>
-                  <Link href="/dashboard/familles" style={{ textDecoration: 'none', color: 'inherit' }}>
-                    <StyledListItemButton isActive={isActive('/dashboard/familles')}>
-                      <DashboardRoundedIcon sx={{ mr: 1.5, color: 'var(--color-axignis-primary)' }} />
-                      <ListItemText
-                        primary={
-                          <Typography variant="body2" fontWeight="medium">
-                            Familles d&apos;équipements
-                          </Typography>
-                        }
-                      />
-                    </StyledListItemButton>
-                  </Link>
-                </Box>
-              </Tooltip>
-            </ListItem>
-
-            <ListItem disablePadding sx={{ width: '100%' }}>
-              <Tooltip title="Gérer les types d'équipements" placement="right" arrow>
-                <Box sx={{ width: '100%' }}>
-                  <Link href="/dashboard/types" style={{ textDecoration: 'none', color: 'inherit' }}>
-                    <StyledListItemButton isActive={isActive('/dashboard/types')}>
-                      <CableIcon sx={{ mr: 1.5, color: 'var(--color-axignis-primary)' }} />
-                      <ListItemText
-                        primary={
-                          <Typography variant="body2" fontWeight="medium">
-                            Types d&apos;équipements
-                          </Typography>
-                        }
-                      />
-                    </StyledListItemButton>
-                  </Link>
-                </Box>
-              </Tooltip>
-            </ListItem>
+            {/* Sous-menu Équipements */}
+            <Collapse in={openEquipments} timeout={400} unmountOnExit>
+              <Box sx={{ pl: 4, py: 1 }}>
+                <Link href="/dashboard/domaines" style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <StyledListItemButton
+                    sx={{ py: 0.75, mb: 0.5, width: '100%' }}
+                    isActive={isActive('/dashboard/domaines')}
+                  >
+                    <FolderIcon sx={{ mr: 1.5, fontSize: '1rem', color: 'var(--color-axignis-primary)' }} />
+                    <Typography variant="body2" color="textSecondary">
+                      Domaines
+                    </Typography>
+                  </StyledListItemButton>
+                </Link>
+                
+                <Link href="/dashboard/familles" style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <StyledListItemButton
+                    sx={{ py: 0.75, mb: 0.5, width: '100%' }}
+                    isActive={isActive('/dashboard/familles')}
+                  >
+                    <DashboardRoundedIcon sx={{ mr: 1.5, fontSize: '1rem', color: 'var(--color-axignis-primary)' }} />
+                    <Typography variant="body2" color="textSecondary">
+                      Familles
+                    </Typography>
+                  </StyledListItemButton>
+                </Link>
+                
+                <Link href="/dashboard/types" style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <StyledListItemButton
+                    sx={{ py: 0.75, mb: 0.5, width: '100%' }}
+                    isActive={isActive('/dashboard/types')}
+                  >
+                    <CableIcon sx={{ mr: 1.5, fontSize: '1rem', color: 'var(--color-axignis-primary)' }} />
+                    <Typography variant="body2" color="textSecondary">
+                      Types
+                    </Typography>
+                  </StyledListItemButton>
+                </Link>
+              </Box>
+            </Collapse>
 
             <ListItem disablePadding sx={{ width: '100%' }}>
               <Tooltip title="Gérer les marques" placement="right" arrow>
@@ -385,18 +402,6 @@ export default function Sidebar() {
                           Produits
                         </Typography>
                       }
-                    />
-                    <Badge
-                      badgeContent="3"
-                      color="primary"
-                      sx={{
-                        mr: 1,
-                        '& .MuiBadge-badge': {
-                          fontSize: '0.6rem',
-                          minWidth: '16px',
-                          height: '16px',
-                        }
-                      }}
                     />
                     <KeyboardArrowDownIcon
                       sx={{
