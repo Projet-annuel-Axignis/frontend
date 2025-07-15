@@ -1,7 +1,8 @@
 'use client';
 
 import DashBoardHeader from '@/components/dashboard/DashBoardHeader';
-import interventionTypeService, { CreateInterventionTypeDto, InterventionType, UpdateInterventionTypeDto } from '@/services/interventionTypeService';
+import interventionTypeService from '@/services/interventionTypeService';
+import { CreateInterventionTypeDto, InterventionType, UpdateInterventionTypeDto } from '@/types/intervention';
 import {
   Add as AddIcon,
   Category as CategoryIcon
@@ -64,6 +65,7 @@ export default function InterventionTypesPage() {
   // Chargement initial
   useEffect(() => {
     loadInterventionTypes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Filtrage côté client

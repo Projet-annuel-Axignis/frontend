@@ -1,6 +1,6 @@
 'use client';
 
-import { InterventionType } from '@/services/interventionTypeService';
+import { InterventionType } from '@/types/intervention';
 import {
   Delete as DeleteIcon,
   Edit as EditIcon

@@ -1,20 +1,10 @@
 import { api } from '@/lib/api';
 import { PaginatedResponseDto } from '@/types/apiTypes';
-
-export interface InterventionType {
-  id: number;
-  code: string;
-  name: string;
-}
-
-export interface CreateInterventionTypeDto {
-  code: string;
-  name: string;
-}
-
-export interface UpdateInterventionTypeDto {
-  name?: string;
-}
+import {
+  CreateInterventionTypeDto,
+  InterventionType,
+  UpdateInterventionTypeDto
+} from '@/types/intervention';
 
 export interface InterventionTypeFilters {
   search?: string;
