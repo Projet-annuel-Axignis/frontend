@@ -140,7 +140,7 @@ export interface CreateEquipmentTypeRequest {
   serialNumber: string;
   inventoryRequired: boolean;
   extraSchema?: Record<string, any>;
-  familyId: string;
+  familyId: string | number;  // Accepter à la fois une chaîne ou un nombre
 }
 
 export interface UpdateEquipmentTypeRequest {
@@ -149,7 +149,7 @@ export interface UpdateEquipmentTypeRequest {
   serialNumber?: string;
   inventoryRequired?: boolean;
   extraSchema?: Record<string, any>;
-  familyId?: string;
+  familyId?: string | number;  // Accepter à la fois une chaîne ou un nombre
 }
 
 // Types pour les réponses API

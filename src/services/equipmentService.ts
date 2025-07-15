@@ -221,13 +221,53 @@ export const equipmentService = {
   },
   
   async createType(data: CreateEquipmentTypeRequest): Promise<ApiResponse<EquipmentType>> {
-    const response = await api.post('/equipments/types', data);
+    // Créer un objet pour l'API qui peut avoir des types différents
+    const requestData: any = { ...data };
+    
+    // Si familyId est présent, essayer de le convertir en nombre pour l'API
+    if (requestData.familyId) {
+      // Dans le cas où familyId est une chaîne qui représente un nombre
+      if (typeof requestData.familyId === 'string' && !isNaN(Number(requestData.familyId))) {
+        // Convertir en nombre pour l'API
+        requestData.familyId = Number(requestData.familyId);
+      }
+    }
+    
+    console.log("Données pour création de type:", requestData);
+    
+    const response = await api.post('/equipments/types', requestData);
     return response.data;
   },
   
   async updateType(id: string, data: UpdateEquipmentTypeRequest): Promise<ApiResponse<EquipmentType>> {
-    const response = await api.patch(`/equipments/types/${id}`, data);
-    return response.data;
+    // Créer un objet pour l'API qui peut avoir des types différents
+    const requestData: any = { ...data };
+    
+    // Si familyId est présent, essayer de le convertir en nombre pour l'API
+    if (requestData.familyId) {
+      // Dans le cas où familyId est une chaîne qui représente un nombre
+      if (typeof requestData.familyId === 'string' && !isNaN(Number(requestData.familyId))) {
+        // Convertir en nombre pour l'API
+        requestData.familyId = Number(requestData.familyId);
+      }
+    }
+    
+    console.log(`Appel API PATCH /equipments/types/${id} avec données originales:`, data);
+    console.log(`Données après transformation pour l'API:`, requestData);
+    
+    try {
+      const response = await api.patch(`/equipments/types/${id}`, requestData);
+      console.log("Réponse API updateType:", response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error("Erreur updateType:", error);
+      if (error.response) {
+        console.error("Statut de l'erreur:", error.response.status);
+        console.error("Données d'erreur:", error.response.data);
+        console.error("Headers de la réponse:", error.response.headers);
+      }
+      throw error;
+    }
   },
   
   async deleteType(id: string): Promise<ApiResponse<void>> {

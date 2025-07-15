@@ -216,7 +216,11 @@ export default function EquipmentTypesPage() {
         extraSchema: convertExtraFieldsToSchema()
       };
 
+      console.log("handleSubmit - Données du formulaire avant soumission:", formDataWithSchema);
+      console.log("handleSubmit - Type de familyId:", typeof formDataWithSchema.familyId);
+
       if (editingType) {
+        console.log(`Mise à jour du type d'équipement (ID: ${editingType.id})`);
         await equipmentService.updateType(editingType.id, formDataWithSchema as UpdateEquipmentTypeRequest);
         setSnackbar({
           open: true,
@@ -224,6 +228,7 @@ export default function EquipmentTypesPage() {
           severity: 'success'
         });
       } else {
+        console.log("Création d'un nouveau type d'équipement");
         await equipmentService.createType(formDataWithSchema);
         setSnackbar({
           open: true,
@@ -238,8 +243,13 @@ export default function EquipmentTypesPage() {
       let errorMessage = 'Erreur lors de la sauvegarde';
       
       if (error.response) {
+        console.error("Code d'erreur:", error.response.status);
+        console.error("Détails de l'erreur:", error.response.data);
+        
         if (error.response.status === 409) {
           errorMessage = 'Un type avec ce numéro de série existe déjà';
+        } else if (error.response.status === 500) {
+          errorMessage = 'Erreur serveur. Vérifiez les formats de données et réessayez.';
         } else if (error.response.data && error.response.data.message) {
           errorMessage = error.response.data.message;
         }
@@ -341,12 +351,21 @@ export default function EquipmentTypesPage() {
 
   const handleEdit = (equipmentType: EquipmentType) => {
     setEditingType(equipmentType);
+    
+    // Assurons-nous que familyId est traité correctement
+    const processedFamilyId = equipmentType.familyId;
+    
+    // Si c'est un nombre sous forme de chaîne, nous pouvons le conserver tel quel,
+    // le service s'occupera de la conversion
+    console.log("handleEdit - Type d'équipement à éditer:", equipmentType);
+    console.log("handleEdit - Type de familyId:", typeof processedFamilyId);
+    
     setFormData({ 
       title: equipmentType.title, 
       subTitle: equipmentType.subTitle || '',
       serialNumber: equipmentType.serialNumber,
       inventoryRequired: equipmentType.inventoryRequired,
-      familyId: equipmentType.familyId,
+      familyId: processedFamilyId,
       extraSchema: equipmentType.extraSchema || {}
     });
     setOpenDialog(true);
