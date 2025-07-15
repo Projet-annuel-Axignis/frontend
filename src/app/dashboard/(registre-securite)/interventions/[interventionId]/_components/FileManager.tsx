@@ -74,12 +74,10 @@ const FileManager: React.FC<FileManagerProps> = ({
     try {
       let filesData;
       if (entityType === 'report') {
-        // Utiliser l'API spécifique pour les fichiers d'un rapport
-        const response = await fetch(`/api/v1/reports/${entityId}/files`);
-        if (!response.ok) throw new Error('Erreur lors du chargement des fichiers');
-        filesData = await response.json();
+        // Utiliser le service pour récupérer les fichiers d'un rapport
+        filesData = await fileService.getReportFiles(entityId);
       } else {
-        // Utiliser l'API spécifique pour les fichiers d'une observation
+        // Pour les observations, utiliser une route similaire
         const response = await fetch(`/api/v1/observations/${entityId}/files`);
         if (!response.ok) throw new Error('Erreur lors du chargement des fichiers');
         filesData = await response.json();
@@ -108,12 +106,7 @@ const FileManager: React.FC<FileManagerProps> = ({
 
         // 2. Attacher le fichier à l'entité
         if (entityType === 'report') {
-          const response = await fetch(`/api/v1/reports/${entityId}/files`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ fileId: uploadResponse.id })
-          });
-          if (!response.ok) throw new Error('Erreur lors de l\'attachement du fichier');
+          await fileService.attachFileToReport(entityId, uploadResponse.id);
         } else {
           const response = await fetch(`/api/v1/observations/${entityId}/files`, {
             method: 'POST',
@@ -189,10 +182,7 @@ const FileManager: React.FC<FileManagerProps> = ({
   const handleDelete = async (file: File) => {
     try {
       if (entityType === 'report') {
-        const response = await fetch(`/api/v1/reports/${entityId}/files/${file.id}`, {
-          method: 'DELETE'
-        });
-        if (!response.ok) throw new Error('Erreur lors de la suppression');
+        await fileService.removeFileFromReport(entityId, file.id);
       } else {
         const response = await fetch(`/api/v1/observations/${entityId}/files/${file.id}`, {
           method: 'DELETE'
@@ -310,8 +300,8 @@ const FileManager: React.FC<FileManagerProps> = ({
                 </ListItemIcon>
 
                 <ListItemText
-                  primary={`Fichier ${file.id}`}
-                  secondary={`ID: ${file.fileId}`}
+                  primary={`Fichier #${file.id}`}
+                  secondary={`ID fichier: ${file.fileId}`}
                 />
 
                 <ListItemSecondaryAction>
