@@ -1,490 +1,392 @@
 'use client';
 
-import interventionTypeService, { CreateInterventionTypeDto, InterventionType, InterventionTypeFilters, UpdateInterventionTypeDto } from '@/services/interventionTypeService';
-import {
-  Add as AddIcon,
-  Delete as DeleteIcon,
-  Edit as EditIcon,
-  MoreVert as MoreVertIcon,
-  Search as SearchIcon,
-  Visibility as ViewIcon
-} from '@mui/icons-material';
+import DashBoardHeader from '@/components/dashboard/DashBoardHeader';
+import { useLoading } from '@/hooks/useLoading';
+import interventionTypeService, { CreateInterventionTypeDto, InterventionType, UpdateInterventionTypeDto } from '@/services/interventionTypeService';
+import { Add as AddIcon, Refresh as RefreshIcon, Settings as SettingsIcon } from '@mui/icons-material';
 import {
   Alert,
   Box,
   Button,
-  Chip,
+  Card,
+  CardContent,
   Dialog,
   DialogActions,
   DialogContent,
+  DialogContentText,
   DialogTitle,
-  FormControl,
-  FormControlLabel,
-  InputLabel,
-  ListItemIcon,
-  ListItemText,
-  Menu,
-  MenuItem,
-  MenuItem as MenuItemAction,
-  MenuList,
-  Select,
+  Divider,
   Snackbar,
-  Switch,
-  TextField,
   Typography
 } from '@mui/material';
-import { DataGrid, GridActionsCellItem, GridColDef } from '@mui/x-data-grid';
-import { format, isValid, parseISO } from 'date-fns';
-import { fr } from 'date-fns/locale';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import InterventionTypeCard from './_components/InterventionTypeCard';
+import InterventionTypeDialog from './_components/InterventionTypeDialog';
+import InterventionTypeFilters from './_components/InterventionTypeFilters';
+import InterventionTypeTable from './_components/InterventionTypeTable';
 
-// Fonction utilitaire pour formater les dates de manière sûre
-const formatDate = (dateString: string): string => {
-  if (!dateString) return '-';
+const InterventionTypesPage = () => {
+  const { isLoading: loading, withLoading } = useLoading();
 
-  const date = parseISO(dateString);
-  if (!isValid(date)) return '-';
-
-  return format(date, 'dd/MM/yy', { locale: fr });
-};
-
-const formatDateTime = (dateString: string): string => {
-  if (!dateString) return '-';
-
-  const date = parseISO(dateString);
-  if (!isValid(date)) return '-';
-
-  return format(date, 'dd MMMM yyyy à HH:mm', { locale: fr });
-};
-
-export default function InterventionTypesPage() {
+  // Data states
   const [interventionTypes, setInterventionTypes] = useState<InterventionType[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
-  // États des filtres
-  const [filters, setFilters] = useState<InterventionTypeFilters>({
-    search: '',
-    isActive: undefined,
-    sortBy: 'name',
-    sortOrder: 'asc',
-    page: 1,
-    limit: 50
-  });
+  // Filter states
+  const [search, setSearch] = useState('');
+  const [isActive, setIsActive] = useState<boolean | undefined>(undefined);
+  const [sortBy, setSortBy] = useState('name');
+  const [sortOrder, setSortOrder] = useState('asc');
 
-  // États du dialogue
+  // Dialog states
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [dialogMode, setDialogMode] = useState<'create' | 'edit' | 'view'>('create');
-  const [selectedType, setSelectedType] = useState<InterventionType | null>(null);
-  const [formData, setFormData] = useState<CreateInterventionTypeDto>({
-    code: '',
-    name: '',
-    description: '',
-    isActive: true
+  const [editingType, setEditingType] = useState<InterventionType | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [typeToDelete, setTypeToDelete] = useState<InterventionType | null>(null);
+
+  // Notification states
+  const [notification, setNotification] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error';
+  }>({
+    open: false,
+    message: '',
+    severity: 'success',
   });
 
-  // États du menu contextuel
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [menuType, setMenuType] = useState<InterventionType | null>(null);
-
-  // Chargement des données
+  // Load initial data
   useEffect(() => {
-    loadInterventionTypes();
+    loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters]);
+  }, []);
 
-  const loadInterventionTypes = async () => {
-    try {
-      setLoading(true);
-      const response = await interventionTypeService.getInterventionTypes(filters);
-      setInterventionTypes(response.data);
-    } catch (err: any) {
-      setError('Erreur lors du chargement des types d&apos;intervention');
-      console.error('Erreur:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleFilterChange = (key: keyof InterventionTypeFilters, value: any) => {
-    setFilters(prev => ({
-      ...prev,
-      [key]: key === 'isActive' ? (value === '' ? undefined : value === 'true') : value,
-      page: key !== 'page' ? 1 : value // Reset page sauf si on change la page
-    }));
-  };
-
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, type: InterventionType) => {
-    setAnchorEl(event.currentTarget);
-    setMenuType(type);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-    setMenuType(null);
-  };
-
-  const handleDialogOpen = (mode: 'create' | 'edit' | 'view', type?: InterventionType) => {
-    setDialogMode(mode);
-    setSelectedType(type || null);
-
-    if (mode === 'create') {
-      setFormData({
-        code: '',
-        name: '',
-        description: '',
-        isActive: true
-      });
-    } else if (type) {
-      setFormData({
-        code: type.code,
-        name: type.name,
-        description: type.description || '',
-        isActive: type.isActive
-      });
-    }
-
-    setDialogOpen(true);
-    handleMenuClose();
-  };
-
-  const handleDialogClose = () => {
-    setDialogOpen(false);
-    setSelectedType(null);
-    setFormData({
-      code: '',
-      name: '',
-      description: '',
-      isActive: true
+  const loadData = async () => {
+    await withLoading(async () => {
+      try {
+        await loadInterventionTypes();
+      } catch (error) {
+        console.error('Error loading data:', error);
+        showNotification('Erreur lors du chargement des données', 'error');
+      }
     });
   };
 
-  const handleSubmit = async () => {
+  const loadInterventionTypes = async () => {
     try {
-      if (dialogMode === 'create') {
-        await interventionTypeService.createInterventionType(formData);
-        setSuccess('Type d&apos;intervention créé avec succès');
-      } else if (dialogMode === 'edit' && selectedType) {
-        const updateData: UpdateInterventionTypeDto = {
-          name: formData.name,
-          description: formData.description,
-          isActive: formData.isActive
-        };
-        await interventionTypeService.updateInterventionType(selectedType.code, updateData);
-        setSuccess('Type d&apos;intervention modifié avec succès');
-      }
-
-      handleDialogClose();
-      loadInterventionTypes();
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Erreur lors de l&apos;opération');
+      const result = await interventionTypeService.getInterventionTypes({
+        search,
+        isActive,
+        sortBy: sortBy as any,
+        sortOrder: sortOrder as any,
+        page: 1,
+        limit: 1000,
+      });
+      setInterventionTypes(result.data);
+    } catch (error) {
+      console.error('Error loading intervention types:', error);
+      showNotification('Erreur lors du chargement des types d\'intervention', 'error');
     }
   };
 
-  const handleDelete = async (type: InterventionType) => {
-    if (window.confirm(`Êtes-vous sûr de vouloir supprimer le type d&apos;intervention "${type.name}" ?`)) {
+  // Reload types when filters change
+  useEffect(() => {
+    loadInterventionTypes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, isActive, sortBy, sortOrder]);
+
+  const showNotification = (message: string, severity: 'success' | 'error') => {
+    setNotification({ open: true, message, severity });
+  };
+
+  const handleCreateType = () => {
+    setEditingType(null);
+    setDialogOpen(true);
+  };
+
+  const handleEditType = (type: InterventionType) => {
+    setEditingType(type);
+    setDialogOpen(true);
+  };
+
+  const handleDeleteType = (type: InterventionType) => {
+    setTypeToDelete(type);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleRestoreType = async (type: InterventionType) => {
+    await withLoading(async () => {
       try {
-        await interventionTypeService.deleteInterventionType(type.code);
-        setSuccess('Type d&apos;intervention supprimé avec succès');
-        loadInterventionTypes();
-      } catch (err: any) {
-        setError(err.response?.data?.message || 'Erreur lors de la suppression');
+        await interventionTypeService.updateInterventionType(type.code, { isActive: true });
+        await loadInterventionTypes();
+        showNotification('Type d\'intervention restauré avec succès', 'success');
+      } catch (error) {
+        console.error('Error restoring intervention type:', error);
+        showNotification('Erreur lors de la restauration du type d\'intervention', 'error');
       }
-    }
-    handleMenuClose();
+    });
   };
 
-  const columns: GridColDef[] = [
-    {
-      field: 'code',
-      headerName: 'Code',
-      width: 120,
-      renderCell: (params) => (
-        <Typography variant="body2" fontWeight="medium">
-          {params.value}
-        </Typography>
-      )
-    },
-    {
-      field: 'name',
-      headerName: 'Nom',
-      flex: 1,
-      minWidth: 200
-    },
-    {
-      field: 'description',
-      headerName: 'Description',
-      flex: 1.5,
-      minWidth: 250,
-      renderCell: (params) => (
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          {params.value || '-'}
-        </Typography>
-      )
-    },
-    {
-      field: 'isActive',
-      headerName: 'Statut',
-      width: 120,
-      renderCell: (params) => (
-        <Chip
-          label={params.value ? 'Actif' : 'Inactif'}
-          color={params.value ? 'success' : 'default'}
-          size="small"
-        />
-      )
-    },
-    {
-      field: 'createdAt',
-      headerName: 'Créé le',
-      width: 120,
-      renderCell: (params) => (
-        <Typography variant="body2" color="text.secondary">
-          {formatDate(params.value)}
-        </Typography>
-      )
-    },
-    {
-      field: 'actions',
-      type: 'actions',
-      headerName: 'Actions',
-      width: 100,
-      getActions: (params) => [
-        <GridActionsCellItem
-          key="menu"
-          icon={<MoreVertIcon />}
-          label="Plus d&apos;actions"
-          onClick={(event) => handleMenuOpen(event, params.row)}
-        />
-      ]
+  const confirmDeleteType = async () => {
+    if (!typeToDelete) return;
+
+    await withLoading(async () => {
+      try {
+        await interventionTypeService.updateInterventionType(typeToDelete.code, { isActive: false });
+        await loadInterventionTypes();
+        showNotification('Type d\'intervention désactivé avec succès', 'success');
+        setDeleteDialogOpen(false);
+        setTypeToDelete(null);
+      } catch (error) {
+        console.error('Error deleting intervention type:', error);
+        showNotification('Erreur lors de la désactivation du type d\'intervention', 'error');
+      }
+    });
+  };
+
+  const handleSubmitType = async (data: CreateInterventionTypeDto | UpdateInterventionTypeDto) => {
+    await withLoading(async () => {
+      try {
+        if (editingType) {
+          // Update existing type
+          await interventionTypeService.updateInterventionType(editingType.code, data as UpdateInterventionTypeDto);
+          showNotification('Type d\'intervention modifié avec succès', 'success');
+        } else {
+          // Create new type
+          await interventionTypeService.createInterventionType(data as CreateInterventionTypeDto);
+          showNotification('Type d\'intervention créé avec succès', 'success');
+        }
+
+        await loadInterventionTypes();
+        setDialogOpen(false);
+        setEditingType(null);
+      } catch (error) {
+        console.error('Error submitting intervention type:', error);
+        throw error; // Let the dialog handle the error display
+      }
+    });
+  };
+
+  const handleResetFilters = () => {
+    setSearch('');
+    setIsActive(undefined);
+    setSortBy('name');
+    setSortOrder('asc');
+  };
+
+  // Filter types based on current filters (client-side for better UX)
+  const filteredTypes = interventionTypes.filter(type => {
+    if (isActive !== undefined && type.isActive !== isActive) return false;
+    if (search) {
+      const searchLower = search.toLowerCase();
+      return (
+        type.code.toLowerCase().includes(searchLower) ||
+        type.name.toLowerCase().includes(searchLower) ||
+        type.description?.toLowerCase().includes(searchLower)
+      );
     }
-  ];
+    return true;
+  });
 
   return (
-    <Box sx={{ p: 3 }}>
-      {/* En-tête */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box>
-          <Typography variant="h4" component="h1" gutterBottom>
-            Types d&apos;intervention
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Gérez les différents types d&apos;intervention disponibles
-          </Typography>
-        </Box>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => handleDialogOpen('create')}
-        >
-          Ajouter un type
-        </Button>
-      </Box>
+    <Box>
+      {/* Header */}
+      <DashBoardHeader
+        title="Types d'intervention"
+        icon={<SettingsIcon />}
+      />
 
-      {/* Filtres */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
-        <TextField
-          placeholder="Rechercher par code, nom ou description..."
-          value={filters.search || ''}
-          onChange={(e) => handleFilterChange('search', e.target.value)}
-          InputProps={{
-            startAdornment: <SearchIcon sx={{ color: 'text.secondary', mr: 1 }} />
-          }}
-          sx={{ minWidth: 300 }}
-          size="small"
-        />
+      <Card>
+        <CardContent>
+          {/* Header */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+            <SettingsIcon color="primary" sx={{ fontSize: '2rem' }} />
+            <Box sx={{ flexGrow: 1 }}>
+              <Typography variant="h5" component="h2" fontWeight="600">
+                Gestion des Types d&apos;intervention
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {filteredTypes.length} type{filteredTypes.length > 1 ? 's' : ''} trouvé{filteredTypes.length > 1 ? 's' : ''}
+                {filteredTypes.length !== interventionTypes.length && ` sur ${interventionTypes.length} au total`}
+              </Typography>
+            </Box>
 
-        <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel>Statut</InputLabel>
-          <Select
-            value={filters.isActive === undefined ? '' : filters.isActive}
-            onChange={(e) => handleFilterChange('isActive', e.target.value === '' ? undefined : e.target.value)}
-            label="Statut"
-          >
-            <MenuItem value="">Tous</MenuItem>
-            <MenuItem value="true">Actif</MenuItem>
-            <MenuItem value="false">Inactif</MenuItem>
-          </Select>
-        </FormControl>
+            {/* Boutons - Version Desktop */}
+            <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 1, flexWrap: 'wrap' }}>
+              <Button
+                variant="outlined"
+                startIcon={<RefreshIcon />}
+                onClick={loadData}
+                disabled={loading}
+                size="small"
+              >
+                Actualiser
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={handleCreateType}
+                disabled={loading}
+                sx={{
+                  background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                  },
+                }}
+              >
+                Nouveau type
+              </Button>
+            </Box>
 
-        <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel>Trier par</InputLabel>
-          <Select
-            value={filters.sortBy || 'name'}
-            onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-            label="Trier par"
-          >
-            <MenuItem value="code">Code</MenuItem>
-            <MenuItem value="name">Nom</MenuItem>
-            <MenuItem value="createdAt">Date de création</MenuItem>
-            <MenuItem value="updatedAt">Dernière mise à jour</MenuItem>
-          </Select>
-        </FormControl>
-      </Box>
+            {/* Boutons - Version Mobile (icônes seulement) */}
+            <Box sx={{ display: { xs: 'flex', sm: 'none' }, gap: 1 }}>
+              <Button
+                variant="outlined"
+                onClick={loadData}
+                disabled={loading}
+                size="small"
+                sx={{ minWidth: 'auto', px: 1 }}
+              >
+                <RefreshIcon fontSize="small" />
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleCreateType}
+                disabled={loading}
+                size="small"
+                sx={{
+                  minWidth: 'auto',
+                  px: 1,
+                  background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                  },
+                }}
+              >
+                <AddIcon fontSize="small" />
+              </Button>
+            </Box>
+          </Box>
 
-      {/* Tableau */}
-      <Box sx={{ height: 600, width: '100%' }}>
-        <DataGrid
-          rows={interventionTypes}
-          columns={columns}
-          loading={loading}
-          disableRowSelectionOnClick
-          pageSizeOptions={[25, 50, 100]}
-          initialState={{
-            pagination: {
-              paginationModel: { pageSize: 25 }
-            }
-          }}
-          sx={{
-            '& .MuiDataGrid-cell:focus': {
-              outline: 'none'
-            }
-          }}
-        />
-      </Box>
+          <Divider sx={{ mb: 3 }} />
 
-      {/* Menu contextuel */}
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-      >
-        <MenuList>
-          <MenuItemAction onClick={() => handleDialogOpen('view', menuType || undefined)}>
-            <ListItemIcon>
-              <ViewIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Voir les détails</ListItemText>
-          </MenuItemAction>
-          <MenuItemAction onClick={() => handleDialogOpen('edit', menuType || undefined)}>
-            <ListItemIcon>
-              <EditIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Modifier</ListItemText>
-          </MenuItemAction>
-          <MenuItemAction
-            onClick={() => menuType && handleDelete(menuType)}
-            sx={{ color: 'error.main' }}
-          >
-            <ListItemIcon>
-              <DeleteIcon fontSize="small" color="error" />
-            </ListItemIcon>
-            <ListItemText>Supprimer</ListItemText>
-          </MenuItemAction>
-        </MenuList>
-      </Menu>
+          {/* Filtres */}
+          <InterventionTypeFilters
+            search={search}
+            onSearchChange={setSearch}
+            isActive={isActive}
+            onIsActiveChange={setIsActive}
+            sortBy={sortBy}
+            onSortByChange={setSortBy}
+            sortOrder={sortOrder}
+            onSortOrderChange={setSortOrder}
+            onReset={handleResetFilters}
+          />
 
-      {/* Dialogue de création/édition/vue */}
-      <Dialog
-        open={dialogOpen}
-        onClose={handleDialogClose}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>
-          {dialogMode === 'create' && 'Ajouter un type d&apos;intervention'}
-          {dialogMode === 'edit' && 'Modifier le type d&apos;intervention'}
-          {dialogMode === 'view' && 'Détails du type d&apos;intervention'}
-        </DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 2 }}>
-            <TextField
-              label="Code"
-              value={formData.code}
-              onChange={(e) => setFormData(prev => ({ ...prev, code: e.target.value }))}
-              disabled={dialogMode !== 'create'}
-              required
-              fullWidth
-              helperText={dialogMode === 'create' ? 'Le code ne peut pas être modifié après création' : ''}
+          {/* Desktop Table View */}
+          <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+            <InterventionTypeTable
+              interventionTypes={filteredTypes}
+              onEdit={handleEditType}
+              onDelete={handleDeleteType}
+              onRestore={handleRestoreType}
             />
+          </Box>
 
-            <TextField
-              label="Nom"
-              value={formData.name}
-              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-              disabled={dialogMode === 'view'}
-              required
-              fullWidth
-            />
+          {/* Mobile Card View */}
+          <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+            {filteredTypes.map((type) => (
+              <InterventionTypeCard
+                key={type.id}
+                interventionType={type}
+                onEdit={handleEditType}
+                onDelete={handleDeleteType}
+                onRestore={handleRestoreType}
+              />
+            ))}
 
-            <TextField
-              label="Description"
-              value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              disabled={dialogMode === 'view'}
-              multiline
-              rows={3}
-              fullWidth
-            />
-
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={formData.isActive}
-                  onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
-                  disabled={dialogMode === 'view'}
-                />
-              }
-              label="Type actif"
-            />
-
-            {dialogMode === 'view' && selectedType && (
-              <Box sx={{ mt: 2 }}>
-                <Typography variant="body2" color="text.secondary">
-                  Créé le : {formatDateTime(selectedType.createdAt)}
+            {filteredTypes.length === 0 && (
+              <Box sx={{ textAlign: 'center', py: 8 }}>
+                <SettingsIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+                <Typography variant="h6" color="text.secondary" gutterBottom>
+                  Aucun type d&apos;intervention trouvé
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Modifié le : {formatDateTime(selectedType.updatedAt)}
+                  {search || isActive !== undefined
+                    ? 'Aucun type ne correspond à vos critères de recherche.'
+                    : 'Commencez par créer votre premier type d\'intervention.'
+                  }
                 </Typography>
               </Box>
             )}
           </Box>
+        </CardContent>
+      </Card>
+
+      {/* Type Dialog */}
+      <InterventionTypeDialog
+        open={dialogOpen}
+        onClose={() => {
+          setDialogOpen(false);
+          setEditingType(null);
+        }}
+        onSubmit={handleSubmitType}
+        interventionType={editingType}
+        loading={loading}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => {
+          setDeleteDialogOpen(false);
+          setTypeToDelete(null);
+        }}
+      >
+        <DialogTitle>Confirmer la désactivation</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Êtes-vous sûr de vouloir désactiver le type d&apos;intervention &quot;{typeToDelete?.name}&quot; ?
+            Cette action peut être annulée en restaurant le type depuis les filtres.
+          </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDialogClose}>
-            {dialogMode === 'view' ? 'Fermer' : 'Annuler'}
+          <Button
+            onClick={() => {
+              setDeleteDialogOpen(false);
+              setTypeToDelete(null);
+            }}
+            disabled={loading}
+          >
+            Annuler
           </Button>
-          {dialogMode !== 'view' && (
-            <Button
-              onClick={handleSubmit}
-              variant="contained"
-              disabled={!formData.code || !formData.name}
-            >
-              {dialogMode === 'create' ? 'Créer' : 'Modifier'}
-            </Button>
-          )}
+          <Button
+            onClick={confirmDeleteType}
+            color="error"
+            variant="contained"
+            disabled={loading}
+          >
+            Désactiver
+          </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Notifications */}
+      {/* Notification Snackbar */}
       <Snackbar
-        open={!!error}
-        autoHideDuration={6000}
-        onClose={() => setError(null)}
-      >
-        <Alert severity="error" onClose={() => setError(null)}>
-          {error}
-        </Alert>
-      </Snackbar>
-
-      <Snackbar
-        open={!!success}
+        open={notification.open}
         autoHideDuration={4000}
-        onClose={() => setSuccess(null)}
+        onClose={() => setNotification(prev => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
-        <Alert severity="success" onClose={() => setSuccess(null)}>
-          {success}
+        <Alert
+          onClose={() => setNotification(prev => ({ ...prev, open: false }))}
+          severity={notification.severity}
+          variant="filled"
+        >
+          {notification.message}
         </Alert>
       </Snackbar>
     </Box>
   );
-} 
+};
+
+export default InterventionTypesPage; 
