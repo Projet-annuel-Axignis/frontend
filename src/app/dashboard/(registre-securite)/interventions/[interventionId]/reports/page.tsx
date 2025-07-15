@@ -2,8 +2,10 @@
 
 import { useBreadcrumbTitle } from '@/hooks/useBreadcrumbTitle';
 import { useLoading } from '@/hooks/useLoading';
+import organizationService from '@/services/organizationService';
 import reportService from '@/services/reportService';
-import { OrganizationType, Report } from '@/types/intervention';
+import reportTypeService from '@/services/reportTypeService';
+import { Organization, OrganizationType, Report, ReportType, UpdateReportDto } from '@/types/intervention';
 import {
   Add as AddIcon,
   Assignment as AssignmentIcon,
@@ -23,6 +25,7 @@ import {
 } from '@mui/icons-material';
 import {
   Alert,
+  Autocomplete,
   Box,
   Button,
   Card,
@@ -68,6 +71,21 @@ const organizationTypeColors: Record<OrganizationType, 'default' | 'primary' | '
   TC: 'secondary'
 };
 
+// Type pour les options de topologie
+type TopologyCode = {
+  code: string;
+  label: string;
+  description: string;
+};
+
+// Predefined options for typology codes
+const TOPOLOGY_CODES: TopologyCode[] = [
+  { code: 'ERP', label: 'ERP', description: 'Établissement Recevant du Public' },
+  { code: 'IGH', label: 'IGH', description: 'Immeuble de Grande Hauteur' },
+  { code: 'BUP', label: 'BUP', description: 'Bâtiment à Utilisation Professionnelle' },
+  { code: 'HAB', label: 'HAB', description: 'Bâtiment d\'Habitation' },
+];
+
 export default function InterventionReportsPage() {
   const params = useParams();
   const { withLoading } = useLoading();
@@ -78,6 +96,8 @@ export default function InterventionReportsPage() {
 
   // Data states
   const [reports, setReports] = useState<Report[]>([]);
+  const [reportTypes, setReportTypes] = useState<ReportType[]>([]);
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
 
   // Filter states
   const [search, setSearch] = useState('');
@@ -93,7 +113,7 @@ export default function InterventionReportsPage() {
   // Expandable rows state
   const [expandedRow, setExpandedRow] = useState<number | null>(null);
   const [editingReport, setEditingReport] = useState<Report | null>(null);
-  const [editForm, setEditForm] = useState({
+  const [editForm, setEditForm] = useState<UpdateReportDto>({
     label: '',
     typeCode: '',
     organizationId: 0,
@@ -118,6 +138,7 @@ export default function InterventionReportsPage() {
   useEffect(() => {
     if (interventionId) {
       loadReports();
+      loadReferenceData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [interventionId, search, typeFilter, organizationFilter, includeDeleted]);
@@ -136,6 +157,35 @@ export default function InterventionReportsPage() {
         showNotification('Erreur lors du chargement des rapports', 'error');
       }
     });
+  };
+
+  const loadReferenceData = async () => {
+    try {
+      // Charger les types de rapport
+      const reportTypesResponse = await reportTypeService.getReportTypes(
+        {
+          limit: 1000,
+          page: 1,
+          sortOrder: 'asc',
+          sortBy: 'name'
+        }
+      );
+      setReportTypes(reportTypesResponse.data);
+
+      // Charger les organisations
+      const organizationsResponse = await organizationService.getOrganizations(
+        {
+          limit: 1000,
+          page: 1,
+          sortOrder: 'asc',
+          sortBy: 'name'
+        }
+      );
+      setOrganizations(organizationsResponse.data);
+    } catch (error) {
+      console.error('Erreur lors du chargement des données de référence:', error);
+      showNotification('Erreur lors du chargement des données de référence', 'error');
+    }
   };
 
   const showNotification = (message: string, severity: 'success' | 'error' | 'info') => {
@@ -165,9 +215,7 @@ export default function InterventionReportsPage() {
     if (!editingReport) return;
 
     try {
-      // Ici on appellerait le service pour sauvegarder
-      // await reportService.updateReport(editingReport.id, editForm);
-
+      await reportService.updateReport(editingReport.id, editForm);
       showNotification('Rapport modifié avec succès', 'success');
       await loadReports();
       setExpandedRow(null);
@@ -183,7 +231,7 @@ export default function InterventionReportsPage() {
     setEditingReport(null);
   };
 
-  const handleFormChange = (field: string, value: any) => {
+  const handleFormChange = (field: keyof UpdateReportDto, value: any) => {
     setEditForm(prev => ({ ...prev, [field]: value }));
   };
 
@@ -509,22 +557,90 @@ export default function InterventionReportsPage() {
                                   size="small"
                                 />
 
-                                <TextField
-                                  label="Code du type"
-                                  value={editForm.typeCode}
-                                  onChange={(e) => handleFormChange('typeCode', e.target.value)}
-                                  fullWidth
-                                  variant="outlined"
-                                  size="small"
+                                <Autocomplete<ReportType>
+                                  options={reportTypes || []}
+                                  getOptionLabel={(option: ReportType) => `${option.name} (${option.code})`}
+                                  value={reportTypes?.find(type => type.code === editForm.typeCode) || null}
+                                  onChange={(_, newValue: ReportType | null) => handleFormChange('typeCode', newValue?.code || '')}
+                                  renderInput={(params: any) => (
+                                    <TextField
+                                      {...params}
+                                      label="Type de rapport"
+                                      size="small"
+                                      variant="outlined"
+                                    />
+                                  )}
+                                  renderOption={(props: any, option: ReportType) => (
+                                    <Box component="li" {...props}>
+                                      <Box>
+                                        <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                                          {option.name}
+                                        </Typography>
+                                        <Typography variant="caption" color="text.secondary">
+                                          Code: {option.code}
+                                        </Typography>
+                                      </Box>
+                                    </Box>
+                                  )}
                                 />
 
-                                <TextField
-                                  label="Code de la typologie"
-                                  value={editForm.typologyCode}
-                                  onChange={(e) => handleFormChange('typologyCode', e.target.value)}
-                                  fullWidth
-                                  variant="outlined"
-                                  size="small"
+                                <Autocomplete<Organization>
+                                  options={organizations || []}
+                                  getOptionLabel={(option: Organization) => `${option.name} (${organizationTypeLabels[option.type]})`}
+                                  value={organizations?.find(org => org.id === editForm.organizationId) || null}
+                                  onChange={(_, newValue: Organization | null) => handleFormChange('organizationId', newValue?.id || 0)}
+                                  renderInput={(params: any) => (
+                                    <TextField
+                                      {...params}
+                                      label="Organisation"
+                                      size="small"
+                                      variant="outlined"
+                                    />
+                                  )}
+                                  renderOption={(props: any, option: Organization) => (
+                                    <Box component="li" {...props}>
+                                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
+                                        <Box sx={{ flexGrow: 1 }}>
+                                          <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                                            {option.name}
+                                          </Typography>
+                                        </Box>
+                                        <Chip
+                                          size="small"
+                                          label={organizationTypeLabels[option.type]}
+                                          color={organizationTypeColors[option.type]}
+                                          variant="outlined"
+                                        />
+                                      </Box>
+                                    </Box>
+                                  )}
+                                />
+
+                                <Autocomplete<TopologyCode>
+                                  options={TOPOLOGY_CODES || []}
+                                  getOptionLabel={(option: TopologyCode) => `${option.code} - ${option.description}`}
+                                  value={TOPOLOGY_CODES?.find(typo => typo.code === editForm.typologyCode) || null}
+                                  onChange={(_, newValue: TopologyCode | null) => handleFormChange('typologyCode', newValue?.code || '')}
+                                  renderInput={(params: any) => (
+                                    <TextField
+                                      {...params}
+                                      label="Typologie"
+                                      size="small"
+                                      variant="outlined"
+                                    />
+                                  )}
+                                  renderOption={(props: any, option: TopologyCode) => (
+                                    <Box component="li" {...props}>
+                                      <Box>
+                                        <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                                          {option.code}
+                                        </Typography>
+                                        <Typography variant="caption" color="text.secondary">
+                                          {option.description}
+                                        </Typography>
+                                      </Box>
+                                    </Box>
+                                  )}
                                 />
 
                                 <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
