@@ -1,6 +1,7 @@
 'use client';
 
 import DashBoardHeader from '@/components/dashboard/DashBoardHeader';
+import { useBreadcrumbTitle } from '@/hooks/useBreadcrumbTitle';
 import organizationService from '@/services/organizationService';
 import { CreateOrganizationDto, Organization, UpdateOrganizationDto } from '@/types/intervention';
 import {
@@ -34,7 +35,7 @@ import OrganizationTable from './_components/OrganizationTable';
 export default function OrganizationsPage() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-
+  useBreadcrumbTitle('organizations', 'Organismes');
   // État des données
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [allOrganizations, setAllOrganizations] = useState<Organization[]>([]);
