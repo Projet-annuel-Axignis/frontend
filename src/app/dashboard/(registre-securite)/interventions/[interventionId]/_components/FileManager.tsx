@@ -65,6 +65,7 @@ const FileManager: React.FC<FileManagerProps> = ({
 
   useEffect(() => {
     loadFiles();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entityId, entityType]);
 
   const loadFiles = async () => {
@@ -165,6 +166,7 @@ const FileManager: React.FC<FileManagerProps> = ({
     if (droppedFiles.length > 0) {
       await uploadFiles(droppedFiles);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entityId, entityType]);
 
   const handleDownload = async (file: File) => {
