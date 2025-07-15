@@ -20,6 +20,17 @@ export const fileService = {
     return response.data;
   },
 
+  // Uploader un fichier directement vers un rapport
+  async uploadReportFile(reportId: number, file: globalThis.File): Promise<File> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await api.post<File>(`/reports/${reportId}/files`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
+
   // Supprimer un fichier d'un rapport
   async removeFileFromReport(reportId: number, fileId: number): Promise<void> {
     await api.delete(`/reports/${reportId}/files/${fileId}`);
