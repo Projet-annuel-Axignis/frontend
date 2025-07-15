@@ -165,7 +165,7 @@ export interface File {
   id: number;
   fileId: number; //id sur la BDD BET
   report?: Report;
-  file: File;
+  file: Document;
 }
 
 export enum DocumentStatus {
