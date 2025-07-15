@@ -175,15 +175,6 @@ export enum DocumentStatus {
   EXPIRED = 'EXPIRED',
 }
 
-export interface DocumentType {
-  id: number;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt?: string;
-  name: string;
-  serialNumber: string;
-}
-
 export interface Document {
   id: number;
   createdAt: string;
