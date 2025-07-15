@@ -69,7 +69,11 @@ export default function InterventionDetailPage() {
 
   const loadInterventionTypes = async () => {
     try {
-      const response = await interventionTypeService.getInterventionTypes();
+      const response = await interventionTypeService.getInterventionTypes({
+        sortBy: 'name',
+        sortOrder: 'asc',
+        search: '',
+      });
       setInterventionTypes(response.data);
     } catch (error) {
       console.error('Erreur lors du chargement des types d&apos;interventions:', error);
