@@ -353,7 +353,7 @@ export default function EquipmentTypesPage() {
     setEditingType(equipmentType);
     
     // Assurons-nous que familyId est traité correctement
-    const processedFamilyId = equipmentType.familyId;
+    const processedFamilyId = equipmentType.family?.id;
     
     // Si c'est un nombre sous forme de chaîne, nous pouvons le conserver tel quel,
     // le service s'occupera de la conversion
@@ -365,7 +365,7 @@ export default function EquipmentTypesPage() {
       subTitle: equipmentType.subTitle || '',
       serialNumber: equipmentType.serialNumber,
       inventoryRequired: equipmentType.inventoryRequired,
-      familyId: processedFamilyId,
+      familyId: processedFamilyId ?? '',
       extraSchema: equipmentType.extraSchema || {}
     });
     setOpenDialog(true);
