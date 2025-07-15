@@ -3,11 +3,20 @@
 import { fileService } from '@/services/fileService';
 import { File } from '@/types/intervention';
 import {
+  Archive as ArchiveIcon,
+  AudioFile as AudioIcon,
   CloudUpload as CloudUploadIcon,
+  Code as CodeIcon,
   Delete as DeleteIcon,
   Description as DescriptionIcon,
   Download as DownloadIcon,
-  MoreVert as MoreVertIcon
+  Image as ImageIcon,
+  MoreVert as MoreVertIcon,
+  PictureAsPdf as PdfIcon,
+  Slideshow as PresentationIcon,
+  TableChart as SpreadsheetIcon,
+  TextSnippet as TextIcon,
+  VideoFile as VideoIcon
 } from '@mui/icons-material';
 import {
   Alert,
@@ -22,7 +31,6 @@ import {
   List,
   ListItem,
   ListItemIcon,
-  ListItemSecondaryAction,
   ListItemText,
   Menu,
   MenuItem,
@@ -62,6 +70,20 @@ const FileManager: React.FC<FileManagerProps> = ({
   const [deleteDialog, setDeleteDialog] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+
+  // Fonction pour déterminer l'icône selon le type MIME
+  const getFileIcon = (mimeType: string) => {
+    if (mimeType.includes('pdf')) return <PdfIcon color="error" />;
+    if (mimeType.includes('image/')) return <ImageIcon color="primary" />;
+    if (mimeType.includes('video/')) return <VideoIcon color="secondary" />;
+    if (mimeType.includes('audio/')) return <AudioIcon color="info" />;
+    if (mimeType.includes('text/')) return <TextIcon color="success" />;
+    if (mimeType.includes('application/vnd.ms-excel') || mimeType.includes('application/vnd.openxmlformats-officedocument.spreadsheetml')) return <SpreadsheetIcon color="success" />;
+    if (mimeType.includes('application/vnd.ms-powerpoint') || mimeType.includes('application/vnd.openxmlformats-officedocument.presentationml')) return <PresentationIcon color="warning" />;
+    if (mimeType.includes('application/zip') || mimeType.includes('application/x-rar') || mimeType.includes('application/x-7z')) return <ArchiveIcon color="info" />;
+    if (mimeType.includes('application/json') || mimeType.includes('application/xml') || mimeType.includes('text/html') || mimeType.includes('text/css') || mimeType.includes('text/javascript')) return <CodeIcon color="secondary" />;
+    return <DescriptionIcon color="primary" />;
+  };
 
   useEffect(() => {
     loadFiles();
@@ -296,24 +318,27 @@ const FileManager: React.FC<FileManagerProps> = ({
         ) : (
           <List>
             {files.map((file) => (
-              <ListItem key={file.id} divider>
-                <ListItemIcon>
-                  <DescriptionIcon color="primary" />
-                </ListItemIcon>
-
-                <ListItemText
-                  primary={`Fichier #${file.id}`}
-                  secondary={`ID fichier: ${file.fileId}`}
-                />
-
-                <ListItemSecondaryAction>
+              <ListItem
+                key={file.id}
+                divider
+                secondaryAction={
                   <IconButton
                     onClick={(e) => handleMenuOpen(e, file)}
                     size="small"
                   >
                     <MoreVertIcon />
                   </IconButton>
-                </ListItemSecondaryAction>
+                }
+              >
+                <ListItemIcon>
+                  {getFileIcon(file.file.mimeType)}
+                </ListItemIcon>
+
+                <ListItemText
+                  primary={`${file.file.fileName}`}
+                  secondary={`${(file.file.size / 1024).toFixed(2)} Ko`}
+                />
+
               </ListItem>
             ))}
           </List>
