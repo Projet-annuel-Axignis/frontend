@@ -1,4 +1,5 @@
 import { api } from '@/lib/api';
+import { PaginatedResponseDto } from '@/types/apiTypes';
 import {
   CreateOrganizationDto,
   Organization,
@@ -36,8 +37,14 @@ const organizationService = {
       params.append('limit', filters.limit.toString());
     }
 
-    const response = await api.get(`/organizations?${params.toString()}`);
-    return response.data;
+    const response = await api.get<PaginatedResponseDto<Organization>>(`/organizations?${params.toString()}`);
+
+    return {
+      data: response.data.results,
+      total: response.data.totalResults,
+      page: filters.page || 1,
+      limit: filters.limit || 20
+    };
   },
 
   // Obtenir un organisme par ID
