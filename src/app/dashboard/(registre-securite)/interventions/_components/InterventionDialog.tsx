@@ -186,17 +186,25 @@ const InterventionDialog = ({
         terminatedById: formData.terminatedById,
       };
 
-      // Ajouter les dates seulement si elles ne sont pas vides
-      if (formData.plannedAt.trim()) {
-        submitData.plannedAt = formData.plannedAt;
+      // Gestion des dates selon le mode
+      if (isEdit) {
+        // En mode modification, envoyer undefined pour supprimer une date vide
+        submitData.plannedAt = formData.plannedAt.trim() || undefined;
+        submitData.startedAt = formData.startedAt.trim() || undefined;
+        submitData.endedAt = formData.endedAt.trim() || undefined;
+      } else {
+        // En mode création, ajouter les dates seulement si elles ne sont pas vides
+        if (formData.plannedAt.trim()) {
+          submitData.plannedAt = formData.plannedAt;
+        }
+        if (formData.startedAt.trim()) {
+          submitData.startedAt = formData.startedAt;
+        }
+        if (formData.endedAt.trim()) {
+          submitData.endedAt = formData.endedAt;
+        }
       }
-      if (formData.startedAt.trim()) {
-        submitData.startedAt = formData.startedAt;
-      }
-      if (formData.endedAt.trim()) {
-        submitData.endedAt = formData.endedAt;
-      }
-
+      console.log(submitData);
       await onSubmit(submitData);
       onClose();
     } catch (error) {
