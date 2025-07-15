@@ -4,7 +4,6 @@ import DashBoardHeader from '@/components/dashboard/DashBoardHeader';
 import { useBreadcrumbTitle } from '@/hooks/useBreadcrumbTitle';
 import { useLoading } from '@/hooks/useLoading';
 import interventionService from '@/services/interventionService';
-import observationService from '@/services/observationService';
 import reportService from '@/services/reportService';
 import { Intervention, InterventionStatus } from '@/types/intervention';
 import {
@@ -13,8 +12,7 @@ import {
   Business as BusinessIcon,
   Info as InfoIcon,
   Person as PersonIcon,
-  Schedule as ScheduleIcon,
-  Visibility as VisibilityIcon
+  Schedule as ScheduleIcon
 } from '@mui/icons-material';
 import {
   Alert,
@@ -37,7 +35,6 @@ import React, { useEffect, useState } from 'react';
 const tabs = [
   { label: "Informations", value: "", icon: <InfoIcon /> },
   { label: "Rapports", value: "reports", icon: <AssignmentIcon /> },
-  { label: "Observations", value: "observations", icon: <VisibilityIcon /> }
 ];
 
 const statusColors: Record<InterventionStatus, 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'> = {
@@ -78,7 +75,6 @@ export default function InterventionDetailLayout({
 
   // États pour les compteurs
   const [reportsCount, setReportsCount] = useState<number>(0);
-  const [observationsCount, setObservationsCount] = useState<number>(0);
 
   // Définir le titre personnalisé pour le breadcrumb
   useBreadcrumbTitle(String(interventionId), intervention?.label || `Intervention ${interventionId}`);
@@ -141,15 +137,6 @@ export default function InterventionDetailLayout({
       });
       setReportsCount(reportsData.total);
 
-      // Charger le nombre d'observations 
-      const observationsData = await observationService.getObservations({
-        includeDeleted: false
-      });
-      // Filtrer par intervention (assumant qu'il y a une relation via les rapports)
-      const interventionObservations = observationsData.observations.filter(obs =>
-        obs.report && reportsData.reports.some(report => report.id === obs.report.id)
-      );
-      setObservationsCount(interventionObservations.length);
     } catch (error) {
       console.error('Erreur lors du chargement des compteurs:', error);
     }
@@ -329,7 +316,6 @@ export default function InterventionDetailLayout({
           {tabs.map((tab, index) => {
             let badgeContent = 0;
             if (index === 1) badgeContent = reportsCount; // Rapports
-            if (index === 2) badgeContent = observationsCount; // Observations
 
             return (
               <Tab

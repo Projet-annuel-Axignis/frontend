@@ -96,8 +96,8 @@ const FileUpload: React.FC<FileUploadProps> = ({
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       sx={{
-        p: 4,
-        mb: 3,
+        p: 3,
+        mb: 2,
         textAlign: 'center',
         border: dragOver ? '2px dashed var(--color-axignis-primary)' : '2px dashed #ccc',
         backgroundColor: dragOver ? 'rgba(var(--color-background), 0.05)' : '',
@@ -122,17 +122,17 @@ const FileUpload: React.FC<FileUploadProps> = ({
 
       <CloudUploadIcon
         sx={{
-          fontSize: 48,
+          fontSize: 32,
           color: dragOver ? 'var(--color-axignis-primary)' : 'grey.400',
-          mb: 2
+          mb: 1
         }}
       />
 
-      <Typography variant="h6" gutterBottom>
+      <Typography variant="body2" gutterBottom>
         {dragOver ? 'Déposez vos fichiers ici' : 'Glissez-déposez vos fichiers'}
       </Typography>
 
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+      <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
         ou cliquez pour sélectionner des fichiers
       </Typography>
 
@@ -140,6 +140,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
         variant="outlined"
         disabled={uploading}
         startIcon={<CloudUploadIcon />}
+        size="small"
         sx={{
           borderColor: 'var(--color-axignis-primary)',
           color: 'var(--color-axignis-primary)',
