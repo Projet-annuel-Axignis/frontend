@@ -35,7 +35,6 @@ export interface Intervention {
   endedAt: string;
   type: InterventionType;
   terminatedBy: User;
-  periodicity: Periodicity;
 }
 
 export interface CreateInterventionDto {
@@ -43,7 +42,6 @@ export interface CreateInterventionDto {
   companyName: string;
   employeeName: string;
   status: InterventionStatus;
-  periodicity: Periodicity;
   plannedAt: string;
   startedAt: string;
   endedAt: string;
@@ -56,7 +54,6 @@ export interface UpdateInterventionDto {
   companyName?: string;
   employeeName?: string;
   status?: InterventionStatus;
-  periodicity?: Periodicity;
   plannedAt?: string;
   startedAt?: string;
   endedAt?: string;

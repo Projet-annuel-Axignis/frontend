@@ -23,8 +23,8 @@ import { marques, statuses, types } from './data';
 import { FilterValues } from './types';
 
 const StyledSearchFilters = styled(Box)(({ theme }) => ({
-  background: `linear-gradient(135deg, var(--color-axignis-primary)05, var(--color-axignis-secondary)05)`,
-  borderRadius: theme.shape.borderRadius * 2,
+  background: `linear-gradient(135deg, var(--color-axignis-primary) 5%, var(--color-axignis-secondary) 95%)`,
+  borderRadius: (typeof theme.shape.borderRadius === 'number' ? theme.shape.borderRadius : 4) * 2,
   padding: theme.spacing(3),
   border: `1px solid ${theme.palette.divider}`,
   boxShadow: theme.shadows[1],
