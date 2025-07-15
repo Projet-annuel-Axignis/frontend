@@ -10,7 +10,10 @@ import { Intervention, InterventionStatus } from '@/types/intervention';
 import {
   ArrowBack as ArrowBackIcon,
   Assignment as AssignmentIcon,
+  Business as BusinessIcon,
   Info as InfoIcon,
+  Person as PersonIcon,
+  Schedule as ScheduleIcon,
   Visibility as VisibilityIcon
 } from '@mui/icons-material';
 import {
@@ -167,26 +170,24 @@ export default function InterventionDetailLayout({
     router.push('/dashboard/interventions');
   };
 
-  if (loading) {
+  if (loading && !intervention) {
     return (
-      <Box>
-        <DashBoardHeader title="Chargement..." />
-        <Box sx={{ p: 3 }}>
-          <Typography>Chargement de l&apos;intervention...</Typography>
-        </Box>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+        <Typography>Chargement...</Typography>
       </Box>
     );
   }
 
   if (!intervention) {
     return (
-      <Box>
-        <DashBoardHeader title="Erreur" />
-        <Box sx={{ p: 3 }}>
-          <Typography variant="h6" color="error">
-            Intervention non trouvée
-          </Typography>
-        </Box>
+      <Box sx={{ textAlign: 'center', py: 8 }}>
+        <ScheduleIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+        <Typography variant="h6" color="text.secondary" gutterBottom>
+          Intervention non trouvée
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          L&apos;intervention demandée n&apos;existe pas ou a été supprimée.
+        </Typography>
       </Box>
     );
   }
@@ -195,190 +196,191 @@ export default function InterventionDetailLayout({
 
   return (
     <Box>
-      <DashBoardHeader title={intervention.label} />
-
-      <Box sx={{ p: 3 }}>
-        {/* Header avec informations de l'intervention */}
-        <Paper
+      {/* Header */}
+      <DashBoardHeader
+        title={intervention.label}
+        icon={<ScheduleIcon />}
+      >
+        <IconButton
+          onClick={handleBack}
           sx={{
-            p: 3,
-            mb: 3,
-            borderRadius: 2,
-            boxShadow: theme.shadows[3],
-            background: isDeleted
-              ? `linear-gradient(135deg, ${theme.palette.error.light}15, ${theme.palette.error.main}10)`
-              : `linear-gradient(135deg, var(--color-axignis-primary)10, var(--color-axignis-secondary)10)`
+            bgcolor: 'background.paper',
+            boxShadow: 1,
+            '&:hover': { boxShadow: 2 }
           }}
-          elevation={0}
         >
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-            {/* Bouton retour */}
-            <IconButton
-              onClick={handleBack}
-              sx={{
-                mr: 2,
-                color: 'primary.main',
-                '&:hover': {
-                  backgroundColor: 'primary.light',
-                  opacity: 0.1,
-                },
-              }}
-            >
-              <ArrowBackIcon />
-            </IconButton>
+          <ArrowBackIcon />
+        </IconButton>
+      </DashBoardHeader>
 
-            {/* Titre principal */}
-            <Box sx={{ flex: 1 }}>
-              <Typography variant="h4" component="h1" gutterBottom>
-                {intervention.label}
-              </Typography>
+      {/* Intervention Info Card */}
+      <Paper sx={{ p: 3, mb: 3 }}>
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
+          {/* Intervention Details */}
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="h5" gutterBottom sx={{
+              textDecoration: isDeleted ? 'line-through' : 'none',
+              opacity: isDeleted ? 0.6 : 1
+            }}>
+              {intervention.label}
+            </Typography>
 
-              {/* Informations principales */}
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2 }}>
-                <Typography variant="body2" color="text.secondary">
-                  <strong>Entreprise:</strong> {intervention.companyName}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  <strong>Employé:</strong> {intervention.employeeName}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  <strong>Type:</strong> {intervention.type.name}
-                </Typography>
-              </Box>
-
-              {/* Date prévue */}
+            {/* Company */}
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <BusinessIcon sx={{ fontSize: 16, mr: 1, color: 'text.secondary' }} />
               <Typography variant="body2" color="text.secondary">
-                <strong>Date prévue:</strong> {format(new Date(intervention.plannedAt), 'dd/MM/yyyy à HH:mm', { locale: fr })}
+                {intervention.companyName}
               </Typography>
             </Box>
 
-            {/* Statut & Actions */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: { xs: 'flex-start', md: 'flex-end' } }}>
+            {/* Employee */}
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <PersonIcon sx={{ fontSize: 16, mr: 1, color: 'text.secondary' }} />
+              <Typography variant="body2" color="text.secondary">
+                {intervention.employeeName}
+              </Typography>
+            </Box>
+
+            {/* Type */}
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              <strong>Type:</strong> {intervention.type.name}
+            </Typography>
+
+            {/* Date prévue */}
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <ScheduleIcon sx={{ fontSize: 16, mr: 1, color: 'text.secondary' }} />
+              <Typography variant="body2" color="text.secondary">
+                {format(new Date(intervention.plannedAt), 'dd/MM/yyyy à HH:mm', { locale: fr })}
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* Status & Actions */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: { xs: 'flex-start', md: 'flex-end' } }}>
+            <Chip
+              label={statusLabels[intervention.status]}
+              color={statusColors[intervention.status]}
+              variant="filled"
+            />
+
+            {isDeleted && (
               <Chip
-                label={statusLabels[intervention.status]}
-                color={statusColors[intervention.status]}
-                variant="filled"
+                label="Intervention supprimée"
+                color="error"
+                variant="outlined"
               />
+            )}
 
-              {isDeleted && (
-                <Chip
-                  label="Intervention supprimée"
-                  color="error"
-                  variant="outlined"
-                />
-              )}
+            <Typography variant="caption" color="text.secondary">
+              Créée le {format(new Date(intervention.createdAt), 'dd/MM/yyyy', { locale: fr })}
+            </Typography>
 
+            {intervention.updatedAt !== intervention.createdAt && (
               <Typography variant="caption" color="text.secondary">
-                Créée le {format(new Date(intervention.createdAt), 'dd/MM/yyyy', { locale: fr })}
+                Modifiée le {format(new Date(intervention.updatedAt), 'dd/MM/yyyy', { locale: fr })}
               </Typography>
-
-              {intervention.updatedAt !== intervention.createdAt && (
-                <Typography variant="caption" color="text.secondary">
-                  Modifiée le {format(new Date(intervention.updatedAt), 'dd/MM/yyyy', { locale: fr })}
-                </Typography>
-              )}
-            </Box>
+            )}
           </Box>
-        </Paper>
+        </Box>
+      </Paper>
 
-        {/* Tabs Container */}
-        <Paper
+      {/* Tabs Container */}
+      <Paper
+        sx={{
+          width: '100%',
+          borderRadius: 2,
+          overflow: 'hidden',
+          boxShadow: theme.shadows[3],
+          mb: 3
+        }}
+        elevation={0}
+      >
+        <Tabs
+          value={currentTab}
+          onChange={handleTabChange}
+          aria-label="intervention tabs"
+          variant="scrollable"
+          scrollButtons="auto"
           sx={{
-            width: '100%',
-            borderRadius: 2,
-            overflow: 'hidden',
-            boxShadow: theme.shadows[3],
-            mb: 3
+            borderBottom: 1,
+            borderColor: 'divider',
+            background: `linear-gradient(135deg, var(--color-axignis-primary)10, var(--color-axignis-secondary)10)`,
+            '& .MuiTabs-flexContainer': {
+              justifyContent: 'flex-start',
+            },
+            '& .MuiTab-root': {
+              fontWeight: '300',
+              textTransform: 'none',
+              fontSize: '1rem',
+              transition: 'var(--transition-normal)',
+              '&:hover': {
+                color: 'var(--color-axignis-primary)',
+              },
+              '&.Mui-selected': {
+                color: 'var(--color-axignis-primary)',
+              },
+            },
+            '& .MuiTabs-indicator': {
+              backgroundColor: 'var(--color-axignis-primary)',
+              height: 3,
+            },
           }}
-          elevation={0}
         >
-          <Tabs
-            value={currentTab}
-            onChange={handleTabChange}
-            aria-label="intervention tabs"
-            variant="scrollable"
-            scrollButtons="auto"
-            sx={{
-              borderBottom: 1,
-              borderColor: 'divider',
-              background: `linear-gradient(135deg, var(--color-axignis-primary)10, var(--color-axignis-secondary)10)`,
-              '& .MuiTabs-flexContainer': {
-                justifyContent: 'flex-start',
-              },
-              '& .MuiTab-root': {
-                fontWeight: '300',
-                textTransform: 'none',
-                fontSize: '1rem',
-                transition: 'var(--transition-normal)',
-                '&:hover': {
-                  color: 'var(--color-axignis-primary)',
-                },
-                '&.Mui-selected': {
-                  color: 'var(--color-axignis-primary)',
-                },
-              },
-              '& .MuiTabs-indicator': {
-                backgroundColor: 'var(--color-axignis-primary)',
-                height: 3,
-              },
-            }}
-          >
-            {tabs.map((tab, index) => {
-              let badgeContent = 0;
-              if (index === 1) badgeContent = reportsCount; // Rapports
-              if (index === 2) badgeContent = observationsCount; // Observations
+          {tabs.map((tab, index) => {
+            let badgeContent = 0;
+            if (index === 1) badgeContent = reportsCount; // Rapports
+            if (index === 2) badgeContent = observationsCount; // Observations
 
-              return (
-                <Tab
-                  key={tab.value || 'main'}
-                  icon={
-                    index === 0 ? tab.icon : (
-                      <Badge
-                        badgeContent={badgeContent}
-                        color="info"
-                        sx={{
-                          '& .MuiBadge-badge': {
-                            fontSize: '0.625rem',
-                            height: '16px',
-                            minWidth: '16px',
-                            right: '-10px',
-                            top: '2px'
-                          }
-                        }}
-                      >
-                        {tab.icon}
-                      </Badge>
-                    )
-                  }
-                  label={tab.label}
-                  {...a11yProps(index)}
-                />
-              );
-            })}
-          </Tabs>
+            return (
+              <Tab
+                key={tab.value || 'main'}
+                icon={
+                  index === 0 ? tab.icon : (
+                    <Badge
+                      badgeContent={badgeContent}
+                      color="info"
+                      sx={{
+                        '& .MuiBadge-badge': {
+                          fontSize: '0.625rem',
+                          height: '16px',
+                          minWidth: '16px',
+                          right: '-10px',
+                          top: '2px'
+                        }
+                      }}
+                    >
+                      {tab.icon}
+                    </Badge>
+                  )
+                }
+                label={tab.label}
+                {...a11yProps(index)}
+              />
+            );
+          })}
+        </Tabs>
 
-          {/* Contenu de la page */}
-          <Box sx={{ p: 3 }}>
-            {children}
-          </Box>
-        </Paper>
+        {/* Contenu de la page */}
+        <Box sx={{ p: 3 }}>
+          {children}
+        </Box>
+      </Paper>
 
-        {/* Notification Snackbar */}
-        <Snackbar
-          open={notification.open}
-          autoHideDuration={4000}
+      {/* Notification Snackbar */}
+      <Snackbar
+        open={notification.open}
+        autoHideDuration={4000}
+        onClose={() => setNotification(prev => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert
           onClose={() => setNotification(prev => ({ ...prev, open: false }))}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          severity={notification.severity}
+          variant="filled"
         >
-          <Alert
-            onClose={() => setNotification(prev => ({ ...prev, open: false }))}
-            severity={notification.severity}
-            variant="filled"
-          >
-            {notification.message}
-          </Alert>
-        </Snackbar>
-      </Box>
+          {notification.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 } 
