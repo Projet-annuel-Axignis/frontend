@@ -13,7 +13,7 @@ import { Part, Typologies } from "./site";
 // =========================
 
 export type InterventionStatus = 'PLANNED' | 'IN_PROGRESS' | 'TERMINATED';
-export type Periodicity = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY';
+export type Periodicity = 'MONTHLY' | 'QUARTER' | 'SEMESTER' | 'ANNUAL';
 export type ObservationStatus = 'OPEN' | 'IN_PROGRESS' | 'FINISHED';
 export type OrganizationType = 'OA' | 'TC';
 
