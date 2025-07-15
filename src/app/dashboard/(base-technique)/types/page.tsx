@@ -45,6 +45,7 @@ import {
   Refresh as RefreshIcon,
   Category as CategoryIcon,
   ViewList as ViewListIcon,
+  Visibility as ViewIcon,
   Inventory as InventoryIcon,
   Settings as SettingsIcon
 } from '@mui/icons-material';
@@ -73,7 +74,9 @@ export default function EquipmentTypesPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [typeToDelete, setTypeToDelete] = useState<string | null>(null);
   const [editingType, setEditingType] = useState<EquipmentType | null>(null);
-  const [formData, setFormData] = useState<CreateEquipmentTypeRequest>({ 
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+  const [selectedTypeDetails, setSelectedTypeDetails] = useState<EquipmentType | null>(null);
+  const [formData, setFormData] = useState<CreateEquipmentTypeRequest>({
     title: '', 
     subTitle: '',
     serialNumber: '',
@@ -329,6 +332,11 @@ export default function EquipmentTypesPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleViewDetails = (equipmentType: EquipmentType) => {
+    setSelectedTypeDetails(equipmentType);
+    setDetailsDialogOpen(true);
   };
 
   const handleEdit = (equipmentType: EquipmentType) => {
@@ -645,6 +653,15 @@ export default function EquipmentTypesPage() {
                           </Tooltip>
                         ) : (
                           <>
+                            <Tooltip title="Voir les détails">
+                                <IconButton 
+                                  size="small" 
+                                  color="info"
+                                  onClick={() => handleViewDetails(equipmentType)}
+                                >
+                                  <ViewIcon />
+                                </IconButton>
+                            </Tooltip>
                             <Tooltip title="Modifier">
                               <IconButton 
                                 size="small" 
@@ -1016,6 +1033,169 @@ export default function EquipmentTypesPage() {
       >
         <AddIcon />
       </Fab>
+
+      {/* Dialog pour afficher les détails */}
+      <Dialog 
+        open={detailsDialogOpen} 
+        onClose={() => setDetailsDialogOpen(false)} 
+        maxWidth="md" 
+        fullWidth
+      >
+        <DialogTitle sx={{
+          pb: 1,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+          color: 'white'
+        }}>
+          <CategoryIcon /> Détails du type d&apos;équipement
+        </DialogTitle>
+        <DialogContent dividers>
+          {selectedTypeDetails && (
+            <Box sx={{ p: 1 }}>
+              {/* Informations générales */}
+              <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
+                <Typography variant="h6" gutterBottom>
+                  Informations générales
+                </Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+                  <Box>
+                    <Typography variant="subtitle2" color="text.secondary">Titre</Typography>
+                    <Typography variant="body1" fontWeight="500">{selectedTypeDetails.title}</Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="subtitle2" color="text.secondary">Sous-titre</Typography>
+                    <Typography variant="body1">{selectedTypeDetails.subTitle || '-'}</Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="subtitle2" color="text.secondary">Numéro de série</Typography>
+                    <Chip 
+                      label={selectedTypeDetails.serialNumber} 
+                      size="small" 
+                      variant="outlined"
+                      sx={{ fontFamily: 'monospace' }}
+                    />
+                  </Box>
+                  <Box>
+                    <Typography variant="subtitle2" color="text.secondary">Inventaire requis</Typography>
+                    {selectedTypeDetails.inventoryRequired ? (
+                      <Chip 
+                        icon={<InventoryIcon />} 
+                        label="Requis" 
+                        size="small" 
+                        color="success" 
+                      />
+                    ) : (
+                      <Chip 
+                        label="Non requis" 
+                        size="small" 
+                        variant="outlined" 
+                        color="default" 
+                      />
+                    )}
+                  </Box>
+                  <Box>
+                    <Typography variant="subtitle2" color="text.secondary">Famille</Typography>
+                    <Chip
+                      icon={<ViewListIcon />}
+                      label={getFamilyName(selectedTypeDetails)}
+                      size="small"
+                      color="primary"
+                      variant="outlined"
+                    />
+                  </Box>
+                  <Box>
+                    <Typography variant="subtitle2" color="text.secondary">Date de création</Typography>
+                    <Typography variant="body1">{format(new Date(selectedTypeDetails.createdAt), 'dd/MM/yyyy HH:mm', { locale: fr })}</Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="subtitle2" color="text.secondary">Dernière modification</Typography>
+                    <Typography variant="body1">{format(new Date(selectedTypeDetails.updatedAt), 'dd/MM/yyyy HH:mm', { locale: fr })}</Typography>
+                  </Box>
+                  {selectedTypeDetails.deletedAt && (
+                    <Box>
+                      <Typography variant="subtitle2" color="error">Date de suppression</Typography>
+                      <Typography variant="body1" color="error">{format(new Date(selectedTypeDetails.deletedAt), 'dd/MM/yyyy HH:mm', { locale: fr })}</Typography>
+                    </Box>
+                  )}
+                </Box>
+              </Paper>
+
+              {/* Champs personnalisés */}
+              <Paper variant="outlined" sx={{ p: 2 }}>
+                <Typography variant="h6" gutterBottom>
+                  Champs personnalisés
+                </Typography>
+                {selectedTypeDetails.extraSchema && Object.keys(selectedTypeDetails.extraSchema).length > 0 ? (
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Clé</TableCell>
+                        <TableCell>Libellé</TableCell>
+                        <TableCell>Type</TableCell>
+                        <TableCell>Valeurs</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {Object.entries(selectedTypeDetails.extraSchema).map(([key, value]: [string, any]) => (
+                        <TableRow key={key}>
+                          <TableCell>
+                            <Typography variant="body2" fontFamily="monospace">{key}</Typography>
+                          </TableCell>
+                          <TableCell>{value.label || key}</TableCell>
+                          <TableCell>
+                            <Chip 
+                              label={
+                                value.type === 'text' ? 'Texte' :
+                                value.type === 'decimal' ? 'Nombre' :
+                                value.type === 'enum' ? 'Liste' :
+                                value.type === 'date' ? 'Date' : value.type
+                              }
+                              size="small"
+                              variant="outlined"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            {value.values ? value.values.join(', ') : '-'}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <Box sx={{ p: 2, bgcolor: 'background.default', borderRadius: 1 }}>
+                    <Typography variant="body2" color="text.secondary" align="center">
+                      Aucun champ personnalisé défini
+                    </Typography>
+                  </Box>
+                )}
+              </Paper>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDetailsDialogOpen(false)}>Fermer</Button>
+          {selectedTypeDetails && !selectedTypeDetails.deletedAt && (
+            <Button
+              variant="contained"
+              startIcon={<EditIcon />}
+              onClick={() => {
+                setDetailsDialogOpen(false);
+                handleEdit(selectedTypeDetails);
+              }}
+              sx={{
+                background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                }
+              }}
+            >
+              Modifier
+            </Button>
+          )}
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

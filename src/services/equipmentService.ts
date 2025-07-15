@@ -115,13 +115,53 @@ export const equipmentService = {
   },
   
   async createFamily(data: CreateEquipmentFamilyRequest): Promise<ApiResponse<EquipmentFamily>> {
-    const response = await api.post('/equipments/families', data);
+    // Créer un objet pour l'API qui peut avoir des types différents
+    const requestData: any = { ...data };
+    
+    // Si domainId est présent, essayer de le convertir en nombre pour l'API
+    if (requestData.domainId) {
+      // Dans le cas où domainId est une chaîne qui représente un nombre
+      if (typeof requestData.domainId === 'string' && !isNaN(Number(requestData.domainId))) {
+        // Convertir en nombre pour l'API
+        requestData.domainId = Number(requestData.domainId);
+      }
+    }
+    
+    console.log("Données pour création de famille:", requestData);
+    
+    const response = await api.post('/equipments/families', requestData);
     return response.data;
   },
   
   async updateFamily(id: string, data: UpdateEquipmentFamilyRequest): Promise<ApiResponse<EquipmentFamily>> {
-    const response = await api.patch(`/equipments/families/${id}`, data);
-    return response.data;
+    // Créer un objet pour l'API qui peut avoir des types différents
+    const requestData: any = { ...data };
+    
+    // Si domainId est présent, essayer de le convertir en nombre pour l'API
+    if (requestData.domainId) {
+      // Dans le cas où domainId est une chaîne qui représente un nombre
+      if (typeof requestData.domainId === 'string' && !isNaN(Number(requestData.domainId))) {
+        // Convertir en nombre pour l'API
+        requestData.domainId = Number(requestData.domainId);
+      }
+    }
+    
+    console.log(`Appel API PATCH /equipments/families/${id} avec données originales:`, data);
+    console.log(`Données après transformation pour l'API:`, requestData);
+    
+    try {
+      const response = await api.patch(`/equipments/families/${id}`, requestData);
+      console.log("Réponse API updateFamily:", response.data);
+      return response.data;
+    } catch (error: any) {  // Typer explicitement error comme 'any' pour l'accès aux propriétés
+      console.error("Erreur updateFamily:", error);
+      if (error.response) {
+        console.error("Statut de l'erreur:", error.response.status);
+        console.error("Données d'erreur:", error.response.data);
+        console.error("Headers de la réponse:", error.response.headers);
+      }
+      throw error;
+    }
   },
   
   async deleteFamily(id: string): Promise<ApiResponse<void>> {

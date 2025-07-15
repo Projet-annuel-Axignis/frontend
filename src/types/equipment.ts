@@ -113,13 +113,13 @@ export interface UpdateEquipmentDomainRequest {
 export interface CreateEquipmentFamilyRequest {
   name: string;
   serialNumber: string;
-  domainId: string;
+  domainId: string | number;  // Accepter à la fois une chaîne ou un nombre
 }
 
 export interface UpdateEquipmentFamilyRequest {
   name?: string;
   serialNumber?: string;
-  domainId?: string;
+  domainId?: string | number;  // Accepter à la fois une chaîne ou un nombre
 }
 
 export interface CreateEquipmentTypeRequest {

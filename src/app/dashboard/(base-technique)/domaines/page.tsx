@@ -430,11 +430,6 @@ export default function DomainesPage() {
                           </Tooltip>
                         ) : (
                           <>
-                            <Tooltip title="Voir les détails">
-                              <IconButton size="small" color="primary">
-                                <ViewIcon />
-                              </IconButton>
-                            </Tooltip>
                             <Tooltip title="Modifier">
                               <IconButton 
                                 size="small" 

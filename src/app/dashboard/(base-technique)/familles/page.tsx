@@ -138,14 +138,35 @@ export default function FamiliesPage() {
   const handleSubmit = async () => {
     try {
       if (editingFamily) {
-        await equipmentService.updateFamily(editingFamily.id, formData as UpdateEquipmentFamilyRequest);
+        console.log("Mise à jour de la famille ID:", editingFamily.id);
+        console.log("Données du formulaire avant traitement:", formData);
+        
+        // Préparer les données pour la mise à jour
+        const updateData: UpdateEquipmentFamilyRequest = {
+          name: formData.name,
+          serialNumber: formData.serialNumber,
+        };
+        
+        // Ajouter domainId seulement s'il est présent et non vide
+        if (formData.domainId) {
+          updateData.domainId = formData.domainId;
+        }
+        
+        console.log("Données finales pour la requête PATCH:", updateData);
+        
+        const response = await equipmentService.updateFamily(editingFamily.id, updateData);
+        console.log("Réponse de mise à jour réussie:", response);
+        
         setSnackbar({
           open: true,
           message: 'Famille mise à jour avec succès',
           severity: 'success'
         });
       } else {
-        await equipmentService.createFamily(formData);
+        console.log("Création d'une nouvelle famille:", formData);
+        const response = await equipmentService.createFamily(formData);
+        console.log("Réponse de création:", response);
+        
         setSnackbar({
           open: true,
           message: 'Famille créée avec succès',
@@ -159,8 +180,20 @@ export default function FamiliesPage() {
       let errorMessage = 'Erreur lors de la sauvegarde';
       
       if (error.response) {
+        console.error('Détails de l\'erreur:', {
+          status: error.response.status,
+          statusText: error.response.statusText,
+          data: error.response.data,
+          headers: error.response.headers
+        });
+        
         if (error.response.status === 409) {
           errorMessage = 'Une famille avec ce numéro de série existe déjà';
+        } else if (error.response.status === 500) {
+          errorMessage = 'Erreur serveur interne. Veuillez contacter l\'administrateur.';
+          
+          // Afficher plus de détails sur l'erreur serveur pour le débogage
+          console.error('Corps de la requête qui a provoqué l\'erreur 500:', error.config?.data);
         } else if (error.response.data && error.response.data.message) {
           errorMessage = error.response.data.message;
         }
@@ -257,11 +290,35 @@ export default function FamiliesPage() {
 
   const handleEdit = (family: EquipmentFamily) => {
     setEditingFamily(family);
-    setFormData({ 
+    
+    // Analyser le domainId selon la structure retournée par l'API
+    let domainId;
+    
+    // Log complet de l'objet family pour vérifier sa structure
+    console.log("Objet famille complet reçu par handleEdit:", JSON.stringify(family, null, 2));
+    
+    if (family.domain && family.domain.id) {
+      // Si l'API renvoie un objet domain complet
+      domainId = family.domain.id;
+      console.log("DomainId extrait de l'objet domain:", domainId, "type:", typeof domainId);
+    } else if (family.domainId) {
+      // Utiliser directement domainId si disponible
+      domainId = family.domainId;
+      console.log("DomainId extrait directement:", domainId, "type:", typeof domainId);
+    } else {
+      // Cas où il n'y a pas de domaine associé
+      console.warn("Aucun domainId trouvé pour la famille:", family.id);
+      domainId = '';
+    }
+    
+    const formattedData = { 
       name: family.name, 
       serialNumber: family.serialNumber,
-      domainId: family.domainId
-    });
+      domainId: domainId
+    };
+    
+    setFormData(formattedData);
+    console.log("FormData préparé pour l'édition:", formattedData);
     setOpenDialog(true);
   };
 
@@ -520,11 +577,6 @@ export default function FamiliesPage() {
                           </Tooltip>
                         ) : (
                           <>
-                            <Tooltip title="Voir les détails">
-                              <IconButton size="small" color="primary">
-                                <ViewIcon />
-                              </IconButton>
-                            </Tooltip>
                             <Tooltip title="Modifier">
                               <IconButton 
                                 size="small" 
