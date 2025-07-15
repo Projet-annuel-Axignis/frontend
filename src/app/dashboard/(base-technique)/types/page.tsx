@@ -66,7 +66,7 @@ export default function EquipmentTypesPage() {
   const [familiesLoading, setFamiliesLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showDeleted, setShowDeleted] = useState(false);
-  const [selectedFamily, setSelectedFamily] = useState<string>('');
+  const [selectedFamily, setSelectedFamily] = useState<number | ''>('');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [total, setTotal] = useState(0);
@@ -100,6 +100,14 @@ export default function EquipmentTypesPage() {
   const loadTypes = async () => {
     try {
       setLoading(true);
+      console.log("Chargement des types avec filtres:", {
+        page: page + 1,
+        rowsPerPage,
+        familyId: selectedFamily || undefined,
+        search: searchTerm,
+        showDeleted
+      });
+      
       const response = await equipmentService.getTypes(
         page + 1, 
         rowsPerPage, 
@@ -108,6 +116,7 @@ export default function EquipmentTypesPage() {
         showDeleted
       );
       setTypes(response.results || []);
+      console.log("Réponse types:", response);
       setTotal(response.totalResults || 0);
     } catch (error) {
       console.error('Erreur lors du chargement des types:', error);
@@ -486,7 +495,7 @@ export default function EquipmentTypesPage() {
             >
               <MenuItem value="">Toutes les familles</MenuItem>
               {families.map((family) => (
-                <MenuItem key={family.id} value={family.id}>
+                <MenuItem key={family.id} value={family.id as number}>
                   {family.name}
                 </MenuItem>
               ))}
@@ -779,7 +788,7 @@ export default function EquipmentTypesPage() {
                   <MenuItem disabled>Aucune famille disponible</MenuItem>
                 ) : (
                   families.map((family) => (
-                    <MenuItem key={family.id} value={family.id}>
+                    <MenuItem key={family.id} value={family.id as number}>
                       {family.name}
                     </MenuItem>
                   ))

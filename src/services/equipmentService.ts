@@ -246,7 +246,7 @@ export const equipmentService = {
   },
 
   // Types d'équipements
-  async getTypes(page: number = 1, limit: number = 10, familyId?: string, search?: string, showDeleted: boolean = false): Promise<ServerPaginatedResponse<EquipmentType>> {
+  async getTypes(page: number = 1, limit: number = 10, familyId?: number | string, search?: string, showDeleted: boolean = false): Promise<ServerPaginatedResponse<EquipmentType>> {
     const params = new URLSearchParams();
     
     if (page) {
@@ -257,8 +257,11 @@ export const equipmentService = {
       params.append('limit', limit.toString());
     }
     
+    // Utilisation des paramètres de filtrage pour la famille
     if (familyId) {
-      params.append('familyId', familyId);
+      params.append('filterField', 'family');
+      params.append('filterOp', 'equals');
+      params.append('filter', familyId.toString());
     }
     
     if (search) {
@@ -268,6 +271,8 @@ export const equipmentService = {
     if (showDeleted) {
       params.append('includeDeleted', 'true');
     }
+    
+    console.log("Paramètres de requête pour getTypes:", params.toString());
     
     const queryString = params.toString() ? `?${params.toString()}` : '';
     const response = await api.get(`/equipments/types${queryString}`);
