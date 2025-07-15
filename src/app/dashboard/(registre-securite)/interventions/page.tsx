@@ -1,5 +1,6 @@
 'use client';
 
+import { useUser } from '@/app/_providers/UserProvider';
 import DashBoardHeader from '@/components/dashboard/DashBoardHeader';
 import { useLoading } from '@/hooks/useLoading';
 import { interventionService } from '@/services/interventionService';
@@ -32,6 +33,7 @@ import InterventionTable from './_components/InterventionTable';
 const InterventionsPage = () => {
   const router = useRouter();
   const { isLoading: loading, withLoading } = useLoading();
+  const { user } = useUser();
 
   // Data states
   const [interventions, setInterventions] = useState<Intervention[]>([]);
@@ -146,7 +148,7 @@ const InterventionsPage = () => {
   const handleTerminateIntervention = async (intervention: Intervention) => {
     await withLoading(async () => {
       try {
-        await interventionService.terminateIntervention(intervention.id);
+        await interventionService.terminateIntervention(intervention.id, user?.id ?? 0);
         await loadInterventions();
         showNotification('Intervention terminée avec succès', 'success');
       } catch (error) {
