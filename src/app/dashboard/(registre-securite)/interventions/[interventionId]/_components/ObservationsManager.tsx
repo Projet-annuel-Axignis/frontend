@@ -149,7 +149,7 @@ const ObservationsManager: React.FC<ObservationsManagerProps> = ({
       onObservationsChange?.();
     } catch (error) {
       console.error('Erreur lors de la modification:', error);
-      setError('Erreur lors de la modification de l&apos;observation');
+      setError('Erreur lors de la modification de l\'observation');
     }
   };
 
@@ -163,7 +163,7 @@ const ObservationsManager: React.FC<ObservationsManagerProps> = ({
       onObservationsChange?.();
     } catch (error) {
       console.error('Erreur lors de la suppression:', error);
-      setError('Erreur lors de la suppression de l&apos;observation');
+      setError('Erreur lors de la suppression de l\'observation');
     }
   };
 
