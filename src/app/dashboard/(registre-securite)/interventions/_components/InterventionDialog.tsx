@@ -1,7 +1,7 @@
 'use client';
 
 import { useUser } from '@/app/_providers/UserProvider';
-import { CreateInterventionDto, Intervention, InterventionStatus, InterventionType, Periodicity, UpdateInterventionDto } from '@/types/intervention';
+import { CreateInterventionDto, Intervention, InterventionStatus, InterventionType, UpdateInterventionDto } from '@/types/intervention';
 import {
   Alert,
   Autocomplete,
@@ -36,7 +36,6 @@ interface FormData {
   companyName: string;
   employeeName: string;
   status: InterventionStatus;
-  periodicity: Periodicity;
   plannedAt: string;
   startedAt: string;
   endedAt: string;
@@ -49,7 +48,6 @@ interface FormErrors {
   companyName?: string;
   employeeName?: string;
   status?: string;
-  periodicity?: string;
   plannedAt?: string;
   startedAt?: string;
   endedAt?: string;
@@ -61,13 +59,6 @@ const statusLabels = {
   PLANNED: 'Planifiée',
   IN_PROGRESS: 'En cours',
   TERMINATED: 'Terminée'
-};
-
-const periodicityLabels = {
-  MONTHLY: 'Mensuel',
-  QUARTER: 'Trimestriel',
-  SEMESTER: 'Semestriel',
-  ANNUAL: 'Annuel'
 };
 
 const InterventionDialog = ({
@@ -85,7 +76,6 @@ const InterventionDialog = ({
     companyName: '',
     employeeName: '',
     status: 'PLANNED',
-    periodicity: 'MONTHLY',
     plannedAt: '',
     startedAt: '',
     endedAt: '',
@@ -108,7 +98,6 @@ const InterventionDialog = ({
           companyName: intervention.companyName || '',
           employeeName: intervention.employeeName || '',
           status: intervention.status || 'PLANNED',
-          periodicity: intervention.periodicity || 'MONTHLY',
           plannedAt: intervention.plannedAt ? intervention.plannedAt.split('T')[0] : '',
           startedAt: intervention.startedAt ? intervention.startedAt.split('T')[0] : '',
           endedAt: intervention.endedAt ? intervention.endedAt.split('T')[0] : '',
@@ -122,7 +111,6 @@ const InterventionDialog = ({
           companyName: '',
           employeeName: '',
           status: 'PLANNED',
-          periodicity: 'MONTHLY',
           plannedAt: '',
           startedAt: '',
           endedAt: '',
@@ -181,7 +169,6 @@ const InterventionDialog = ({
         companyName: formData.companyName.trim(),
         employeeName: formData.employeeName.trim(),
         status: formData.status,
-        periodicity: formData.periodicity,
         typeId: formData.typeId!,
         terminatedById: formData.terminatedById,
       };
@@ -306,23 +293,6 @@ const InterventionDialog = ({
                   label="Statut *"
                 >
                   {Object.entries(statusLabels).map(([key, label]) => (
-                    <MenuItem key={key} value={key}>
-                      {label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <FormControl fullWidth error={!!errors.periodicity}>
-                <InputLabel>Périodicité *</InputLabel>
-                <Select
-                  value={formData.periodicity}
-                  onChange={(e) => handleFieldChange('periodicity', e.target.value as Periodicity)}
-                  label="Périodicité *"
-                >
-                  {Object.entries(periodicityLabels).map(([key, label]) => (
                     <MenuItem key={key} value={key}>
                       {label}
                     </MenuItem>

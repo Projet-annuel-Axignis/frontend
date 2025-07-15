@@ -238,7 +238,6 @@ const InterventionsPage = () => {
   const filteredInterventions = interventions.filter(intervention => {
     if (!includeDeleted && intervention.deletedAt) return false;
     if (status && intervention.status !== status) return false;
-    if (periodicity && intervention.periodicity !== periodicity) return false;
     if (search) {
       const searchLower = search.toLowerCase();
       return (

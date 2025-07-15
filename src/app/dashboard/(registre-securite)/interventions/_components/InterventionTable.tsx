@@ -66,21 +66,6 @@ const getStatusLabel = (status: string) => {
   }
 };
 
-const getPeriodicityLabel = (periodicity: string) => {
-  switch (periodicity) {
-    case 'MONTHLY':
-      return 'Mensuel';
-    case 'QUARTER':
-      return 'Trimestriel';
-    case 'SEMESTER':
-      return 'Semestriel';
-    case 'ANNUAL':
-      return 'Annuel';
-    default:
-      return periodicity;
-  }
-};
-
 const InterventionTable: React.FC<InterventionTableProps> = ({
   interventions,
   onView,
@@ -163,7 +148,6 @@ const InterventionTable: React.FC<InterventionTableProps> = ({
             <TableCell><strong>Employé</strong></TableCell>
             <TableCell><strong>Type</strong></TableCell>
             <TableCell><strong>Statut</strong></TableCell>
-            <TableCell><strong>Périodicité</strong></TableCell>
             <TableCell><strong>Date prévue</strong></TableCell>
             <TableCell align="right"><strong>Actions</strong></TableCell>
           </TableRow>
@@ -233,12 +217,6 @@ const InterventionTable: React.FC<InterventionTableProps> = ({
                       />
                     )}
                   </Box>
-                </TableCell>
-
-                <TableCell>
-                  <Typography variant="body2">
-                    {getPeriodicityLabel(intervention.periodicity)}
-                  </Typography>
                 </TableCell>
 
                 <TableCell>

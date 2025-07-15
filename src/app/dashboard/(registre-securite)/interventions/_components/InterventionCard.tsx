@@ -56,21 +56,6 @@ const getStatusLabel = (status: string) => {
   }
 };
 
-const getPeriodicityLabel = (periodicity: string) => {
-  switch (periodicity) {
-    case 'MONTHLY':
-      return 'Mensuel';
-    case 'QUARTER':
-      return 'Trimestriel';
-    case 'SEMESTER':
-      return 'Semestriel';
-    case 'ANNUAL':
-      return 'Annuel';
-    default:
-      return periodicity;
-  }
-};
-
 export default function InterventionCard({
   intervention,
   onView,
@@ -118,10 +103,6 @@ export default function InterventionCard({
 
         <Typography variant="body2" color="text.secondary" gutterBottom>
           <strong>Type:</strong> {intervention.type.name} ({intervention.type.code})
-        </Typography>
-
-        <Typography variant="body2" color="text.secondary" gutterBottom>
-          <strong>Périodicité:</strong> {getPeriodicityLabel(intervention.periodicity)}
         </Typography>
 
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 2 }}>
