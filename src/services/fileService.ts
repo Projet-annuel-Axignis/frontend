@@ -36,9 +36,12 @@ export const fileService = {
   },
 
   // Télécharger un fichier
-  async downloadFile(fileId: number): Promise<Blob> {
-    const response = await api.get(`/upload/${fileId}`, {
+  async downloadFile(file: File): Promise<Blob> {
+    const response = await api.get(`/product-documents/${file.fileId}/file`, {
       responseType: 'blob',
+      headers: {
+        'Content-Type': file.file.mimeType,
+      },
     });
     return response.data;
   },

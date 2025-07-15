@@ -164,7 +164,7 @@ const FileManager: React.FC<FileManagerProps> = ({
 
   const handleDownload = async (file: File) => {
     try {
-      const blob = await fileService.downloadFile(file.fileId);
+      const blob = await fileService.downloadFile(file);
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
