@@ -4,7 +4,9 @@ import { useUser } from '@/app/_providers/UserProvider';
 import { useLoading } from '@/hooks/useLoading';
 import interventionService from '@/services/interventionService';
 import interventionTypeService from '@/services/interventionTypeService';
+import { partService } from '@/services/siteService';
 import { Intervention, InterventionStatus, InterventionType, UpdateInterventionDto } from '@/types/intervention';
+import { Part } from '@/types/site';
 import {
   CheckCircle as CheckCircleIcon,
   Delete as DeleteIcon,
@@ -12,7 +14,8 @@ import {
   PlayArrow as PlayArrowIcon,
   Restore as RestoreIcon,
   Schedule as ScheduleIcon,
-  Stop as StopIcon
+  Stop as StopIcon,
+  ViewModule as ViewModuleIcon
 } from '@mui/icons-material';
 import {
   Timeline,
@@ -32,7 +35,7 @@ import {
 } from '@mui/material';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import InterventionDialog from '../_components/InterventionDialog';
 
@@ -50,6 +53,7 @@ const statusLabels: Record<InterventionStatus, string> = {
 
 export default function InterventionDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const { user } = useUser();
   const { withLoading } = useLoading();
 
@@ -57,6 +61,7 @@ export default function InterventionDetailPage() {
   const [intervention, setIntervention] = useState<Intervention | null>(null);
   const [interventionTypes, setInterventionTypes] = useState<InterventionType[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [partsDetails, setPartsDetails] = useState<Part[]>([]);
 
   useEffect(() => {
     if (interventionId) {
@@ -71,10 +76,25 @@ export default function InterventionDetailPage() {
       try {
         const data = await interventionService.getIntervention(interventionId);
         setIntervention(data);
+
+        // Charger les détails complets des parties
+        if (data.parts && data.parts.length > 0) {
+          await loadPartsDetails(data.parts.map(part => part.id));
+        }
       } catch (error) {
         console.error('Erreur lors du chargement de l&apos;intervention:', error);
       }
     });
+  };
+
+  const loadPartsDetails = async (partIds: number[]) => {
+    try {
+      const partsPromises = partIds.map(partId => partService.getPart(partId));
+      const partsData = await Promise.all(partsPromises);
+      setPartsDetails(partsData);
+    } catch (error) {
+      console.error('Erreur lors du chargement des détails des parties:', error);
+    }
   };
 
   const loadInterventionTypes = async () => {
@@ -120,6 +140,16 @@ export default function InterventionDetailPage() {
       console.error('Erreur lors de la modification:', error);
       throw error; // Relancer l'erreur pour que la modal puisse l'afficher
     }
+  };
+
+  const handleViewPart = (part: Part) => {
+    if (!part.building?.site) {
+      console.error('Site non trouvé pour la partie');
+      return;
+    }
+
+    const siteId = part.building.site.id;
+    router.push(`/dashboard/sites/${siteId}/parties`);
   };
 
   if (!intervention) {
@@ -266,6 +296,128 @@ export default function InterventionDetailPage() {
             </CardContent>
           </Card>
         </Box>
+
+        {/* Localisation de l'intervention */}
+        {partsDetails.length > 0 && (
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom color="primary">
+                Localisation de l&apos;intervention
+              </Typography>
+
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {partsDetails.map((part, index) => (
+                  <Box key={part.id} sx={{
+                    p: 2,
+                    border: 1,
+                    borderColor: 'divider',
+                    borderRadius: 1,
+                    backgroundColor: 'background.paper'
+                  }}>
+                    <Typography variant="subtitle1" fontWeight={500} gutterBottom>
+                      Partie {index + 1}: {part.name}
+                    </Typography>
+
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      {part.building && (
+                        <>
+                          <Box>
+                            <Typography variant="body2" color="text.secondary">
+                              Bâtiment
+                            </Typography>
+                            <Typography variant="body1">
+                              {part.building.name}
+                            </Typography>
+                          </Box>
+
+                          {part.building.site && (
+                            <Box>
+                              <Typography variant="body2" color="text.secondary">
+                                Site
+                              </Typography>
+                              <Typography variant="body1">
+                                {part.building.site.name}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                {part.building.site.streetNumber} {part.building.site.street}, {part.building.site.postalCode} {part.building.site.city}
+                              </Typography>
+                            </Box>
+                          )}
+
+                          {part.building.site?.company && (
+                            <Box>
+                              <Typography variant="body2" color="text.secondary">
+                                Entreprise
+                              </Typography>
+                              <Typography variant="body1">
+                                {part.building.site.company.name}
+                              </Typography>
+                            </Box>
+                          )}
+                        </>
+                      )}
+
+                      <Box>
+                        <Typography variant="body2" color="text.secondary">
+                          Type de partie
+                        </Typography>
+                        <Chip
+                          label={part.type === 'PRIVATE' ? 'Privée' : 'Commune'}
+                          size="small"
+                          variant="outlined"
+                          color={part.type === 'PRIVATE' ? 'primary' : 'secondary'}
+                        />
+                      </Box>
+
+                      {part.isIcpe && (
+                        <Box>
+                          <Typography variant="body2" color="text.secondary">
+                            ICPE
+                          </Typography>
+                          <Chip
+                            label="Installation Classée"
+                            size="small"
+                            color="warning"
+                            variant="outlined"
+                          />
+                        </Box>
+                      )}
+
+                      {part.erpTypes && part.erpTypes.length > 0 && (
+                        <Box>
+                          <Typography variant="body2" color="text.secondary">
+                            Codes ERP
+                          </Typography>
+                          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                            {part.erpTypes.map((erpType) => (
+                              <Chip
+                                key={erpType.code}
+                                label={erpType.code}
+                                size="small"
+                                variant="outlined"
+                              />
+                            ))}
+                          </Box>
+                        </Box>
+                      )}
+
+                      <Box sx={{ mt: 2 }}>
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          startIcon={<ViewModuleIcon />}
+                          onClick={() => handleViewPart(part)}
+                        >
+                          Consulter la partie
+                        </Button>
+                      </Box>
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Timeline des dates */}
         <Card>
