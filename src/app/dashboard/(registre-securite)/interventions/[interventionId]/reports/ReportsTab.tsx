@@ -48,6 +48,7 @@ import { fr } from 'date-fns/locale';
 import React, { useEffect, useState } from 'react';
 import FileList from '../_components/FileList';
 import FileUpload from '../_components/FileUpload';
+import ObservationsManager from '../_components/ObservationsManager';
 import ReportDialog from '../_components/ReportDialog';
 
 const organizationTypeLabels: Record<OrganizationType, string> = {
@@ -685,6 +686,10 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ interventionId, onNotification,
                                       entityId={report.id}
                                       title="Fichiers du rapport"
                                       onFilesChange={loadReports}
+                                    />
+                                    <ObservationsManager
+                                      reportId={report.id}
+                                      onObservationsChange={loadReports}
                                     />
                                   </Grid>
                                 </Grid>
