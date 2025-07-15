@@ -76,6 +76,7 @@ const FileManager: React.FC<FileManagerProps> = ({
       if (entityType === 'report') {
         // Utiliser le service pour récupérer les fichiers d'un rapport
         filesData = await fileService.getReportFiles(entityId);
+        console.log(filesData);
       } else {
         // Pour les observations, utiliser une route similaire
         const response = await fetch(`/api/v1/observations/${entityId}/files`);
@@ -230,9 +231,10 @@ const FileManager: React.FC<FileManagerProps> = ({
             mb: 3,
             textAlign: 'center',
             border: dragOver ? '2px dashed var(--color-axignis-primary)' : '2px dashed #ccc',
-            backgroundColor: dragOver ? 'rgba(var(--color-axignis-primary-rgb), 0.05)' : 'grey.50',
+            backgroundColor: dragOver ? 'rgba(var(--color-background), 0.05)' : '',
             cursor: 'pointer',
             transition: 'all 0.3s ease',
+            boxShadow: 'none',
             '&:hover': {
               backgroundColor: 'rgba(var(--color-axignis-primary-rgb), 0.02)',
               borderColor: 'var(--color-axignis-primary)',
