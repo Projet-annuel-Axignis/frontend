@@ -163,15 +163,53 @@ export interface UpdateOrganizationDto {
 
 export interface File {
   id: number;
-  fileId: number;
+  fileId: number; //id sur la BDD BET
   report?: Report;
+  file: File;
 }
 
-export interface CreateFileDto {
+export enum DocumentStatus {
+  DRAFT = 'DRAFT',
+  PUBLISHED = 'PUBLISHED',
+  ARCHIVED = 'ARCHIVED',
+  EXPIRED = 'EXPIRED',
+}
+
+export interface DocumentType {
+  id: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+  name: string;
+  serialNumber: string;
+}
+
+export interface Document {
+  id: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+  reference: string;
+  serialNumber: string;
+  fileName: string;
+  filePath: string;
+  size: number;
+  issueDate: string;
+  expiryDate: string;
+  version: number;
+  mimeType: string;
+  checksum: string;
+  status: DocumentStatus;
+  uploadedBy: number;
+  type: DocumentType;
+  product?: any;
+}
+
+export interface CreateReportFileDto {
   fileId: number;
 }
 
-export interface UpdateFileDto {
+export interface UpdateReportFileDto {
   fileId?: number;
 }
 
