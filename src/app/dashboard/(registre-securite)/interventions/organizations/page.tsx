@@ -1,7 +1,8 @@
 'use client';
 
 import DashBoardHeader from '@/components/dashboard/DashBoardHeader';
-import organizationService, { CreateOrganizationDto, Organization, UpdateOrganizationDto } from '@/services/organizationService';
+import organizationService from '@/services/organizationService';
+import { CreateOrganizationDto, Organization, UpdateOrganizationDto } from '@/types/intervention';
 import {
   Add as AddIcon,
   Business as BusinessIcon
@@ -64,6 +65,7 @@ export default function OrganizationsPage() {
   // Chargement initial
   useEffect(() => {
     loadOrganizations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Filtrage côté client

@@ -1,6 +1,6 @@
 'use client';
 
-import { Organization } from '@/services/organizationService';
+import { Organization } from '@/types/intervention';
 import {
   Delete as DeleteIcon,
   Edit as EditIcon
