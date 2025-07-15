@@ -6,8 +6,9 @@ import { useBreadcrumbTitle } from '@/hooks/useBreadcrumbTitle';
 import { useLoading } from '@/hooks/useLoading';
 import { hierarchyService } from '@/services/hierarchyService';
 import { interventionService } from '@/services/interventionService';
+import interventionTypeService from '@/services/interventionTypeService';
 import { Company } from '@/types/company';
-import { Intervention, InterventionStatus } from '@/types/intervention';
+import { CreateInterventionDto, Intervention, InterventionStatus, InterventionType, UpdateInterventionDto } from '@/types/intervention';
 import { Part, SiteWithBuildings } from '@/types/site';
 import {
   Add as AddIcon,
@@ -37,6 +38,7 @@ import {
 } from '@mui/material';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import InterventionDialog from './_components/InterventionDialog';
 
 
 const statusColors: Record<InterventionStatus, 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'> = {
@@ -83,6 +85,10 @@ const InterventionsPage = () => {
   const [selectedCompany, setSelectedCompany] = useState<CompanyWithSites | null>(null);
   const [selectedSite, setSelectedSite] = useState<SiteWithBuildings | null>(null);
   const [selectedPart, setSelectedPart] = useState<Part | null>(null);
+  const [interventionTypes, setInterventionTypes] = useState<InterventionType[]>([]);
+
+  // Dialog states
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   // Notification states
   const [notification, setNotification] = useState<{
@@ -98,6 +104,7 @@ const InterventionsPage = () => {
   // Load initial data
   useEffect(() => {
     loadHierarchy();
+    loadInterventionTypes();
   }, []);
 
   // Load interventions when part is selected
@@ -147,6 +154,21 @@ const InterventionsPage = () => {
         showNotification('Erreur lors du chargement de la hiérarchie', 'error');
       }
     });
+  };
+
+  const loadInterventionTypes = async () => {
+    try {
+      const result = await interventionTypeService.getInterventionTypes({
+        limit: 1000,
+        page: 1,
+        sortBy: 'name',
+        sortOrder: 'asc',
+        search: '',
+      });
+      setInterventionTypes(result.data);
+    } catch (error) {
+      console.error('Error loading intervention types:', error);
+    }
   };
 
   const loadInterventions = async () => {
@@ -246,7 +268,32 @@ const InterventionsPage = () => {
 
   const handleCreateIntervention = () => {
     if (!navigationState.partId) return;
-    router.push(`/dashboard/interventions/create?partId=${navigationState.partId}`);
+    setDialogOpen(true);
+  };
+
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+  };
+
+  const handleDialogSubmit = async (data: CreateInterventionDto | UpdateInterventionDto) => {
+    try {
+      // Ajouter les partIds depuis la navigation
+      const interventionData = {
+        ...data,
+        partIds: navigationState.partId ? [navigationState.partId] : [],
+      };
+
+      await interventionService.createIntervention(interventionData as CreateInterventionDto);
+      showNotification('Intervention créée avec succès', 'success');
+
+      // Recharger les interventions
+      await loadInterventions();
+
+      setDialogOpen(false);
+    } catch (error) {
+      console.error('Error creating intervention:', error);
+      showNotification('Erreur lors de la création de l\'intervention', 'error');
+    }
   };
 
   const handleViewIntervention = (intervention: Intervention) => {
@@ -434,6 +481,12 @@ const InterventionsPage = () => {
               variant="contained"
               startIcon={<AddIcon />}
               onClick={handleCreateIntervention}
+              sx={{
+                background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                },
+              }}
             >
               Nouvelle intervention
             </Button>
@@ -561,6 +614,13 @@ const InterventionsPage = () => {
           {notification.message}
         </Alert>
       </Snackbar>
+
+      <InterventionDialog
+        open={dialogOpen}
+        onClose={handleDialogClose}
+        onSubmit={handleDialogSubmit}
+        interventionTypes={interventionTypes}
+      />
     </Box>
   );
 };
