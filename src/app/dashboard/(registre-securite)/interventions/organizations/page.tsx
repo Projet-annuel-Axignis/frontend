@@ -41,7 +41,6 @@ export default function OrganizationsPage() {
 
   // État des filtres
   const [search, setSearch] = useState('');
-  const [isActive, setIsActive] = useState<boolean | undefined>(undefined);
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
 
@@ -83,14 +82,8 @@ export default function OrganizationsPage() {
       filtered = filtered.filter(
         (organization) =>
           organization.name.toLowerCase().includes(searchLower) ||
-          organization.code.toLowerCase().includes(searchLower) ||
-          (organization.description && organization.description.toLowerCase().includes(searchLower))
+          organization.type.toLowerCase().includes(searchLower)
       );
-    }
-
-    // Filtre par statut
-    if (isActive !== undefined) {
-      filtered = filtered.filter((organization) => organization.isActive === isActive);
     }
 
     // Tri
@@ -113,7 +106,7 @@ export default function OrganizationsPage() {
     });
 
     setOrganizations(filtered);
-  }, [allOrganizations, search, isActive, sortBy, sortOrder]);
+  }, [allOrganizations, search, sortBy, sortOrder]);
 
   const loadOrganizations = async () => {
     try {
@@ -122,7 +115,6 @@ export default function OrganizationsPage() {
         limit: 1000,
         page: 1,
         search: '',
-        isActive: undefined,
         sortBy: 'name',
         sortOrder: 'asc'
       });
@@ -182,14 +174,13 @@ export default function OrganizationsPage() {
     setEditDialogOpen(true);
   };
 
-  const handleToggleStatus = (organization: Organization) => {
+  const handleDelete = (organization: Organization) => {
     setSelectedOrganization(organization);
     setDeleteDialogOpen(true);
   };
 
   const resetFilters = () => {
     setSearch('');
-    setIsActive(undefined);
     setSortBy('name');
     setSortOrder('asc');
   };
@@ -242,8 +233,6 @@ export default function OrganizationsPage() {
           <OrganizationFilters
             search={search}
             onSearchChange={setSearch}
-            isActive={isActive}
-            onIsActiveChange={setIsActive}
             sortBy={sortBy}
             onSortByChange={setSortBy}
             sortOrder={sortOrder}
@@ -259,7 +248,7 @@ export default function OrganizationsPage() {
                   <OrganizationCard
                     organization={organization}
                     onEdit={handleEdit}
-                    onToggleStatus={handleToggleStatus}
+                    onDelete={handleDelete}
                   />
                 </Grid>
               ))}
@@ -268,7 +257,7 @@ export default function OrganizationsPage() {
             <OrganizationTable
               organizations={organizations}
               onEdit={handleEdit}
-              onToggleStatus={handleToggleStatus}
+              onDelete={handleDelete}
             />
           )}
         </CardContent>

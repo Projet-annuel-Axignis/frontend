@@ -1,4 +1,9 @@
-import { Clear as ClearIcon, FilterList as FilterListIcon, Search as SearchIcon } from '@mui/icons-material';
+'use client';
+
+import {
+  Clear as ClearIcon,
+  FilterList as FilterIcon
+} from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -7,16 +12,13 @@ import {
   InputLabel,
   MenuItem,
   Select,
-  TextField,
-  Typography
+  Stack,
+  TextField
 } from '@mui/material';
-import React from 'react';
 
 interface InterventionTypeFiltersProps {
   search: string;
   onSearchChange: (search: string) => void;
-  isActive: boolean | undefined;
-  onIsActiveChange: (isActive: boolean | undefined) => void;
   sortBy: string;
   onSortByChange: (sortBy: string) => void;
   sortOrder: string;
@@ -24,131 +26,112 @@ interface InterventionTypeFiltersProps {
   onReset: () => void;
 }
 
-const InterventionTypeFilters: React.FC<InterventionTypeFiltersProps> = ({
+export default function InterventionTypeFilters({
   search,
   onSearchChange,
-  isActive,
-  onIsActiveChange,
   sortBy,
   onSortByChange,
   sortOrder,
   onSortOrderChange,
-  onReset,
-}) => {
-  const hasActiveFilters = search || isActive !== undefined;
+  onReset
+}: InterventionTypeFiltersProps) {
+  const hasActiveFilters = search || sortBy !== 'name' || sortOrder !== 'asc';
+
+  const getActiveFiltersCount = () => {
+    let count = 0;
+    if (search) count++;
+    if (sortBy !== 'name') count++;
+    if (sortOrder !== 'asc') count++;
+    return count;
+  };
 
   return (
     <Box sx={{ mb: 3 }}>
-      {/* Titre des filtres */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-        <FilterListIcon color="primary" />
-        <Typography variant="h6" component="h3">
-          Filtres
-        </Typography>
-        {hasActiveFilters && (
-          <Chip
-            label="Filtres actifs"
-            color="primary"
-            size="small"
-            variant="outlined"
-          />
-        )}
-      </Box>
-
-      {/* Ligne de filtres */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap', alignItems: 'flex-end' }}>
-        {/* Recherche */}
+      {/* Filtres principaux */}
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 2 }}>
         <TextField
-          placeholder="Rechercher par code, nom ou description..."
+          label="Rechercher"
+          variant="outlined"
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
-          InputProps={{
-            startAdornment: <SearchIcon sx={{ color: 'text.secondary', mr: 1 }} />
-          }}
-          sx={{ minWidth: 300, flex: 1 }}
-          size="small"
+          placeholder="Code ou nom du type d'intervention..."
+          sx={{ flex: 1 }}
         />
 
-        {/* Statut */}
-        <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel>Statut</InputLabel>
-          <Select
-            value={isActive === undefined ? '' : isActive.toString()}
-            onChange={(e) => onIsActiveChange(e.target.value === '' ? undefined : e.target.value === 'true')}
-            label="Statut"
-          >
-            <MenuItem value="">Tous</MenuItem>
-            <MenuItem value="true">Actif</MenuItem>
-            <MenuItem value="false">Inactif</MenuItem>
-          </Select>
-        </FormControl>
-
-        {/* Tri par */}
-        <FormControl size="small" sx={{ minWidth: 150 }}>
+        <FormControl sx={{ minWidth: 120 }}>
           <InputLabel>Trier par</InputLabel>
           <Select
             value={sortBy}
-            onChange={(e) => onSortByChange(e.target.value)}
             label="Trier par"
+            onChange={(e) => onSortByChange(e.target.value)}
           >
             <MenuItem value="name">Nom</MenuItem>
             <MenuItem value="code">Code</MenuItem>
-            <MenuItem value="createdAt">Date de création</MenuItem>
-            <MenuItem value="updatedAt">Dernière mise à jour</MenuItem>
           </Select>
         </FormControl>
 
-        {/* Ordre de tri */}
-        <FormControl size="small" sx={{ minWidth: 120 }}>
+        <FormControl sx={{ minWidth: 120 }}>
           <InputLabel>Ordre</InputLabel>
           <Select
             value={sortOrder}
-            onChange={(e) => onSortOrderChange(e.target.value)}
             label="Ordre"
+            onChange={(e) => onSortOrderChange(e.target.value)}
           >
             <MenuItem value="asc">Croissant</MenuItem>
             <MenuItem value="desc">Décroissant</MenuItem>
           </Select>
         </FormControl>
 
-        {/* Bouton de reset */}
         {hasActiveFilters && (
           <Button
             variant="outlined"
             startIcon={<ClearIcon />}
             onClick={onReset}
-            size="small"
+            sx={{ whiteSpace: 'nowrap' }}
           >
-            Effacer
+            Réinitialiser
           </Button>
         )}
-      </Box>
+      </Stack>
 
-      {/* Résumé des filtres actifs */}
+      {/* Chips des filtres actifs */}
       {hasActiveFilters && (
-        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+        <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
+          <Chip
+            icon={<FilterIcon />}
+            label={`${getActiveFiltersCount()} filtre(s) actif(s)`}
+            variant="outlined"
+            size="small"
+          />
+
           {search && (
             <Chip
               label={`Recherche: "${search}"`}
-              size="small"
               onDelete={() => onSearchChange('')}
-              color="primary"
-              variant="outlined"
-            />
-          )}
-          {isActive !== undefined && (
-            <Chip
-              label={`Statut: ${isActive ? 'Actif' : 'Inactif'}`}
               size="small"
-              onDelete={() => onIsActiveChange(undefined)}
               color="primary"
-              variant="outlined"
             />
           )}
-        </Box>
+
+          {sortBy !== 'name' && (
+            <Chip
+              label={`Tri: ${sortBy === 'code' ? 'Code' : 'Nom'}`}
+              onDelete={() => onSortByChange('name')}
+              size="small"
+              color="secondary"
+            />
+          )}
+
+          {sortOrder !== 'asc' && (
+            <Chip
+              label="Ordre: Décroissant"
+              onDelete={() => onSortOrderChange('asc')}
+              size="small"
+              color="secondary"
+            />
+          )}
+        </Stack>
       )}
     </Box>
   );
-};
-
-export default InterventionTypeFilters; 
+} 

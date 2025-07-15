@@ -1,17 +1,26 @@
 'use client';
 
-import { CreateReportTypeDto, ReportType, UpdateReportTypeDto } from '@/services/reportTypeService';
 import {
-  Alert,
-  Box,
+  CreateReportTypeDto,
+  Periodicity,
+  ReportType,
+  UpdateReportTypeDto
+} from '@/services/reportTypeService';
+import {
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  TextField
+  FormControl,
+  Grid,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+  Typography
 } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface ReportTypeDialogProps {
   open: boolean;
@@ -21,55 +30,67 @@ interface ReportTypeDialogProps {
   isLoading?: boolean;
 }
 
+const periodicityOptions: { value: Periodicity; label: string }[] = [
+  { value: 'DAILY', label: 'Quotidien' },
+  { value: 'WEEKLY', label: 'Hebdomadaire' },
+  { value: 'MONTHLY', label: 'Mensuel' },
+  { value: 'QUARTERLY', label: 'Trimestriel' },
+  { value: 'YEARLY', label: 'Annuel' }
+];
 
-
-const ReportTypeDialog: React.FC<ReportTypeDialogProps> = ({
+export default function ReportTypeDialog({
   open,
   onClose,
   onSubmit,
   reportType,
   isLoading = false
-}) => {
-  const [formData, setFormData] = useState({
-    name: '',
+}: ReportTypeDialogProps) {
+  const [formData, setFormData] = useState<CreateReportTypeDto>({
     code: '',
-    description: ''
+    name: '',
+    periodicity: 'MONTHLY'
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [submitError, setSubmitError] = useState<string>('');
 
   const isEditing = !!reportType;
 
   useEffect(() => {
     if (open) {
-      if (isEditing && reportType) {
+      if (reportType) {
         setFormData({
-          name: reportType.name,
           code: reportType.code,
-          description: reportType.description || ''
+          name: reportType.name,
+          periodicity: reportType.periodicity
         });
       } else {
         setFormData({
-          name: '',
           code: '',
-          description: ''
+          name: '',
+          periodicity: 'MONTHLY'
         });
       }
       setErrors({});
-      setSubmitError('');
     }
-  }, [open, isEditing, reportType]);
+  }, [open, reportType]);
 
-  const validateForm = () => {
+  const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = 'Le nom est obligatoire';
-    }
     if (!formData.code.trim()) {
-      newErrors.code = 'Le code est obligatoire';
+      newErrors.code = 'Le code est requis';
+    } else if (formData.code.trim().length < 2) {
+      newErrors.code = 'Le code doit contenir au moins 2 caractères';
     }
 
+    if (!formData.name.trim()) {
+      newErrors.name = 'Le nom est requis';
+    } else if (formData.name.trim().length < 3) {
+      newErrors.name = 'Le nom doit contenir au moins 3 caractères';
+    }
+
+    if (!formData.periodicity) {
+      newErrors.periodicity = 'La périodicité est requise';
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -79,16 +100,28 @@ const ReportTypeDialog: React.FC<ReportTypeDialogProps> = ({
     if (!validateForm()) return;
 
     try {
-      setSubmitError('');
-      await onSubmit(formData);
+      const submitData = isEditing
+        ? {
+          name: formData.name,
+          code: formData.code,
+          periodicity: formData.periodicity
+        } as UpdateReportTypeDto
+        : formData as CreateReportTypeDto;
+
+      await onSubmit(submitData);
       onClose();
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : 'Une erreur est survenue');
+      console.error('Erreur lors de la soumission:', error);
     }
   };
 
-  const handleFieldChange = (field: keyof typeof formData, value: string) => {
+  const handleChange = (field: keyof CreateReportTypeDto) => (
+    event: React.ChangeEvent<HTMLInputElement | { value: unknown }>
+  ) => {
+    const value = event.target.value as string;
     setFormData(prev => ({ ...prev, [field]: value }));
+
+    // Nettoyer l'erreur du champ modifié
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
@@ -101,106 +134,92 @@ const ReportTypeDialog: React.FC<ReportTypeDialogProps> = ({
       maxWidth="sm"
       fullWidth
       PaperProps={{
-        sx: {
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          color: 'white'
-        }
+        sx: { borderRadius: 2 }
       }}
     >
-      <DialogTitle sx={{ color: 'white', fontWeight: 'bold' }}>
+      <DialogTitle>
         {isEditing ? 'Modifier le type de rapport' : 'Créer un type de rapport'}
       </DialogTitle>
 
       <DialogContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 2 }}>
-          {submitError && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {submitError}
-            </Alert>
-          )}
+        <Grid container spacing={3} sx={{ mt: 1 }}>
+          <Grid size={{ xs: 12 }}>
+            <TextField
+              label="Code"
+              value={formData.code}
+              onChange={handleChange('code')}
+              disabled={isEditing} // Le code n'est pas modifiable en édition
+              error={!!errors.code}
+              helperText={errors.code || (isEditing ? 'Le code ne peut pas être modifié' : 'Code unique du type de rapport')}
+              fullWidth
+              variant="outlined"
+              required
+            />
+          </Grid>
 
-          <TextField
-            label="Code"
-            value={formData.code}
-            onChange={(e) => handleFieldChange('code', e.target.value)}
-            disabled={isEditing}
-            error={!!errors.code}
-            helperText={errors.code || (isEditing ? 'Le code ne peut pas être modifié' : '')}
-            fullWidth
-            InputProps={{
-              sx: { backgroundColor: 'rgba(255, 255, 255, 0.9)' }
-            }}
-            InputLabelProps={{
-              sx: { color: 'rgba(0, 0, 0, 0.6)' }
-            }}
-          />
+          <Grid size={{ xs: 12 }}>
+            <TextField
+              label="Nom"
+              value={formData.name}
+              onChange={handleChange('name')}
+              error={!!errors.name}
+              helperText={errors.name || 'Nom descriptif du type de rapport'}
+              fullWidth
+              variant="outlined"
+              required
+            />
+          </Grid>
 
-          <TextField
-            label="Nom"
-            value={formData.name}
-            onChange={(e) => handleFieldChange('name', e.target.value)}
-            error={!!errors.name}
-            helperText={errors.name}
-            fullWidth
-            InputProps={{
-              sx: { backgroundColor: 'rgba(255, 255, 255, 0.9)' }
-            }}
-            InputLabelProps={{
-              sx: { color: 'rgba(0, 0, 0, 0.6)' }
-            }}
-          />
-
-          <TextField
-            label="Description"
-            value={formData.description}
-            onChange={(e) => handleFieldChange('description', e.target.value)}
-            error={!!errors.description}
-            helperText={errors.description}
-            fullWidth
-            multiline
-            rows={3}
-            InputProps={{
-              sx: { backgroundColor: 'rgba(255, 255, 255, 0.9)' }
-            }}
-            InputLabelProps={{
-              sx: { color: 'rgba(0, 0, 0, 0.6)' }
-            }}
-          />
-        </Box>
+          <Grid size={{ xs: 12 }}>
+            <FormControl
+              fullWidth
+              variant="outlined"
+              error={!!errors.periodicity}
+              required
+            >
+              <InputLabel>Périodicité</InputLabel>
+              <Select
+                value={formData.periodicity}
+                onChange={handleChange('periodicity')}
+                label="Périodicité"
+              >
+                {periodicityOptions.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </Select>
+              {errors.periodicity && (
+                <Typography variant="caption" color="error" sx={{ mt: 0.5, mx: 1.75 }}>
+                  {errors.periodicity}
+                </Typography>
+              )}
+            </FormControl>
+          </Grid>
+        </Grid>
       </DialogContent>
 
-      <DialogActions sx={{ p: 3 }}>
+      <DialogActions sx={{ px: 3, pb: 3 }}>
         <Button
           onClick={onClose}
           disabled={isLoading}
-          sx={{
-            color: 'white',
-            borderColor: 'white',
-            '&:hover': {
-              borderColor: 'rgba(255, 255, 255, 0.7)',
-              backgroundColor: 'rgba(255, 255, 255, 0.1)'
-            }
-          }}
-          variant="outlined"
         >
           Annuler
         </Button>
         <Button
           onClick={handleSubmit}
-          disabled={isLoading}
           variant="contained"
+          disabled={isLoading}
           sx={{
-            background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+            background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
             '&:hover': {
-              background: 'linear-gradient(45deg, #FE6B8B 60%, #FF8E53 100%)',
+              background: 'linear-gradient(45deg, #667eea 60%, #764ba2 100%)',
             }
           }}
         >
-          {isLoading ? 'Chargement...' : (isEditing ? 'Modifier' : 'Créer')}
+          {isLoading ? 'En cours...' : (isEditing ? 'Modifier' : 'Créer')}
         </Button>
       </DialogActions>
     </Dialog>
   );
-};
-
-export default ReportTypeDialog; 
+} 
