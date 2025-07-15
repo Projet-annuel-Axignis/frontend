@@ -212,15 +212,6 @@ export default function InterventionDetailPage() {
                     size="small"
                   />
                 </Box>
-
-                <Box>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Périodicité
-                  </Typography>
-                  <Typography variant="body1">
-                    {intervention.periodicity}
-                  </Typography>
-                </Box>
               </Box>
             </CardContent>
           </Card>
