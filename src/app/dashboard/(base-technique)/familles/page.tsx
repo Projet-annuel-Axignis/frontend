@@ -625,6 +625,11 @@ export default function FamiliesPage() {
           {editingFamily ? 'Modifier la famille' : 'Nouvelle famille'}
         </DialogTitle>
         <DialogContent>
+          <Box sx={{ mb: 2, mt: 2, p: 1.5, backgroundColor: 'info.light', borderRadius: 1 }}>
+            <Typography variant="body2" color="info.contrastText">
+              <strong>Note:</strong> Les <u>noms de familles</u> et les <u>numéros de série</u> doivent être uniques dans le système.
+            </Typography>
+          </Box>
           <TextField
             autoFocus
             margin="dense"
