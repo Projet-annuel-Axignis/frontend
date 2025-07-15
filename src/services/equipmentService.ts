@@ -650,6 +650,16 @@ export const equipmentService = {
       console.log(`Appel API GET /products${queryString}`);
       const response = await api.get(`/products${queryString}`);
       console.log("Réponse API getProducts:", response.data);
+      
+      // Adapter le format de réponse [results, totalResults, totalPages]
+      if (Array.isArray(response.data) && response.data.length === 3) {
+        return {
+          results: response.data[0] || [],
+          totalResults: response.data[1] || 0,
+          totalPages: response.data[2] || 0
+        };
+      }
+      
       return response.data;
     } catch (error: any) {
       console.error("Erreur getProducts:", error);

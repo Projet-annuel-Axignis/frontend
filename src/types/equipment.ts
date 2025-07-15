@@ -65,11 +65,11 @@ export interface Product {
   id: number;
   name: string;
   serialNumber: string;
-  brandId: number;
+  brandId?: number;
   brand?: Brand;
-  typeId: number;
-  equipmentType?: EquipmentType;
-  compatibilityGroups?: CompatibilityGroup[];
+  typeId?: number;
+  type?: EquipmentType;
+  groups?: {id: number, name: string}[];
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
@@ -231,8 +231,9 @@ export interface PaginatedResponse<T> {
 } 
 
 export interface ServerPaginatedResponse<T> {
-  sortField: string;
+  sortField?: string;
   totalResults: number;
-  currentResults: number;
+  currentResults?: number;
+  totalPages?: number;
   results: T[];
 }

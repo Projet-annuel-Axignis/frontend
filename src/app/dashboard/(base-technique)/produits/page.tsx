@@ -92,6 +92,15 @@ export default function ProductsPage() {
   const loadProducts = async () => {
     try {
       setLoading(true);
+      console.log("Paramètres loadProducts:", {
+        page: page + 1, 
+        rowsPerPage, 
+        brandId: filterBrandId || undefined,
+        typeId: filterTypeId || undefined,
+        searchTerm, 
+        showDeleted
+      });
+      
       const response = await equipmentService.getProducts(
         page + 1, 
         rowsPerPage, 
@@ -102,6 +111,7 @@ export default function ProductsPage() {
       );
       
       console.log("Réponse loadProducts:", response);
+      console.log("Structure des produits:", response.results?.[0]);
       setProducts(response.results || []);
       setTotal(response.totalResults || 0);
     } catch (error) {
@@ -150,10 +160,19 @@ export default function ProductsPage() {
   const handleSubmit = async () => {
     try {
       console.log("handleSubmit - Données du formulaire avant soumission:", formData);
+      
+      // Assurer que brandId et typeId sont des nombres
+      const processedData = {
+        ...formData,
+        brandId: typeof formData.brandId === 'string' ? parseInt(formData.brandId) : formData.brandId,
+        typeId: typeof formData.typeId === 'string' ? parseInt(formData.typeId) : formData.typeId
+      };
+      
+      console.log("Données traitées pour soumission:", processedData);
 
       if (editingProduct) {
         console.log(`Mise à jour du produit (ID: ${editingProduct.id})`);
-        await equipmentService.updateProduct(editingProduct.id, formData as UpdateProductRequest);
+        await equipmentService.updateProduct(editingProduct.id, processedData as UpdateProductRequest);
         setSnackbar({
           open: true,
           message: 'Produit mis à jour avec succès',
@@ -161,7 +180,7 @@ export default function ProductsPage() {
         });
       } else {
         console.log("Création d'un nouveau produit");
-        await equipmentService.createProduct(formData);
+        await equipmentService.createProduct(processedData as CreateProductRequest);
         setSnackbar({
           open: true,
           message: 'Produit créé avec succès',
@@ -282,9 +301,9 @@ export default function ProductsPage() {
     setFormData({ 
       name: product.name,
       serialNumber: product.serialNumber,
-      brandId: product.brandId,
-      typeId: product.typeId,
-      compatibilityGroupIds: product.compatibilityGroups?.map(g => g.id) || []
+      brandId: product.brand?.id || 0,
+      typeId: product.type?.id || 0,
+      compatibilityGroupIds: product.groups?.map(g => g.id) || []
     });
     setOpenDialog(true);
   };
@@ -489,6 +508,7 @@ export default function ProductsPage() {
                 <TableCell sx={{ fontWeight: 600 }}>Numéro de série</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Marque</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Type</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Groupes de compatibilité</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Date de création</TableCell>
                 <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
               </TableRow>
@@ -496,13 +516,13 @@ export default function ProductsPage() {
             <TableBody>
               {loading && products.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                  <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
                     <CircularProgress />
                   </TableCell>
                 </TableRow>
               ) : products.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                  <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
                     <Typography variant="body1" color="text.secondary">
                       Aucun produit trouvé
                     </Typography>
@@ -556,7 +576,27 @@ export default function ProductsPage() {
                       {product.brand?.name || '-'}
                     </TableCell>
                     <TableCell>
-                      {product.equipmentType?.title || '-'}
+                      {product.type?.title || '-'}
+                    </TableCell>
+                    <TableCell>
+                      {product.groups && product.groups.length > 0 ? (
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                          {product.groups.map(group => (
+                            <Chip 
+                              key={group.id}
+                              label={group.name} 
+                              size="small" 
+                              variant="outlined"
+                              color="primary"
+                              sx={{ fontSize: '0.7rem' }}
+                            />
+                          ))}
+                        </Box>
+                      ) : (
+                        <Typography variant="body2" color="text.secondary">
+                          Aucun groupe
+                        </Typography>
+                      )}
                     </TableCell>
                     <TableCell>
                       {format(new Date(product.createdAt), 'dd/MM/yyyy HH:mm', { locale: fr })}
