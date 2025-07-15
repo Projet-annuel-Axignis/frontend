@@ -1,5 +1,6 @@
 'use client';
 
+import { useBreadcrumbTitle } from '@/hooks/useBreadcrumbTitle';
 import { useLoading } from '@/hooks/useLoading';
 import reportService from '@/services/reportService';
 import { OrganizationType, Report } from '@/types/intervention';
@@ -64,6 +65,8 @@ const organizationTypeColors: Record<OrganizationType, 'default' | 'primary' | '
 export default function InterventionReportsPage() {
   const params = useParams();
   const { withLoading } = useLoading();
+
+  useBreadcrumbTitle('reports', 'Rapports d\'intervention');
 
   const interventionId = parseInt(params.interventionId as string);
 
