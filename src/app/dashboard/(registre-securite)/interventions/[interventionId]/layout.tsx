@@ -77,6 +77,7 @@ export default function InterventionDetailLayout({
   const [reportsCount, setReportsCount] = useState<number>(0);
 
   // Définir le titre personnalisé pour le breadcrumb
+  useBreadcrumbTitle('interventions', 'Interventions');
   useBreadcrumbTitle(String(interventionId), intervention?.label || `Intervention ${interventionId}`);
 
   // Notification states

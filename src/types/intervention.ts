@@ -43,11 +43,11 @@ export interface CreateInterventionDto {
   companyName: string;
   employeeName: string;
   status: InterventionStatus;
-  plannedAt: string;
-  startedAt: string;
-  endedAt: string;
+  plannedAt?: string;
+  startedAt?: string;
+  endedAt?: string;
   typeId: number;
-  terminatedById: number;
+  terminatedById?: number;
   partIds: number[];
 }
 

@@ -1,61 +1,88 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
-import { useUser } from '@/app/_providers/UserProvider';
 import DashBoardHeader from '@/components/dashboard/DashBoardHeader';
 import { useBreadcrumbTitle } from '@/hooks/useBreadcrumbTitle';
 import { useLoading } from '@/hooks/useLoading';
+import { hierarchyService } from '@/services/hierarchyService';
 import { interventionService } from '@/services/interventionService';
-import interventionTypeService from '@/services/interventionTypeService';
-import { CreateInterventionDto, Intervention, InterventionType, UpdateInterventionDto } from '@/types/intervention';
+import { Company } from '@/types/company';
+import { Intervention, InterventionStatus } from '@/types/intervention';
+import { Part, SiteWithBuildings } from '@/types/site';
 import {
   Add as AddIcon,
+  ArrowBack as ArrowBackIcon,
   Build as BuildIcon,
-  Refresh as RefreshIcon
+  Business as BusinessIcon,
+  LocationOn as LocationOnIcon,
+  Refresh as RefreshIcon,
+  Security as SecurityIcon
 } from '@mui/icons-material';
 import {
   Alert,
   Box,
+  Breadcrumbs,
   Button,
   Card,
   CardContent,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  Divider,
+  Chip,
+  CircularProgress,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
   Snackbar,
   Typography
 } from '@mui/material';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import InterventionCard from './_components/InterventionCard';
-import InterventionDialog from './_components/InterventionDialog';
-import InterventionFilters from './_components/InterventionFilters';
-import InterventionTable from './_components/InterventionTable';
+
+
+const statusColors: Record<InterventionStatus, 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'> = {
+  PLANNED: 'info',
+  IN_PROGRESS: 'warning',
+  TERMINATED: 'success'
+};
+
+const statusLabels: Record<InterventionStatus, string> = {
+  PLANNED: 'Planifiée',
+  IN_PROGRESS: 'En cours',
+  TERMINATED: 'Terminée'
+};
+
+interface NavigationState {
+  companyId?: number;
+  siteId?: number;
+  buildingId?: number;
+  partId?: number;
+}
+
+interface CompanyWithSites extends Company {
+  sites: SiteWithBuildings[];
+}
 
 const InterventionsPage = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { isLoading: loading, withLoading } = useLoading();
-  const { user } = useUser();
 
   useBreadcrumbTitle('interventions', 'Interventions');
 
+  // Navigation state
+  const [navigationState, setNavigationState] = useState<NavigationState>({
+    companyId: searchParams.get('companyId') ? parseInt(searchParams.get('companyId')!) : undefined,
+    siteId: searchParams.get('siteId') ? parseInt(searchParams.get('siteId')!) : undefined,
+    buildingId: searchParams.get('buildingId') ? parseInt(searchParams.get('buildingId')!) : undefined,
+    partId: searchParams.get('partId') ? parseInt(searchParams.get('partId')!) : undefined,
+  });
+
   // Data states
+  const [hierarchy, setHierarchy] = useState<CompanyWithSites[]>([]);
   const [interventions, setInterventions] = useState<Intervention[]>([]);
-  const [interventionTypes, setInterventionTypes] = useState<InterventionType[]>([]);
-
-  // Filter states
-  const [search, setSearch] = useState('');
-  const [status, setStatus] = useState('');
-  const [periodicity, setPeriodicity] = useState('');
-  const [includeDeleted, setIncludeDeleted] = useState(false);
-
-  // Dialog states
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [interventionToDelete, setInterventionToDelete] = useState<Intervention | null>(null);
-  const [interventionDialogOpen, setInterventionDialogOpen] = useState(false);
-  const [editingIntervention, setEditingIntervention] = useState<Intervention | null>(null);
+  const [selectedCompany, setSelectedCompany] = useState<CompanyWithSites | null>(null);
+  const [selectedSite, setSelectedSite] = useState<SiteWithBuildings | null>(null);
+  const [selectedPart, setSelectedPart] = useState<Part | null>(null);
 
   // Notification states
   const [notification, setNotification] = useState<{
@@ -70,387 +97,461 @@ const InterventionsPage = () => {
 
   // Load initial data
   useEffect(() => {
-    loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    loadHierarchy();
   }, []);
 
-  const loadData = async () => {
+  // Load interventions when part is selected
+  useEffect(() => {
+    if (navigationState.partId) {
+      loadInterventions();
+    }
+  }, [navigationState.partId]);
+
+  const loadHierarchy = async () => {
     await withLoading(async () => {
       try {
-        // Charger les interventions et les types en parallèle
-        await Promise.all([
-          loadInterventions(),
-          loadInterventionTypes()
-        ]);
+        const result = await hierarchyService.loadHierarchicalData({
+          includeDeleted: false,
+        });
+        const hierarchyData = hierarchyService.buildCompleteHierarchy(
+          result.data,
+          result.partFloorsMap,
+          result.includeDeleted
+        );
+        setHierarchy(hierarchyData as CompanyWithSites[]);
+
+        // Set selected entities based on navigation state
+        if (navigationState.companyId) {
+          const company = hierarchyData.find(c => c.id === navigationState.companyId);
+          if (company) {
+            setSelectedCompany(company as CompanyWithSites);
+            if (navigationState.siteId) {
+              const site = company.sites.find(s => s.id === navigationState.siteId);
+              if (site) {
+                setSelectedSite(site as SiteWithBuildings);
+                if (navigationState.buildingId) {
+                  const building = site.buildings.find(b => b.id === navigationState.buildingId);
+                  if (building && navigationState.partId) {
+                    const part = building.parts.find(p => p.id === navigationState.partId);
+                    if (part) {
+                      setSelectedPart(part);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       } catch (error) {
-        console.error('Error loading data:', error);
-        showNotification('Erreur lors du chargement des données', 'error');
+        console.error('Error loading hierarchy:', error);
+        showNotification('Erreur lors du chargement de la hiérarchie', 'error');
       }
     });
   };
 
   const loadInterventions = async () => {
+    if (!navigationState.partId) return;
+
     try {
+      // Pour l'instant, on charge toutes les interventions et on filtre côté client
       const result = await interventionService.getInterventions({
-        status: status || undefined,
-        search,
-        includeDeleted,
+        includeDeleted: false,
       });
-      setInterventions(result.interventions);
+
+      // Filtrer les interventions par partie (à adapter selon l'API)
+      const filteredInterventions = result.interventions.filter(intervention =>
+        intervention.parts?.some(part => part.id === navigationState.partId)
+      );
+
+      setInterventions(filteredInterventions);
     } catch (error) {
       console.error('Error loading interventions:', error);
       showNotification('Erreur lors du chargement des interventions', 'error');
     }
   };
 
-  const loadInterventionTypes = async () => {
-    try {
-      const result = await interventionTypeService.getInterventionTypes({
-        limit: 1000,
-        page: 1,
-        sortBy: 'name',
-        sortOrder: 'asc',
-        search: '',
-      });
-      setInterventionTypes(result.data);
-    } catch (error) {
-      console.error('Error loading intervention types:', error);
-      showNotification('Erreur lors du chargement des types d\'intervention', 'error');
-    }
-  };
-
-  // Reload interventions when filters change
-  useEffect(() => {
-    loadInterventions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, search, includeDeleted]);
-
   const showNotification = (message: string, severity: 'success' | 'error' | 'info') => {
     setNotification({ open: true, message, severity });
   };
 
-  const handleCreateIntervention = () => {
-    setEditingIntervention(null);
-    setInterventionDialogOpen(true);
+  const updateNavigationState = (newState: Partial<NavigationState>) => {
+    const updatedState = { ...navigationState, ...newState };
+    setNavigationState(updatedState);
+
+    // Update URL params
+    const params = new URLSearchParams();
+    if (updatedState.companyId) params.set('companyId', updatedState.companyId.toString());
+    if (updatedState.siteId) params.set('siteId', updatedState.siteId.toString());
+    if (updatedState.buildingId) params.set('buildingId', updatedState.buildingId.toString());
+    if (updatedState.partId) params.set('partId', updatedState.partId.toString());
+
+    const newUrl = params.toString() ? `?${params.toString()}` : '';
+    router.push(`/dashboard/interventions${newUrl}`);
   };
 
-  const handleEditIntervention = (intervention: Intervention) => {
-    setEditingIntervention(intervention);
-    setInterventionDialogOpen(true);
-  };
-
-  const handleSubmitIntervention = async (data: CreateInterventionDto | UpdateInterventionDto) => {
-    await withLoading(async () => {
-      try {
-        if (editingIntervention) {
-          // Mode édition
-          await interventionService.updateIntervention(editingIntervention.id, data as UpdateInterventionDto);
-          showNotification('Intervention modifiée avec succès', 'success');
-        } else {
-          // Mode création
-          await interventionService.createIntervention(data as CreateInterventionDto);
-          showNotification('Intervention créée avec succès', 'success');
-        }
-
-        await loadInterventions();
-        setInterventionDialogOpen(false);
-        setEditingIntervention(null);
-      } catch (error) {
-        console.error('Error submitting intervention:', error);
-        throw error; // Let the dialog handle the error display
-      }
+  const handleCompanySelect = (company: CompanyWithSites) => {
+    setSelectedCompany(company);
+    setSelectedSite(null);
+    setSelectedPart(null);
+    updateNavigationState({
+      companyId: company.id,
+      siteId: undefined,
+      buildingId: undefined,
+      partId: undefined,
     });
+  };
+
+  const handleSiteSelect = (site: SiteWithBuildings) => {
+    setSelectedSite(site);
+    setSelectedPart(null);
+    updateNavigationState({
+      siteId: site.id,
+      buildingId: undefined,
+      partId: undefined,
+    });
+  };
+
+  const handleBuildingSelect = (buildingId: number) => {
+    updateNavigationState({
+      buildingId,
+      partId: undefined,
+    });
+  };
+
+  const handlePartSelect = (part: Part) => {
+    setSelectedPart(part);
+    updateNavigationState({
+      partId: part.id,
+    });
+  };
+
+  const handleBack = () => {
+    if (navigationState.partId) {
+      // Back to building
+      updateNavigationState({ partId: undefined });
+      setSelectedPart(null);
+    } else if (navigationState.buildingId) {
+      // Back to site
+      updateNavigationState({ buildingId: undefined });
+    } else if (navigationState.siteId) {
+      // Back to company
+      updateNavigationState({ siteId: undefined });
+      setSelectedSite(null);
+    } else if (navigationState.companyId) {
+      // Back to companies list
+      updateNavigationState({ companyId: undefined });
+      setSelectedCompany(null);
+    }
+  };
+
+  const handleCreateIntervention = () => {
+    if (!navigationState.partId) return;
+    router.push(`/dashboard/interventions/create?partId=${navigationState.partId}`);
   };
 
   const handleViewIntervention = (intervention: Intervention) => {
     router.push(`/dashboard/interventions/${intervention.id}`);
   };
 
-  const handleDeleteIntervention = (intervention: Intervention) => {
-    setInterventionToDelete(intervention);
-    setDeleteDialogOpen(true);
-  };
+  const renderBreadcrumbs = () => {
+    const breadcrumbs = [];
 
-  const handleRestoreIntervention = async (intervention: Intervention) => {
-    await withLoading(async () => {
-      try {
-        await interventionService.restoreIntervention(intervention.id);
-        await loadInterventions();
-        showNotification('Intervention restaurée avec succès', 'success');
-      } catch (error) {
-        console.error('Error restoring intervention:', error);
-        showNotification('Erreur lors de la restauration de l\'intervention', 'error');
-      }
-    });
-  };
-
-  const handleStartIntervention = async (intervention: Intervention) => {
-    await withLoading(async () => {
-      try {
-        await interventionService.startIntervention(intervention.id);
-        await loadInterventions();
-        showNotification('Intervention démarrée avec succès', 'success');
-      } catch (error) {
-        console.error('Error starting intervention:', error);
-        showNotification('Erreur lors du démarrage de l\'intervention', 'error');
-      }
-    });
-  };
-
-  const handleTerminateIntervention = async (intervention: Intervention) => {
-    await withLoading(async () => {
-      try {
-        await interventionService.terminateIntervention(intervention.id, user?.id ?? 0);
-        await loadInterventions();
-        showNotification('Intervention terminée avec succès', 'success');
-      } catch (error) {
-        console.error('Error terminating intervention:', error);
-        showNotification('Erreur lors de la finalisation de l\'intervention', 'error');
-      }
-    });
-  };
-
-  const confirmDeleteIntervention = async () => {
-    if (!interventionToDelete) return;
-
-    await withLoading(async () => {
-      try {
-        await interventionService.deleteIntervention(interventionToDelete.id);
-        await loadInterventions();
-        showNotification('Intervention archivée avec succès', 'success');
-        setDeleteDialogOpen(false);
-        setInterventionToDelete(null);
-      } catch (error) {
-        console.error('Error deleting intervention:', error);
-        showNotification('Erreur lors de l\'archivage de l\'intervention', 'error');
-      }
-    });
-  };
-
-  const handleResetFilters = () => {
-    setSearch('');
-    setStatus('');
-    setPeriodicity('');
-    setIncludeDeleted(false);
-  };
-
-  // Filter interventions based on current filters
-  const filteredInterventions = interventions.filter(intervention => {
-    if (!includeDeleted && intervention.deletedAt) return false;
-    if (status && intervention.status !== status) return false;
-    if (search) {
-      const searchLower = search.toLowerCase();
-      return (
-        intervention.label.toLowerCase().includes(searchLower) ||
-        intervention.companyName.toLowerCase().includes(searchLower) ||
-        intervention.employeeName.toLowerCase().includes(searchLower) ||
-        intervention.type.name.toLowerCase().includes(searchLower)
+    if (selectedCompany) {
+      breadcrumbs.push(
+        <Button
+          key="company"
+          onClick={() => handleCompanySelect(selectedCompany)}
+          startIcon={<BusinessIcon />}
+          color="primary"
+        >
+          {selectedCompany.name}
+        </Button>
       );
     }
-    return true;
-  });
+
+    if (selectedSite) {
+      breadcrumbs.push(
+        <Button
+          key="site"
+          onClick={() => handleSiteSelect(selectedSite)}
+          startIcon={<LocationOnIcon />}
+          color="primary"
+        >
+          {selectedSite.name}
+        </Button>
+      );
+    }
+
+    if (navigationState.buildingId && selectedSite) {
+      const building = selectedSite.buildings?.find(b => b.id === navigationState.buildingId);
+      if (building) {
+        breadcrumbs.push(
+          <Button
+            key="building"
+            onClick={() => handleBuildingSelect(building.id)}
+            startIcon={<SecurityIcon />}
+            color="primary"
+          >
+            {building.name}
+          </Button>
+        );
+      }
+    }
+
+    if (selectedPart) {
+      breadcrumbs.push(
+        <Typography key="part" variant="body1" color="text.primary">
+          {selectedPart.name}
+        </Typography>
+      );
+    }
+
+    return (
+      <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
+        {breadcrumbs}
+      </Breadcrumbs>
+    );
+  };
+
+  const renderCompaniesList = () => (
+    <Card>
+      <CardContent>
+        <Typography variant="h6" gutterBottom>
+          Sélectionnez une entreprise
+        </Typography>
+        <List>
+          {hierarchy.map((company) => (
+            <ListItem key={company.id} disablePadding>
+              <ListItemButton onClick={() => handleCompanySelect(company)}>
+                <ListItemIcon>
+                  <BusinessIcon color="primary" />
+                </ListItemIcon>
+                <ListItemText
+                  primary={company.name}
+                  secondary={`${company.sites?.length || 0} site(s)`}
+                />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
+      </CardContent>
+    </Card>
+  );
+
+  const renderSitesList = () => (
+    <Card>
+      <CardContent>
+        <Typography variant="h6" gutterBottom>
+          Sites de {selectedCompany?.name}
+        </Typography>
+        <List>
+          {selectedCompany?.sites?.map((site) => (
+            <ListItem key={site.id} disablePadding>
+              <ListItemButton onClick={() => handleSiteSelect(site)}>
+                <ListItemIcon>
+                  <LocationOnIcon color="primary" />
+                </ListItemIcon>
+                <ListItemText
+                  primary={site.name}
+                  secondary={`${site.streetNumber} ${site.street}, ${site.postalCode} ${site.city}`}
+                />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
+      </CardContent>
+    </Card>
+  );
+
+  const renderBuildingsList = () => (
+    <Card>
+      <CardContent>
+        <Typography variant="h6" gutterBottom>
+          Bâtiments du site {selectedSite?.name}
+        </Typography>
+        <List>
+          {selectedSite?.buildings?.map((building) => (
+            <ListItem key={building.id} disablePadding>
+              <ListItemButton onClick={() => handleBuildingSelect(building.id)}>
+                <ListItemIcon>
+                  <SecurityIcon color="primary" />
+                </ListItemIcon>
+                <ListItemText
+                  primary={building.name}
+                  secondary={`${(building as any).parts?.length || 0} partie(s)`}
+                />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
+      </CardContent>
+    </Card>
+  );
+
+  const renderPartsList = () => {
+    if (!selectedSite || !navigationState.buildingId) return null;
+
+    const building = selectedSite.buildings?.find(b => b.id === navigationState.buildingId);
+    if (!building) return null;
+
+    return (
+      <Card>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>
+            Parties du bâtiment {building.name}
+          </Typography>
+          <List>
+            {(building as any).parts?.map((part: any) => (
+              <ListItem key={part.id} disablePadding>
+                <ListItemButton onClick={() => handlePartSelect(part)}>
+                  <ListItemIcon>
+                    <SecurityIcon color="primary" />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={part.name}
+                    secondary={`Type: ${part.type || 'Non défini'}`}
+                  />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  const renderInterventionsList = () => {
+    if (!selectedPart) return null;
+
+    return (
+      <Card>
+        <CardContent>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h6">
+              Interventions de la partie {selectedPart.name}
+            </Typography>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={handleCreateIntervention}
+            >
+              Nouvelle intervention
+            </Button>
+          </Box>
+
+          {interventions.length === 0 ? (
+            <Alert severity="info">
+              Aucune intervention trouvée pour cette partie.
+            </Alert>
+          ) : (
+            <List>
+              {interventions.map((intervention) => (
+                <ListItem key={intervention.id} disablePadding>
+                  <ListItemButton onClick={() => handleViewIntervention(intervention)}>
+                    <ListItemIcon>
+                      <SecurityIcon color="primary" />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={intervention.label}
+                      secondary={
+                        <Box>
+                          <Typography variant="body2" color="text.secondary">
+                            {intervention.companyName} - {intervention.employeeName}
+                          </Typography>
+                          <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                            <Chip
+                              label={statusLabels[intervention.status]}
+                              size="small"
+                              color={statusColors[intervention.status]}
+                            />
+                            <Chip
+                              label={intervention.type.name}
+                              size="small"
+                              variant="outlined"
+                            />
+                          </Box>
+                        </Box>
+                      }
+                    />
+                  </ListItemButton>
+                </ListItem>
+              ))}
+            </List>
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
+
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
+          <CircularProgress />
+        </Box>
+      );
+    }
+
+    if (!navigationState.companyId) {
+      return renderCompaniesList();
+    }
+
+    if (!navigationState.siteId) {
+      return renderSitesList();
+    }
+
+    if (!navigationState.buildingId) {
+      return renderBuildingsList();
+    }
+
+    if (!navigationState.partId) {
+      return renderPartsList();
+    }
+
+    return renderInterventionsList();
+  };
 
   return (
     <Box>
-      {/* Header */}
       <DashBoardHeader
         title="Interventions"
         icon={<BuildIcon />}
-      />
-
-      <Card>
-        <CardContent>
-          {/* Header */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-            <BuildIcon color="primary" sx={{ fontSize: '2rem' }} />
-            <Box sx={{ flexGrow: 1 }}>
-              <Typography variant="h5" component="h2" fontWeight="600">
-                Gestion des Interventions
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {filteredInterventions.length} intervention{filteredInterventions.length > 1 ? 's' : ''} trouvée{filteredInterventions.length > 1 ? 's' : ''}
-                {filteredInterventions.length !== interventions.length && ` sur ${interventions.length} au total`}
-              </Typography>
-            </Box>
-
-            {/* Boutons - Version Desktop */}
-            <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 1, flexWrap: 'wrap' }}>
-              <Button
-                variant="outlined"
-                startIcon={<RefreshIcon />}
-                onClick={loadData}
-                disabled={loading}
-                size="small"
-              >
-                Actualiser
-              </Button>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={handleCreateIntervention}
-                disabled={loading}
-                sx={{
-                  background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
-                  '&:hover': {
-                    background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
-                  },
-                }}
-              >
-                Nouvelle intervention
-              </Button>
-            </Box>
-
-            {/* Boutons - Version Mobile (icônes seulement) */}
-            <Box sx={{ display: { xs: 'flex', sm: 'none' }, gap: 1 }}>
-              <Button
-                variant="outlined"
-                onClick={loadData}
-                disabled={loading}
-                size="small"
-                sx={{ minWidth: 'auto', px: 1 }}
-              >
-                <RefreshIcon fontSize="small" />
-              </Button>
-              <Button
-                variant="contained"
-                onClick={handleCreateIntervention}
-                disabled={loading}
-                size="small"
-                sx={{
-                  minWidth: 'auto',
-                  px: 1,
-                  background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
-                  '&:hover': {
-                    background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
-                  },
-                }}
-              >
-                <AddIcon fontSize="small" />
-              </Button>
-            </Box>
-          </Box>
-
-          <Divider sx={{ mb: 3 }} />
-
-          {/* Filtres */}
-          <InterventionFilters
-            search={search}
-            onSearchChange={setSearch}
-            status={status}
-            onStatusChange={setStatus}
-            periodicity={periodicity}
-            onPeriodicityChange={setPeriodicity}
-            includeDeleted={includeDeleted}
-            onIncludeDeletedChange={setIncludeDeleted}
-            onReset={handleResetFilters}
-          />
-
-          {/* Desktop Table View */}
-          <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-            <InterventionTable
-              interventions={filteredInterventions}
-              onView={handleViewIntervention}
-              onEdit={handleEditIntervention}
-              onStart={handleStartIntervention}
-              onTerminate={handleTerminateIntervention}
-              onDelete={handleDeleteIntervention}
-              onRestore={handleRestoreIntervention}
-            />
-          </Box>
-
-          {/* Mobile Card View */}
-          <Box sx={{ display: { xs: 'block', md: 'none' } }}>
-            {filteredInterventions.map((intervention) => (
-              <InterventionCard
-                key={intervention.id}
-                intervention={intervention}
-                onView={handleViewIntervention}
-                onEdit={handleEditIntervention}
-                onStart={handleStartIntervention}
-                onTerminate={handleTerminateIntervention}
-                onDelete={handleDeleteIntervention}
-                onRestore={handleRestoreIntervention}
-              />
-            ))}
-
-            {filteredInterventions.length === 0 && (
-              <Box sx={{ textAlign: 'center', py: 8 }}>
-                <BuildIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
-                <Typography variant="h6" color="text.secondary" gutterBottom>
-                  Aucune intervention trouvée
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {search || status || periodicity
-                    ? 'Aucune intervention ne correspond à vos critères de recherche.'
-                    : 'Commencez par créer votre première intervention.'
-                  }
-                </Typography>
-              </Box>
-            )}
-          </Box>
-        </CardContent>
-      </Card>
-
-      {/* Intervention Dialog */}
-      <InterventionDialog
-        open={interventionDialogOpen}
-        onClose={() => {
-          setInterventionDialogOpen(false);
-          setEditingIntervention(null);
-        }}
-        onSubmit={handleSubmitIntervention}
-        intervention={editingIntervention}
-        interventionTypes={interventionTypes}
-        loading={loading}
-      />
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog
-        open={deleteDialogOpen}
-        onClose={() => {
-          setDeleteDialogOpen(false);
-          setInterventionToDelete(null);
-        }}
       >
-        <DialogTitle>Confirmer l&apos;archivage</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Êtes-vous sûr de vouloir archiver l&apos;intervention &quot;{interventionToDelete?.label}&quot; ?
-            Cette action peut être annulée en restaurant l&apos;intervention depuis les filtres.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => {
-              setDeleteDialogOpen(false);
-              setInterventionToDelete(null);
-            }}
-            disabled={loading}
-          >
-            Annuler
-          </Button>
-          <Button
-            onClick={confirmDeleteIntervention}
-            color="error"
-            variant="contained"
-            disabled={loading}
-          >
-            Archiver
-          </Button>
-        </DialogActions>
-      </Dialog>
+        <Button
+          variant="outlined"
+          startIcon={<RefreshIcon />}
+          onClick={loadHierarchy}
+          disabled={loading}
+        >
+          Actualiser
+        </Button>
+      </DashBoardHeader>
 
-      {/* Notification Snackbar */}
+      <Box sx={{ mb: 3 }}>
+        {renderBreadcrumbs()}
+
+        {(navigationState.companyId || navigationState.siteId || navigationState.buildingId || navigationState.partId) && (
+          <Button
+            startIcon={<ArrowBackIcon />}
+            onClick={handleBack}
+            sx={{ mb: 2 }}
+          >
+            Retour
+          </Button>
+        )}
+      </Box>
+
+      {renderContent()}
+
       <Snackbar
         open={notification.open}
-        autoHideDuration={4000}
-        onClose={() => setNotification(prev => ({ ...prev, open: false }))}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        autoHideDuration={6000}
+        onClose={() => setNotification({ ...notification, open: false })}
       >
         <Alert
-          onClose={() => setNotification(prev => ({ ...prev, open: false }))}
+          onClose={() => setNotification({ ...notification, open: false })}
           severity={notification.severity}
-          variant="filled"
+          sx={{ width: '100%' }}
         >
           {notification.message}
         </Alert>
