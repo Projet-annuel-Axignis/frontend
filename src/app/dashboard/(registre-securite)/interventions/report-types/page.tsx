@@ -91,6 +91,7 @@ export default function ReportTypesPage() {
   // Chargement des données
   useEffect(() => {
     loadReportTypes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
   const loadReportTypes = async () => {

@@ -91,6 +91,7 @@ export default function InterventionTypesPage() {
   // Chargement des données
   useEffect(() => {
     loadInterventionTypes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
   const loadInterventionTypes = async () => {
