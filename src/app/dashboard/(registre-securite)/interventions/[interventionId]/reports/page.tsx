@@ -7,6 +7,7 @@ import { OrganizationType, Report } from '@/types/intervention';
 import {
   Add as AddIcon,
   Assignment as AssignmentIcon,
+  Attachment as AttachmentIcon,
   Delete as DeleteIcon,
   Download as DownloadIcon,
   Edit as EditIcon,
@@ -51,6 +52,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
+import FileManager from '../_components/FileManager';
 
 const organizationTypeLabels: Record<OrganizationType, string> = {
   OA: 'Organisme Agréé',
@@ -83,6 +85,9 @@ export default function InterventionReportsPage() {
   // Menu states
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+
+  // File management state
+  const [fileManagerReport, setFileManagerReport] = useState<Report | null>(null);
 
   // Dialog states
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -433,6 +438,31 @@ export default function InterventionReportsPage() {
         </TableContainer>
       </Paper>
 
+      {/* Gestion des fichiers pour le rapport sélectionné */}
+      {fileManagerReport && (
+        <FileManager
+          entityType="report"
+          entityId={fileManagerReport.id}
+          title={`Fichiers du rapport: ${fileManagerReport.label}`}
+          onFilesChange={() => {
+            // Optionnel: recharger les données si nécessaire
+            loadReports();
+          }}
+        />
+      )}
+
+      {/* Bouton pour fermer le gestionnaire de fichiers */}
+      {fileManagerReport && (
+        <Box sx={{ mt: 2, textAlign: 'center' }}>
+          <Button
+            variant="outlined"
+            onClick={() => setFileManagerReport(null)}
+          >
+            Fermer la gestion des fichiers
+          </Button>
+        </Box>
+      )}
+
       {/* Menu contextuel */}
       <Menu
         anchorEl={anchorEl}
@@ -476,6 +506,17 @@ export default function InterventionReportsPage() {
             )}
           </>
         )}
+        <MenuItem
+          onClick={() => {
+            if (selectedReport) {
+              setFileManagerReport(selectedReport);
+            }
+            handleMenuClose();
+          }}
+        >
+          <AttachmentIcon sx={{ mr: 1 }} />
+          Gérer les fichiers
+        </MenuItem>
       </Menu>
 
       {/* Dialogue de confirmation de suppression */}
