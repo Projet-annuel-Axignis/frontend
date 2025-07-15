@@ -120,16 +120,18 @@ const FileManager: React.FC<FileManagerProps> = ({
 
     try {
       for (const file of Array.from(filesToUpload)) {
-        // 1. Upload du fichier physique
-        const formData = new FormData();
-        formData.append('file', file);
-
-        const uploadResponse = await fileService.uploadFile(formData);
-
-        // 2. Attacher le fichier à l'entité
         if (entityType === 'report') {
-          await fileService.attachFileToReport(entityId, uploadResponse.id);
+          // Upload direct vers le rapport
+          await fileService.uploadReportFile(entityId, file);
         } else {
+          // Pour les observations, garder l'ancien processus
+          // 1. Upload du fichier physique
+          const formData = new FormData();
+          formData.append('file', file);
+
+          const uploadResponse = await fileService.uploadFile(formData);
+
+          // 2. Attacher le fichier à l'entité
           const response = await fetch(`/api/v1/observations/${entityId}/files`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
