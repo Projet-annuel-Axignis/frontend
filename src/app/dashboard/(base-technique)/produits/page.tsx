@@ -51,7 +51,8 @@ import {
   CreateProductRequest, 
   UpdateProductRequest,
   Brand,
-  EquipmentType
+  EquipmentType,
+  CompatibilityGroup
 } from '@/types/equipment';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -60,6 +61,7 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [equipmentTypes, setEquipmentTypes] = useState<EquipmentType[]>([]);
+  const [compatibilityGroups, setCompatibilityGroups] = useState<CompatibilityGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showDeleted, setShowDeleted] = useState(false);
@@ -146,6 +148,31 @@ export default function ProductsPage() {
     }
   };
 
+  // Charger les groupes de compatibilité pour le formulaire
+  const loadCompatibilityGroups = async () => {
+    try {
+      const response = await equipmentService.getCompatibilityGroups(1, 100);
+      console.log('Response groupes de compatibilité:', response);
+      
+      // Vérifier si la réponse est directement un tableau (format [{ id, name, products }])
+      if (Array.isArray(response)) {
+        setCompatibilityGroups(response);
+      } 
+      // Vérifier si la réponse a une structure avec un champ results
+      else if (response && response.results) {
+        setCompatibilityGroups(response.results);
+      }
+      // Si format inconnu, utiliser un tableau vide
+      else {
+        console.warn('Format de réponse inattendu pour les groupes de compatibilité');
+        setCompatibilityGroups([]);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des groupes de compatibilité:', error);
+      setCompatibilityGroups([]);
+    }
+  };
+
   useEffect(() => {
     loadProducts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -154,6 +181,7 @@ export default function ProductsPage() {
   useEffect(() => {
     loadBrands();
     loadEquipmentTypes();
+    loadCompatibilityGroups();
   }, []);
 
   // Gestion des formulaires
@@ -584,10 +612,10 @@ export default function ProductsPage() {
                           {product.groups.map(group => (
                             <Chip 
                               key={group.id}
-                              label={group.name} 
-                              size="small" 
-                              variant="outlined"
+                              label={group.name}
+                              size="small"
                               color="primary"
+                              variant="outlined"
                               sx={{ fontSize: '0.7rem' }}
                             />
                           ))}
@@ -732,18 +760,24 @@ export default function ProductsPage() {
                   input={<OutlinedInput label="Groupes de compatibilité" />}
                   renderValue={(selected) => (
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                      {(selected as number[]).map((value) => (
-                        <Chip key={value} label={`Groupe ${value}`} size="small" />
-                      ))}
+                      {(selected as number[]).map((value) => {
+                        const group = compatibilityGroups.find(g => g.id === value);
+                        return (
+                          <Chip key={value} label={group?.name || `Groupe ${value}`} size="small" />
+                        );
+                      })}
                     </Box>
                   )}
                 >
-                  {/* Simuler des groupes pour le moment - à remplacer par une API réelle */}
-                  {[1, 2, 3, 4, 5].map((id) => (
-                    <MenuItem key={id} value={id}>
-                      Groupe {id}
-                    </MenuItem>
-                  ))}
+                  {compatibilityGroups.length === 0 ? (
+                    <MenuItem disabled>Aucun groupe disponible</MenuItem>
+                  ) : (
+                    compatibilityGroups.map((group) => (
+                      <MenuItem key={group.id} value={group.id}>
+                        {group.name}
+                      </MenuItem>
+                    ))
+                  )}
                 </Select>
                 <FormHelperText>Sélectionnez les groupes de compatibilité (optionnel)</FormHelperText>
               </FormControl>

@@ -215,6 +215,19 @@ export interface UpdateProductRequest {
   compatibilityGroupIds?: number[];
 }
 
+// Types pour les groupes de compatibilité
+export interface CreateCompatibilityGroupRequest {
+  name: string;
+  serialNumber: string;
+  description?: string;
+}
+
+export interface UpdateCompatibilityGroupRequest {
+  name?: string;
+  serialNumber?: string;
+  description?: string;
+}
+
 // Types pour les réponses API
 export interface ApiResponse<T> {
   data: T;

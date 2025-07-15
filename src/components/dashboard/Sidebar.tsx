@@ -7,6 +7,7 @@ import BusinessIcon from '@mui/icons-material/Business';
 import CableIcon from '@mui/icons-material/Cable';
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import FolderIcon from '@mui/icons-material/Folder';
+import GroupIcon from '@mui/icons-material/Group';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import MenuIcon from '@mui/icons-material/Menu';
 import PeopleIcon from '@mui/icons-material/People';
@@ -308,7 +309,7 @@ export default function Sidebar() {
                 <Box sx={{ width: '100%' }}>
                   <StyledListItemButton
                     onClick={handleEquipmentsClick}
-                    isActive={isActive('/dashboard/domaines') || isActive('/dashboard/familles') || isActive('/dashboard/types')}
+                    isActive={isActive('/dashboard/domaines') || isActive('/dashboard/familles') || isActive('/dashboard/types') || isActive('/dashboard/compatibilite')}
                   >
                     <AccountTreeIcon sx={{ mr: 1.5, color: 'var(--color-axignis-primary)' }} />
                     <ListItemText
@@ -365,6 +366,30 @@ export default function Sidebar() {
                     <CableIcon sx={{ mr: 1.5, fontSize: '1rem', color: 'var(--color-axignis-primary)' }} />
                     <Typography variant="body2" color="textSecondary">
                       Types
+                    </Typography>
+                  </StyledListItemButton>
+                </Link>
+                
+                <Link href="/dashboard/compatibilite" style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <StyledListItemButton
+                    sx={{ py: 0.75, mb: 0.5, width: '100%' }}
+                    isActive={isActive('/dashboard/compatibilite')}
+                  >
+                    <GroupIcon sx={{ mr: 1.5, fontSize: '1rem', color: 'var(--color-axignis-primary)' }} />
+                    <Typography variant="body2" color="textSecondary">
+                      Compatibilité
+                    </Typography>
+                  </StyledListItemButton>
+                </Link>
+
+                <Link href="/dashboard/compatibilite" style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <StyledListItemButton
+                    sx={{ py: 0.75, mb: 0.5, width: '100%' }}
+                    isActive={isActive('/dashboard/compatibilite')}
+                  >
+                    <GroupIcon sx={{ mr: 1.5, fontSize: '1rem', color: 'var(--color-axignis-primary)' }} />
+                    <Typography variant="body2" color="textSecondary">
+                      Compatibilité
                     </Typography>
                   </StyledListItemButton>
                 </Link>
