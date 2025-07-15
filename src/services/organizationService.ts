@@ -1,23 +1,9 @@
 import { api } from '@/lib/api';
-
-// Utiliser les types de intervention.ts
-export type OrganizationType = 'OA' | 'TC';
-
-export interface Organization {
-  id: number;
-  name: string;
-  type: OrganizationType;
-}
-
-export interface CreateOrganizationDto {
-  name: string;
-  type: OrganizationType;
-}
-
-export interface UpdateOrganizationDto {
-  name?: string;
-  type?: OrganizationType;
-}
+import {
+  CreateOrganizationDto,
+  Organization,
+  UpdateOrganizationDto
+} from '@/types/intervention';
 
 export interface OrganizationFilters {
   search?: string;

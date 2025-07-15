@@ -5,7 +5,7 @@ import {
   Organization,
   OrganizationType,
   UpdateOrganizationDto
-} from '@/services/organizationService';
+} from '@/types/intervention';
 import {
   Button,
   Dialog,
@@ -103,7 +103,7 @@ export default function OrganizationDialog({
   };
 
   const handleChange = (field: keyof CreateOrganizationDto) => (
-    event: React.ChangeEvent<HTMLInputElement | { value: unknown }>
+    event: React.ChangeEvent<HTMLInputElement> | { target: { value: unknown } }
   ) => {
     const value = event.target.value as string;
     setFormData(prev => ({ ...prev, [field]: value }));
