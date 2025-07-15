@@ -1,488 +1,325 @@
 'use client';
 
-import reportTypeService, { CreateReportTypeDto, ReportType, ReportTypeFilters, UpdateReportTypeDto } from '@/services/reportTypeService';
+import DashBoardHeader from '@/components/dashboard/DashBoardHeader';
+import reportTypeService, { CreateReportTypeDto, ReportType, UpdateReportTypeDto } from '@/services/reportTypeService';
 import {
   Add as AddIcon,
-  Delete as DeleteIcon,
-  Edit as EditIcon,
-  MoreVert as MoreVertIcon,
-  Search as SearchIcon,
-  Visibility as ViewIcon
+  Description as DescriptionIcon
 } from '@mui/icons-material';
 import {
   Alert,
   Box,
   Button,
-  Chip,
+  Card,
+  CardContent,
   Dialog,
   DialogActions,
   DialogContent,
+  DialogContentText,
   DialogTitle,
-  FormControl,
-  FormControlLabel,
-  InputLabel,
-  ListItemIcon,
-  ListItemText,
-  Menu,
-  MenuItem,
-  MenuItem as MenuItemAction,
-  MenuList,
-  Select,
+  Divider,
+  Grid,
   Snackbar,
-  Switch,
-  TextField,
-  Typography
+  Typography,
+  useMediaQuery,
+  useTheme
 } from '@mui/material';
-import { DataGrid, GridActionsCellItem, GridColDef } from '@mui/x-data-grid';
-import { format, isValid, parseISO } from 'date-fns';
-import { fr } from 'date-fns/locale';
-import React, { useEffect, useState } from 'react';
-
-// Fonction utilitaire pour formater les dates de manière sûre
-const formatDate = (dateString: string): string => {
-  if (!dateString) return '-';
-
-  const date = parseISO(dateString);
-  if (!isValid(date)) return '-';
-
-  return format(date, 'dd/MM/yy', { locale: fr });
-};
-
-const formatDateTime = (dateString: string): string => {
-  if (!dateString) return '-';
-
-  const date = parseISO(dateString);
-  if (!isValid(date)) return '-';
-
-  return format(date, 'dd MMMM yyyy à HH:mm', { locale: fr });
-};
+import { useEffect, useState } from 'react';
+import ReportTypeCard from './_components/ReportTypeCard';
+import ReportTypeDialog from './_components/ReportTypeDialog';
+import ReportTypeFilters from './_components/ReportTypeFilters';
+import ReportTypeTable from './_components/ReportTypeTable';
 
 export default function ReportTypesPage() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  // État des données
   const [reportTypes, setReportTypes] = useState<ReportType[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [allReportTypes, setAllReportTypes] = useState<ReportType[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // États des filtres
-  const [filters, setFilters] = useState<ReportTypeFilters>({
-    search: '',
-    isActive: undefined,
-    sortBy: 'name',
-    sortOrder: 'asc',
-    page: 1,
-    limit: 50
-  });
+  // État des filtres
+  const [search, setSearch] = useState('');
+  const [isActive, setIsActive] = useState<boolean | undefined>(undefined);
+  const [sortBy, setSortBy] = useState('name');
+  const [sortOrder, setSortOrder] = useState('asc');
 
-  // États du dialogue
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [dialogMode, setDialogMode] = useState<'create' | 'edit' | 'view'>('create');
+  // État des dialogues
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedReportType, setSelectedReportType] = useState<ReportType | null>(null);
-  const [formData, setFormData] = useState<CreateReportTypeDto>({
-    code: '',
-    name: '',
-    description: '',
-    isActive: true
+
+  // État des notifications
+  const [notification, setNotification] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error';
+  }>({
+    open: false,
+    message: '',
+    severity: 'success'
   });
 
-  // États du menu contextuel
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [menuReportType, setMenuReportType] = useState<ReportType | null>(null);
-
-  // Chargement des données
+  // Chargement initial
   useEffect(() => {
     loadReportTypes();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters]);
+  }, []);
+
+  // Filtrage côté client
+  useEffect(() => {
+    let filtered = [...allReportTypes];
+
+    // Filtre par recherche
+    if (search) {
+      const searchLower = search.toLowerCase();
+      filtered = filtered.filter(
+        (reportType) =>
+          reportType.name.toLowerCase().includes(searchLower) ||
+          reportType.code.toLowerCase().includes(searchLower) ||
+          (reportType.description && reportType.description.toLowerCase().includes(searchLower))
+      );
+    }
+
+    // Filtre par statut
+    if (isActive !== undefined) {
+      filtered = filtered.filter((reportType) => reportType.isActive === isActive);
+    }
+
+    // Tri
+    filtered.sort((a, b) => {
+      let aValue: any = a[sortBy as keyof ReportType];
+      let bValue: any = b[sortBy as keyof ReportType];
+
+      // Gestion des valeurs nulles/undefined
+      if (aValue == null) aValue = '';
+      if (bValue == null) bValue = '';
+
+      if (typeof aValue === 'string') aValue = aValue.toLowerCase();
+      if (typeof bValue === 'string') bValue = bValue.toLowerCase();
+
+      if (sortOrder === 'asc') {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      } else {
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+      }
+    });
+
+    setReportTypes(filtered);
+  }, [allReportTypes, search, isActive, sortBy, sortOrder]);
 
   const loadReportTypes = async () => {
     try {
-      setLoading(true);
-      const response = await reportTypeService.getReportTypes(filters);
-      setReportTypes(response.data);
-    } catch (err: any) {
-      setError('Erreur lors du chargement des types de rapport');
-      console.error('Erreur:', err);
+      setIsLoading(true);
+      const response = await reportTypeService.getReportTypes({
+        limit: 1000,
+        page: 1,
+        search: '',
+        isActive: undefined,
+        sortBy: 'name',
+        sortOrder: 'asc'
+      });
+      setAllReportTypes(response.data);
+    } catch {
+      showNotification('Erreur lors du chargement des types de rapport', 'error');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const handleFilterChange = (key: keyof ReportTypeFilters, value: any) => {
-    setFilters(prev => ({
-      ...prev,
-      [key]: key === 'isActive' ? (value === '' ? undefined : value === 'true') : value,
-      page: key !== 'page' ? 1 : value // Reset page sauf si on change la page
-    }));
+  const showNotification = (message: string, severity: 'success' | 'error') => {
+    setNotification({ open: true, message, severity });
   };
 
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, reportType: ReportType) => {
-    setAnchorEl(event.currentTarget);
-    setMenuReportType(reportType);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-    setMenuReportType(null);
-  };
-
-  const handleDialogOpen = (mode: 'create' | 'edit' | 'view', reportType?: ReportType) => {
-    setDialogMode(mode);
-    setSelectedReportType(reportType || null);
-
-    if (mode === 'create') {
-      setFormData({
-        code: '',
-        name: '',
-        description: '',
-        isActive: true
-      });
-    } else if (reportType) {
-      setFormData({
-        code: reportType.code,
-        name: reportType.name,
-        description: reportType.description || '',
-        isActive: reportType.isActive
-      });
-    }
-
-    setDialogOpen(true);
-    handleMenuClose();
-  };
-
-  const handleDialogClose = () => {
-    setDialogOpen(false);
-    setSelectedReportType(null);
-    setFormData({
-      code: '',
-      name: '',
-      description: '',
-      isActive: true
-    });
-  };
-
-  const handleSubmit = async () => {
+  const handleCreateReportType = async (data: CreateReportTypeDto | UpdateReportTypeDto) => {
     try {
-      if (dialogMode === 'create') {
-        await reportTypeService.createReportType(formData);
-        setSuccess('Type de rapport créé avec succès');
-      } else if (dialogMode === 'edit' && selectedReportType) {
-        const updateData: UpdateReportTypeDto = {
-          name: formData.name,
-          description: formData.description,
-          isActive: formData.isActive
-        };
-        await reportTypeService.updateReportType(selectedReportType.code, updateData);
-        setSuccess('Type de rapport modifié avec succès');
-      }
-
-      handleDialogClose();
+      await reportTypeService.createReportType(data as CreateReportTypeDto);
+      showNotification('Type de rapport créé avec succès', 'success');
       loadReportTypes();
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Erreur lors de l&apos;opération');
+    } catch {
+      throw new Error('Erreur lors de la création du type de rapport');
     }
   };
 
-  const handleDelete = async (reportType: ReportType) => {
-    if (window.confirm(`Êtes-vous sûr de vouloir supprimer le type de rapport "${reportType.name}" ?`)) {
-      try {
-        await reportTypeService.deleteReportType(reportType.code);
-        setSuccess('Type de rapport supprimé avec succès');
-        loadReportTypes();
-      } catch (err: any) {
-        setError(err.response?.data?.message || 'Erreur lors de la suppression');
-      }
+  const handleEditReportType = async (data: CreateReportTypeDto | UpdateReportTypeDto) => {
+    if (!selectedReportType) return;
+
+    try {
+      await reportTypeService.updateReportType(selectedReportType.code, data as UpdateReportTypeDto);
+      showNotification('Type de rapport modifié avec succès', 'success');
+      loadReportTypes();
+    } catch {
+      throw new Error('Erreur lors de la modification du type de rapport');
     }
-    handleMenuClose();
   };
 
-  const columns: GridColDef[] = [
-    {
-      field: 'code',
-      headerName: 'Code',
-      width: 120,
-      renderCell: (params) => (
-        <Typography variant="body2" fontWeight="medium">
-          {params.value}
-        </Typography>
-      )
-    },
-    {
-      field: 'name',
-      headerName: 'Nom',
-      flex: 1,
-      minWidth: 200
-    },
-    {
-      field: 'description',
-      headerName: 'Description',
-      flex: 1.5,
-      minWidth: 250,
-      renderCell: (params) => (
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          {params.value || '-'}
-        </Typography>
-      )
-    },
-    {
-      field: 'isActive',
-      headerName: 'Statut',
-      width: 120,
-      renderCell: (params) => (
-        <Chip
-          label={params.value ? 'Actif' : 'Inactif'}
-          color={params.value ? 'success' : 'default'}
-          size="small"
-        />
-      )
-    },
-    {
-      field: 'createdAt',
-      headerName: 'Créé le',
-      width: 120,
-      renderCell: (params) => (
-        <Typography variant="body2" color="text.secondary">
-          {formatDate(params.value)}
-        </Typography>
-      )
-    },
-    {
-      field: 'actions',
-      type: 'actions',
-      headerName: 'Actions',
-      width: 100,
-      getActions: (params) => [
-        <GridActionsCellItem
-          key="menu"
-          icon={<MoreVertIcon />}
-          label="Plus d&apos;actions"
-          onClick={(event) => handleMenuOpen(event, params.row)}
-        />
-      ]
+  const handleDeleteReportType = async () => {
+    if (!selectedReportType) return;
+
+    try {
+      await reportTypeService.deleteReportType(selectedReportType.code);
+      showNotification('Type de rapport supprimé avec succès', 'success');
+      setDeleteDialogOpen(false);
+      setSelectedReportType(null);
+      loadReportTypes();
+    } catch {
+      showNotification('Erreur lors de la suppression du type de rapport', 'error');
     }
-  ];
+  };
+
+  const handleEdit = (reportType: ReportType) => {
+    setSelectedReportType(reportType);
+    setEditDialogOpen(true);
+  };
+
+  const handleToggleStatus = (reportType: ReportType) => {
+    setSelectedReportType(reportType);
+    setDeleteDialogOpen(true);
+  };
+
+  const resetFilters = () => {
+    setSearch('');
+    setIsActive(undefined);
+    setSortBy('name');
+    setSortOrder('asc');
+  };
 
   return (
     <Box sx={{ p: 3 }}>
-      {/* En-tête */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box>
-          <Typography variant="h4" component="h1" gutterBottom>
-            Types de rapport
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Gérez les différents types de rapport disponibles pour les interventions
-          </Typography>
-        </Box>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => handleDialogOpen('create')}
-        >
-          Ajouter un type
-        </Button>
-      </Box>
+      <DashBoardHeader
+        title="Types de rapport"
+        icon={<DescriptionIcon />}
+      />
 
-      {/* Filtres */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
-        <TextField
-          placeholder="Rechercher par code, nom ou description..."
-          value={filters.search || ''}
-          onChange={(e) => handleFilterChange('search', e.target.value)}
-          InputProps={{
-            startAdornment: <SearchIcon sx={{ color: 'text.secondary', mr: 1 }} />
-          }}
-          sx={{ minWidth: 300 }}
-          size="small"
-        />
+      <Card>
+        <CardContent>
+          {/* Header avec stats et actions */}
+          <Box sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            mb: 3,
+            flexWrap: 'wrap',
+            gap: 2
+          }}>
+            <Box>
+              <Typography variant="h6" gutterBottom>
+                {reportTypes.length} type{reportTypes.length > 1 ? 's' : ''} de rapport
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Gérez les types de rapport de votre organisation
+              </Typography>
+            </Box>
 
-        <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel>Statut</InputLabel>
-          <Select
-            value={filters.isActive === undefined ? '' : filters.isActive}
-            onChange={(e) => handleFilterChange('isActive', e.target.value === '' ? undefined : e.target.value)}
-            label="Statut"
-          >
-            <MenuItem value="">Tous</MenuItem>
-            <MenuItem value="true">Actif</MenuItem>
-            <MenuItem value="false">Inactif</MenuItem>
-          </Select>
-        </FormControl>
-
-        <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel>Trier par</InputLabel>
-          <Select
-            value={filters.sortBy || 'name'}
-            onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-            label="Trier par"
-          >
-            <MenuItem value="code">Code</MenuItem>
-            <MenuItem value="name">Nom</MenuItem>
-            <MenuItem value="createdAt">Date de création</MenuItem>
-            <MenuItem value="updatedAt">Dernière mise à jour</MenuItem>
-          </Select>
-        </FormControl>
-      </Box>
-
-      {/* Tableau */}
-      <Box sx={{ height: 600, width: '100%' }}>
-        <DataGrid
-          rows={reportTypes}
-          columns={columns}
-          loading={loading}
-          disableRowSelectionOnClick
-          pageSizeOptions={[25, 50, 100]}
-          initialState={{
-            pagination: {
-              paginationModel: { pageSize: 25 }
-            }
-          }}
-          sx={{
-            '& .MuiDataGrid-cell:focus': {
-              outline: 'none'
-            }
-          }}
-        />
-      </Box>
-
-      {/* Menu contextuel */}
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-      >
-        <MenuList>
-          <MenuItemAction onClick={() => handleDialogOpen('view', menuReportType || undefined)}>
-            <ListItemIcon>
-              <ViewIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Voir les détails</ListItemText>
-          </MenuItemAction>
-          <MenuItemAction onClick={() => handleDialogOpen('edit', menuReportType || undefined)}>
-            <ListItemIcon>
-              <EditIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Modifier</ListItemText>
-          </MenuItemAction>
-          <MenuItemAction
-            onClick={() => menuReportType && handleDelete(menuReportType)}
-            sx={{ color: 'error.main' }}
-          >
-            <ListItemIcon>
-              <DeleteIcon fontSize="small" color="error" />
-            </ListItemIcon>
-            <ListItemText>Supprimer</ListItemText>
-          </MenuItemAction>
-        </MenuList>
-      </Menu>
-
-      {/* Dialogue de création/édition/vue */}
-      <Dialog
-        open={dialogOpen}
-        onClose={handleDialogClose}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>
-          {dialogMode === 'create' && 'Ajouter un type de rapport'}
-          {dialogMode === 'edit' && 'Modifier le type de rapport'}
-          {dialogMode === 'view' && 'Détails du type de rapport'}
-        </DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 2 }}>
-            <TextField
-              label="Code"
-              value={formData.code}
-              onChange={(e) => setFormData(prev => ({ ...prev, code: e.target.value }))}
-              disabled={dialogMode !== 'create'}
-              required
-              fullWidth
-              helperText={dialogMode === 'create' ? 'Le code ne peut pas être modifié après création' : ''}
-            />
-
-            <TextField
-              label="Nom"
-              value={formData.name}
-              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-              disabled={dialogMode === 'view'}
-              required
-              fullWidth
-            />
-
-            <TextField
-              label="Description"
-              value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              disabled={dialogMode === 'view'}
-              multiline
-              rows={3}
-              fullWidth
-            />
-
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={formData.isActive}
-                  onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
-                  disabled={dialogMode === 'view'}
-                />
-              }
-              label="Type actif"
-            />
-
-            {dialogMode === 'view' && selectedReportType && (
-              <Box sx={{ mt: 2 }}>
-                <Typography variant="body2" color="text.secondary">
-                  Créé le : {formatDateTime(selectedReportType.createdAt)}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Modifié le : {formatDateTime(selectedReportType.updatedAt)}
-                </Typography>
-              </Box>
-            )}
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => setCreateDialogOpen(true)}
+              sx={{
+                background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
+                '&:hover': {
+                  background: 'linear-gradient(45deg, #667eea 60%, #764ba2 100%)',
+                }
+              }}
+            >
+              {isMobile ? 'Ajouter' : 'Ajouter un type'}
+            </Button>
           </Box>
+
+          <Divider sx={{ mb: 3 }} />
+
+          {/* Filtres */}
+          <ReportTypeFilters
+            search={search}
+            onSearchChange={setSearch}
+            isActive={isActive}
+            onIsActiveChange={setIsActive}
+            sortBy={sortBy}
+            onSortByChange={setSortBy}
+            sortOrder={sortOrder}
+            onSortOrderChange={setSortOrder}
+            onReset={resetFilters}
+          />
+
+          {/* Vue conditionnelle desktop/mobile */}
+          {isMobile ? (
+            <Grid container spacing={2}>
+              {reportTypes.map((reportType) => (
+                <Grid size={{ xs: 12, sm: 6 }} key={reportType.id}>
+                  <ReportTypeCard
+                    reportType={reportType}
+                    onEdit={handleEdit}
+                    onToggleStatus={handleToggleStatus}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          ) : (
+            <ReportTypeTable
+              reportTypes={reportTypes}
+              onEdit={handleEdit}
+              onToggleStatus={handleToggleStatus}
+            />
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Dialog de création */}
+      <ReportTypeDialog
+        open={createDialogOpen}
+        onClose={() => setCreateDialogOpen(false)}
+        onSubmit={handleCreateReportType}
+        isLoading={isLoading}
+      />
+
+      {/* Dialog d'édition */}
+      <ReportTypeDialog
+        open={editDialogOpen}
+        onClose={() => {
+          setEditDialogOpen(false);
+          setSelectedReportType(null);
+        }}
+        onSubmit={handleEditReportType}
+        reportType={selectedReportType || undefined}
+        isLoading={isLoading}
+      />
+
+      {/* Dialog de confirmation de suppression */}
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+        <DialogTitle>Confirmer la suppression</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Êtes-vous sûr de vouloir supprimer le type de rapport &quot;{selectedReportType?.name}&quot; ?
+            Cette action est irréversible.
+          </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDialogClose}>
-            {dialogMode === 'view' ? 'Fermer' : 'Annuler'}
+          <Button onClick={() => setDeleteDialogOpen(false)}>
+            Annuler
           </Button>
-          {dialogMode !== 'view' && (
-            <Button
-              onClick={handleSubmit}
-              variant="contained"
-              disabled={!formData.code || !formData.name}
-            >
-              {dialogMode === 'create' ? 'Créer' : 'Modifier'}
-            </Button>
-          )}
+          <Button
+            onClick={handleDeleteReportType}
+            color="error"
+            variant="contained"
+          >
+            Supprimer
+          </Button>
         </DialogActions>
       </Dialog>
 
       {/* Notifications */}
       <Snackbar
-        open={!!error}
-        autoHideDuration={6000}
-        onClose={() => setError(null)}
-      >
-        <Alert severity="error" onClose={() => setError(null)}>
-          {error}
-        </Alert>
-      </Snackbar>
-
-      <Snackbar
-        open={!!success}
+        open={notification.open}
         autoHideDuration={4000}
-        onClose={() => setSuccess(null)}
+        onClose={() => setNotification(prev => ({ ...prev, open: false }))}
       >
-        <Alert severity="success" onClose={() => setSuccess(null)}>
-          {success}
+        <Alert
+          onClose={() => setNotification(prev => ({ ...prev, open: false }))}
+          severity={notification.severity}
+          variant="filled"
+        >
+          {notification.message}
         </Alert>
       </Snackbar>
     </Box>
