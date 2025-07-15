@@ -1,7 +1,7 @@
 // Types pour l'application Base d'équipements techniques
 
 export interface EquipmentDomain {
-  id: string;
+  id: number;
   name: string;
   serialNumber: string;
   createdAt: string;

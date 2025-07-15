@@ -55,7 +55,7 @@ export default function DomainesPage() {
   const [editingDomain, setEditingDomain] = useState<EquipmentDomain | null>(null);
   const [formData, setFormData] = useState<CreateEquipmentDomainRequest>({ name: '', serialNumber: '' });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [domainToDelete, setDomainToDelete] = useState<string | null>(null);
+  const [domainToDelete, setDomainToDelete] = useState<number | null>(null);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
     open: false,
     message: '',
@@ -114,17 +114,48 @@ export default function DomainesPage() {
       }
       handleCloseDialog();
       loadDomains();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur lors de la sauvegarde:', error);
+      
+      // Gestion des erreurs spécifiques
+      let errorMessage = 'Erreur lors de la sauvegarde';
+      
+      if (error.response) {
+        console.error('Status code:', error.response.status);
+        console.error('Error data:', error.response.data);
+        
+        // Erreurs spécifiques selon le code HTTP
+        if (error.response.status === 409) {
+          if (error.response.data && error.response.data.message) {
+            if (error.response.data.message.includes('name already exists')) {
+              errorMessage = 'Un domaine avec ce nom existe déjà';
+            } else if (error.response.data.message.includes('serial number already exists')) {
+              errorMessage = 'Un domaine avec ce numéro de série existe déjà';
+            } else {
+              errorMessage = error.response.data.message;
+            }
+          } else {
+            errorMessage = 'Conflit : cette ressource existe déjà';
+          }
+        } else if (error.response.status === 400) {
+          errorMessage = 'Données invalides. Veuillez vérifier les champs du formulaire.';
+          if (error.response.data && error.response.data.message) {
+            errorMessage = error.response.data.message;
+          }
+        } else if (error.response.data && error.response.data.message) {
+          errorMessage = error.response.data.message;
+        }
+      }
+      
       setSnackbar({
         open: true,
-        message: 'Erreur lors de la sauvegarde',
+        message: errorMessage,
         severity: 'error'
       });
     }
   };
 
-  const openDeleteDialog = (id: string) => {
+  const openDeleteDialog = (id: number) => {
     setDomainToDelete(id);
     setDeleteDialogOpen(true);
   };
@@ -172,7 +203,7 @@ export default function DomainesPage() {
     }
   };
 
-  const handleRestore = async (id: string) => {
+  const handleRestore = async (id: number) => {
     try {
       setLoading(true);
       await equipmentService.restoreDomain(id);
@@ -478,6 +509,11 @@ export default function DomainesPage() {
           {editingDomain ? 'Modifier le domaine' : 'Nouveau domaine'}
         </DialogTitle>
         <DialogContent>
+          <Box sx={{ mb: 2, mt: 2, p: 1.5, backgroundColor: 'info.light', borderRadius: 1 }}>
+            <Typography variant="body2" color="info.contrastText">
+              <strong>Note:</strong> Les <u>noms de domaines</u> et les <u>numéros de série</u> doivent être uniques dans le système.
+            </Typography>
+          </Box>
           <TextField
             autoFocus
             margin="dense"
@@ -486,8 +522,8 @@ export default function DomainesPage() {
             variant="outlined"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            sx={{ mt: 2 }}
-            helperText="Ex: électricité"
+            required
+            helperText="Ex: électricité (doit être unique)"
           />
           <TextField
             margin="dense"
@@ -496,8 +532,8 @@ export default function DomainesPage() {
             variant="outlined"
             value={formData.serialNumber}
             onChange={(e) => setFormData({ ...formData, serialNumber: e.target.value })}
-            sx={{ mt: 2 }}
-            helperText="Ex: ELEC001 (3-50 caractères)"
+            required
+            helperText="Ex: ELEC001 (3-50 caractères, doit être unique)"
           />
         </DialogContent>
         <DialogActions>

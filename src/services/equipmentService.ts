@@ -52,9 +52,20 @@ export const equipmentService = {
     return response.data;
   },
 
-  async getDomainById(id: string): Promise<ApiResponse<EquipmentDomain>> {
-    const response = await api.get(`/equipments/domains/${id}`);
-    return response.data;
+  async getDomainById(id: number): Promise<ApiResponse<EquipmentDomain>> {
+    try {
+      console.log(`Récupération du domaine (ID: ${id})`);
+      const response = await api.get(`/equipments/domains/${id}`);
+      console.log('Réponse de récupération de domaine:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error(`Erreur lors de la récupération du domaine (ID: ${id}):`, error);
+      if (error.response) {
+        console.error('Status:', error.response.status);
+        console.error('Données d\'erreur:', error.response.data);
+      }
+      throw error;
+    }
   },
   
   async getDomainBySerialNumber(serialNumber: string): Promise<ApiResponse<EquipmentDomain>> {
@@ -63,28 +74,67 @@ export const equipmentService = {
   },
 
   async createDomain(data: CreateEquipmentDomainRequest): Promise<ApiResponse<EquipmentDomain>> {
-    const response = await api.post('/equipments/domains', data);
-    return response.data;
-  },
-
-  async updateDomain(id: string, data: UpdateEquipmentDomainRequest): Promise<ApiResponse<EquipmentDomain>> {
-    const response = await api.patch(`/equipments/domains/${id}`, data);
-    return response.data;
-  },
-
-  async deleteDomain(id: string): Promise<ApiResponse<void>> {
     try {
-      const response = await api.delete(`/equipments/domains/${id}`);
+      console.log('Création d\'un domaine avec les données:', data);
+      const response = await api.post('/equipments/domains', data);
+      console.log('Réponse de création de domaine:', response.data);
       return response.data;
-    } catch (error) {
-      // Relancer l'erreur pour que le composant puisse la gérer
+    } catch (error: any) {
+      console.error('Erreur lors de la création du domaine:', error);
+      if (error.response) {
+        console.error('Status:', error.response.status);
+        console.error('Données d\'erreur:', error.response.data);
+      }
+      throw error;
+    }
+  },
+
+  async updateDomain(id: number, data: UpdateEquipmentDomainRequest): Promise<ApiResponse<EquipmentDomain>> {
+    try {
+      console.log(`Mise à jour du domaine (ID: ${id}) avec les données:`, data);
+      const response = await api.patch(`/equipments/domains/${id}`, data);
+      console.log('Réponse de mise à jour de domaine:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error(`Erreur lors de la mise à jour du domaine (ID: ${id}):`, error);
+      if (error.response) {
+        console.error('Status:', error.response.status);
+        console.error('Données d\'erreur:', error.response.data);
+      }
+      throw error;
+    }
+  },
+
+  async deleteDomain(id: number): Promise<ApiResponse<void>> {
+    try {
+      console.log(`Suppression du domaine (ID: ${id})`);
+      const response = await api.delete(`/equipments/domains/${id}`);
+      console.log('Réponse de suppression de domaine:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error(`Erreur lors de la suppression du domaine (ID: ${id}):`, error);
+      if (error.response) {
+        console.error('Status:', error.response.status);
+        console.error('Données d\'erreur:', error.response.data);
+      }
       throw error;
     }
   },
   
-  async restoreDomain(id: string): Promise<ApiResponse<EquipmentDomain>> {
-    const response = await api.patch(`/equipments/domains/${id}/restore`);
-    return response.data;
+  async restoreDomain(id: number): Promise<ApiResponse<EquipmentDomain>> {
+    try {
+      console.log(`Restauration du domaine (ID: ${id})`);
+      const response = await api.patch(`/equipments/domains/${id}/restore`);
+      console.log('Réponse de restauration de domaine:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error(`Erreur lors de la restauration du domaine (ID: ${id}):`, error);
+      if (error.response) {
+        console.error('Status:', error.response.status);
+        console.error('Données d\'erreur:', error.response.data);
+      }
+      throw error;
+    }
   },
 
   // Familles d'équipements
