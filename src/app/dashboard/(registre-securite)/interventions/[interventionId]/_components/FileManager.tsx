@@ -98,7 +98,6 @@ const FileManager: React.FC<FileManagerProps> = ({
       if (entityType === 'report') {
         // Utiliser le service pour récupérer les fichiers d'un rapport
         filesData = await fileService.getReportFiles(entityId);
-        console.log(filesData);
       } else {
         // Pour les observations, utiliser une route similaire
         const response = await fetch(`/api/v1/observations/${entityId}/files`);
@@ -187,11 +186,11 @@ const FileManager: React.FC<FileManagerProps> = ({
 
   const handleDownload = async (file: File) => {
     try {
-      const blob = await fileService.downloadFile(file);
+      const { blob, fileName } = await fileService.downloadFile(file);
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `file-${file.id}`;
+      link.download = fileName;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

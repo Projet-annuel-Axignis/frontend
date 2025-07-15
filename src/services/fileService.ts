@@ -36,14 +36,23 @@ export const fileService = {
   },
 
   // Télécharger un fichier
-  async downloadFile(file: File): Promise<Blob> {
+  async downloadFile(file: File): Promise<{ blob: Blob; fileName: string }> {
     const response = await api.get(`/product-documents/${file.fileId}/file`, {
       responseType: 'blob',
       headers: {
         'Content-Type': file.file.mimeType,
       },
     });
-    return response.data;
+
+    // Récupérer le nom du fichier depuis le header content-disposition
+    let fileName = file.file.fileName; // fallback
+    const disposition = response.headers['content-disposition'];
+    if (disposition) {
+      const match = disposition.match(/filename="?([^";]+)"?/);
+      if (match) fileName = match[1];
+    }
+
+    return { blob: response.data, fileName };
   },
 };
 
