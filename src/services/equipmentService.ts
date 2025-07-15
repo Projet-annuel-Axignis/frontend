@@ -20,7 +20,10 @@ import {
   UpdateDocumentTypeRequest,
   ProductDocument,
   UploadProductDocumentRequest,
-  UpdateProductDocumentStatusRequest
+  UpdateProductDocumentStatusRequest,
+  Product,
+  CreateProductRequest,
+  UpdateProductRequest
 } from '@/types/equipment';
 
 export const equipmentService = {
@@ -551,5 +554,132 @@ export const equipmentService = {
   async restoreProductDocument(id: string): Promise<ApiResponse<ProductDocument>> {
     const response = await api.patch(`/product-documents/${id}/restore`);
     return response.data;
+  },
+
+  // Produits
+  async getProducts(page: number = 1, limit: number = 10, brandId?: number, typeId?: number, search?: string, showDeleted: boolean = false): Promise<ServerPaginatedResponse<Product>> {
+    const params = new URLSearchParams();
+    
+    if (page) {
+      params.append('page', page.toString());
+    }
+    
+    if (limit) {
+      params.append('limit', limit.toString());
+    }
+    
+    if (brandId) {
+      params.append('brandId', brandId.toString());
+    }
+    
+    if (typeId) {
+      params.append('typeId', typeId.toString());
+    }
+    
+    if (search) {
+      params.append('search', search);
+    }
+    
+    if (showDeleted) {
+      params.append('includeDeleted', 'true');
+    }
+    
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+    
+    try {
+      console.log(`Appel API GET /products${queryString}`);
+      const response = await api.get(`/products${queryString}`);
+      console.log("Réponse API getProducts:", response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error("Erreur getProducts:", error);
+      if (error.response) {
+        console.error("Statut de l'erreur:", error.response.status);
+        console.error("Données d'erreur:", error.response.data);
+      }
+      throw error;
+    }
+  },
+  
+  async getProductById(id: number): Promise<ApiResponse<Product>> {
+    try {
+      console.log(`Appel API GET /products/${id}`);
+      const response = await api.get(`/products/${id}`);
+      console.log("Réponse API getProductById:", response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error("Erreur getProductById:", error);
+      throw error;
+    }
+  },
+  
+  async getProductBySerialNumber(serialNumber: string): Promise<ApiResponse<Product>> {
+    try {
+      console.log(`Appel API GET /products/serial/${serialNumber}`);
+      const response = await api.get(`/products/serial/${serialNumber}`);
+      console.log("Réponse API getProductBySerialNumber:", response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error("Erreur getProductBySerialNumber:", error);
+      throw error;
+    }
+  },
+  
+  async createProduct(data: CreateProductRequest): Promise<ApiResponse<Product>> {
+    console.log("Données pour création de produit:", data);
+    
+    try {
+      const response = await api.post('/products', data);
+      console.log("Réponse API createProduct:", response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error("Erreur createProduct:", error);
+      if (error.response) {
+        console.error("Statut de l'erreur:", error.response.status);
+        console.error("Données d'erreur:", error.response.data);
+      }
+      throw error;
+    }
+  },
+  
+  async updateProduct(id: number, data: UpdateProductRequest): Promise<ApiResponse<Product>> {
+    console.log(`Appel API PATCH /products/${id} avec données:`, data);
+    
+    try {
+      const response = await api.patch(`/products/${id}`, data);
+      console.log("Réponse API updateProduct:", response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error("Erreur updateProduct:", error);
+      if (error.response) {
+        console.error("Statut de l'erreur:", error.response.status);
+        console.error("Données d'erreur:", error.response.data);
+      }
+      throw error;
+    }
+  },
+  
+  async deleteProduct(id: number): Promise<ApiResponse<void>> {
+    try {
+      console.log(`Appel API DELETE /products/${id}`);
+      const response = await api.delete(`/products/${id}`);
+      console.log("Réponse API deleteProduct:", response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error("Erreur deleteProduct:", error);
+      throw error;
+    }
+  },
+  
+  async restoreProduct(id: number): Promise<ApiResponse<Product>> {
+    try {
+      console.log(`Appel API POST /products/${id}/restore`);
+      const response = await api.patch(`/products/${id}/restore`);
+      console.log("Réponse API restoreProduct:", response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error("Erreur restoreProduct:", error);
+      throw error;
+    }
   }
 };

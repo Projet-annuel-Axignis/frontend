@@ -51,17 +51,28 @@ export interface Brand {
   deletedAt: string | null;
 }
 
-export interface Product {
-  id: string;
+export interface CompatibilityGroup {
+  id: number;
   name: string;
   serialNumber: string;
-  brandId: string;
-  brand?: Brand;
-  equipmentTypeId: string;
-  equipmentType?: EquipmentType;
-  associatedProducts?: string[]; // IDs des produits associés
+  description?: string;
   createdAt: string;
   updatedAt: string;
+  deletedAt: string | null;
+}
+
+export interface Product {
+  id: number;
+  name: string;
+  serialNumber: string;
+  brandId: number;
+  brand?: Brand;
+  typeId: number;
+  equipmentType?: EquipmentType;
+  compatibilityGroups?: CompatibilityGroup[];
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
 }
 
 export interface DocumentType {
@@ -185,6 +196,23 @@ export interface UpdateEquipmentTypeRequest {
   inventoryRequired?: boolean;
   extraSchema?: Record<string, any>;
   familyId?: string | number;  // Accepter à la fois une chaîne ou un nombre
+}
+
+// Types pour les produits
+export interface CreateProductRequest {
+  name: string;
+  serialNumber: string;
+  brandId: number;
+  typeId: number;
+  compatibilityGroupIds?: number[];
+}
+
+export interface UpdateProductRequest {
+  name?: string;
+  serialNumber?: string;
+  brandId?: number;
+  typeId?: number;
+  compatibilityGroupIds?: number[];
 }
 
 // Types pour les réponses API
