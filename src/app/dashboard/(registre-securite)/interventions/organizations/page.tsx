@@ -80,6 +80,7 @@ export default function OrganizationsPage() {
   // Chargement des données
   useEffect(() => {
     loadOrganizations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
   const loadOrganizations = async () => {
