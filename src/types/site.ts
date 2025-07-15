@@ -6,6 +6,7 @@
 
 import { User } from "./auth";
 import { Company } from "./company";
+import { Intervention } from "./intervention";
 
 // ============================================================================
 // SITES - Niveau racine de la hiérarchie
@@ -141,6 +142,7 @@ export interface Part {
   partFloors?: PartFloor[];
   habFamily?: HabFamily;
   erpTypes?: ErpType[];
+  interventions?: Intervention[];
 }
 
 export interface CreatePartDto {

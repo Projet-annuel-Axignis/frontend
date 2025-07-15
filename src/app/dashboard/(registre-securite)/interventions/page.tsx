@@ -453,6 +453,11 @@ const InterventionsPage = () => {
                     </ListItemIcon>
                     <ListItemText
                       primary={intervention.label}
+                      slotProps={{
+                        secondary: {
+                          component: 'div',
+                        },
+                      }}
                       secondary={
                         <Box>
                           <Typography variant="body2" color="text.secondary">

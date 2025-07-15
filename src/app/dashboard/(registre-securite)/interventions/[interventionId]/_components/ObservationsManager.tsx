@@ -287,15 +287,20 @@ const ObservationsManager: React.FC<ObservationsManagerProps> = ({
                       />
                     </Box>
                   }
+                  slotProps={{
+                    secondary: {
+                      component: 'div',
+                    },
+                  }}
                   secondary={
-                    <>
+                    <Box>
                       <Typography variant="caption" color="text.secondary">
                         Référence: {observation.reference} | Localisation: {observation.location}
                       </Typography>
                       <Typography variant="caption" color="text.secondary" display="block">
                         Priorité: {observation.priority} | Créée le: {format(new Date(observation.createdAt), 'dd/MM/yyyy à HH:mm', { locale: fr })}
                       </Typography>
-                    </>
+                    </Box>
                   }
                 />
 
@@ -409,7 +414,12 @@ const ObservationsManager: React.FC<ObservationsManagerProps> = ({
                 value={createForm.priority}
                 onChange={(e) => setCreateForm(f => ({ ...f, priority: Number(e.target.value) }))}
                 fullWidth
-                inputProps={{ min: 1, max: 5 }}
+                slotProps={{
+                  htmlInput: {
+                    min: 1,
+                    max: 5
+                  }
+                }}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
@@ -474,7 +484,12 @@ const ObservationsManager: React.FC<ObservationsManagerProps> = ({
                 value={editForm.priority}
                 onChange={(e) => setEditForm(f => ({ ...f, priority: Number(e.target.value) }))}
                 fullWidth
-                inputProps={{ min: 1, max: 5 }}
+                slotProps={{
+                  htmlInput: {
+                    min: 1,
+                    max: 5
+                  }
+                }}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
