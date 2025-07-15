@@ -3,7 +3,8 @@
 import { useUser } from '@/app/_providers/UserProvider';
 import { useLoading } from '@/hooks/useLoading';
 import interventionService from '@/services/interventionService';
-import { Intervention, InterventionStatus } from '@/types/intervention';
+import interventionTypeService from '@/services/interventionTypeService';
+import { Intervention, InterventionStatus, InterventionType, UpdateInterventionDto } from '@/types/intervention';
 import {
   Delete as DeleteIcon,
   Edit as EditIcon,
@@ -23,6 +24,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import InterventionDialog from '../_components/InterventionDialog';
 
 const statusColors: Record<InterventionStatus, 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'> = {
   PLANNED: 'info',
@@ -43,10 +45,13 @@ export default function InterventionDetailPage() {
 
   const interventionId = parseInt(params.interventionId as string);
   const [intervention, setIntervention] = useState<Intervention | null>(null);
+  const [interventionTypes, setInterventionTypes] = useState<InterventionType[]>([]);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
     if (interventionId) {
       loadIntervention();
+      loadInterventionTypes();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [interventionId]);
@@ -60,6 +65,15 @@ export default function InterventionDetailPage() {
         console.error('Erreur lors du chargement de l&apos;intervention:', error);
       }
     });
+  };
+
+  const loadInterventionTypes = async () => {
+    try {
+      const response = await interventionTypeService.getInterventionTypes();
+      setInterventionTypes(response.data);
+    } catch (error) {
+      console.error('Erreur lors du chargement des types d&apos;interventions:', error);
+    }
   };
 
   const handleStart = async () => {
@@ -79,6 +93,18 @@ export default function InterventionDetailPage() {
       await loadIntervention();
     } catch (error) {
       console.error('Erreur lors de la terminaison:', error);
+    }
+  };
+
+  const handleUpdateIntervention = async (data: UpdateInterventionDto) => {
+    if (!intervention) return;
+
+    try {
+      await interventionService.updateIntervention(intervention.id, data);
+      await loadIntervention(); // Recharger les données après modification
+    } catch (error) {
+      console.error('Erreur lors de la modification:', error);
+      throw error; // Relancer l'erreur pour que la modal puisse l'afficher
     }
   };
 
@@ -122,6 +148,7 @@ export default function InterventionDetailPage() {
           <Button
             variant="outlined"
             startIcon={<EditIcon />}
+            onClick={() => setIsDialogOpen(true)}
           >
             Modifier
           </Button>
@@ -296,6 +323,14 @@ export default function InterventionDetailPage() {
           </CardContent>
         </Card>
       </Box>
+
+      <InterventionDialog
+        open={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        onSubmit={handleUpdateIntervention}
+        intervention={intervention}
+        interventionTypes={interventionTypes}
+      />
     </Box>
   );
 }
