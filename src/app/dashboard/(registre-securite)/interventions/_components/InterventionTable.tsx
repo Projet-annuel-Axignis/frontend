@@ -298,7 +298,7 @@ const InterventionTable: React.FC<InterventionTableProps> = ({
         }}
       >
         {selectedIntervention && !selectedIntervention.deletedAt && (
-          <>
+          <div>
             <MenuItem onClick={handleEdit}>
               <EditIcon sx={{ mr: 1 }} />
               Modifier
@@ -322,7 +322,7 @@ const InterventionTable: React.FC<InterventionTableProps> = ({
               <DeleteIcon sx={{ mr: 1 }} />
               Archiver
             </MenuItem>
-          </>
+          </div>
         )}
 
         {selectedIntervention?.deletedAt && onRestore && (
