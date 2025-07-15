@@ -216,8 +216,8 @@ const ObservationsManager: React.FC<ObservationsManagerProps> = ({
     <Box>
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h6" color="primary">
-          Observations
+        <Typography variant="subtitle1" color="primary">
+          Gestion des observations
         </Typography>
         <Button
           variant="contained"
@@ -253,7 +253,7 @@ const ObservationsManager: React.FC<ObservationsManagerProps> = ({
           </Typography>
         </Paper>
       ) : (
-        <List>
+        <List sx={{ p: 0 }}>
           {observations.map((observation) => (
             <React.Fragment key={observation.id}>
               <ListItem
@@ -261,18 +261,19 @@ const ObservationsManager: React.FC<ObservationsManagerProps> = ({
                 sx={{
                   opacity: observation.deletedAt ? 0.6 : 1,
                   cursor: 'pointer',
-                  '&:hover': { backgroundColor: 'grey.50' }
+                  '&:hover': { backgroundColor: 'grey.50' },
+                  px: 0
                 }}
                 onClick={() => toggleExpanded(observation.id)}
               >
-                <ListItemIcon>
-                  <ViewIcon color="primary" />
+                <ListItemIcon sx={{ minWidth: 40 }}>
+                  <ViewIcon color="primary" fontSize="small" />
                 </ListItemIcon>
 
                 <ListItemText
                   primary={
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography variant="body1" fontWeight="medium">
+                      <Typography variant="body2" fontWeight="medium">
                         {observation.title}
                       </Typography>
                       <Chip
@@ -285,17 +286,17 @@ const ObservationsManager: React.FC<ObservationsManagerProps> = ({
                   }
                   secondary={
                     <Box>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant="caption" color="text.secondary">
                         Référence: {observation.reference} | Localisation: {observation.location}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant="caption" color="text.secondary" display="block">
                         Priorité: {observation.priority} | Créée le: {format(new Date(observation.createdAt), 'dd/MM/yyyy à HH:mm', { locale: fr })}
                       </Typography>
                     </Box>
                   }
                 />
 
-                <Box sx={{ display: 'flex', gap: 1 }}>
+                <Box sx={{ display: 'flex', gap: 0.5 }}>
                   {observation.status === 'OPEN' && (
                     <Tooltip title="Démarrer">
                       <IconButton
@@ -303,7 +304,7 @@ const ObservationsManager: React.FC<ObservationsManagerProps> = ({
                         onClick={(e) => { e.stopPropagation(); handleStartObservation(observation); }}
                         color="success"
                       >
-                        <StartIcon />
+                        <StartIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
                   )}
@@ -315,7 +316,7 @@ const ObservationsManager: React.FC<ObservationsManagerProps> = ({
                         onClick={(e) => { e.stopPropagation(); handleFinishObservation(observation); }}
                         color="success"
                       >
-                        <StopIcon />
+                        <StopIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
                   )}
@@ -326,7 +327,7 @@ const ObservationsManager: React.FC<ObservationsManagerProps> = ({
                       onClick={(e) => { e.stopPropagation(); openEditDialog(observation); }}
                       disabled={!!observation.deletedAt}
                     >
-                      <EditIcon />
+                      <EditIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>
 
@@ -336,7 +337,7 @@ const ObservationsManager: React.FC<ObservationsManagerProps> = ({
                       onClick={(e) => { e.stopPropagation(); openDeleteDialog(observation); }}
                       color="error"
                     >
-                      <DeleteIcon />
+                      <DeleteIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>
                 </Box>
@@ -344,8 +345,8 @@ const ObservationsManager: React.FC<ObservationsManagerProps> = ({
 
               {/* Section extensible pour les fichiers */}
               {expandedObservation === observation.id && (
-                <Box sx={{ pl: 4, pr: 2, pb: 2, backgroundColor: 'grey.50' }}>
-                  <Typography variant="subtitle2" color="primary" sx={{ mb: 2, mt: 1 }}>
+                <Box sx={{ pl: 4, pr: 2, pb: 2, backgroundColor: 'grey.50', mt: 1 }}>
+                  <Typography variant="caption" color="primary" sx={{ mb: 2, display: 'block' }}>
                     Fichiers de l&apos;observation
                   </Typography>
                   <FileUpload

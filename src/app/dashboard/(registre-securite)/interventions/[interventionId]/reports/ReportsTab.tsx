@@ -97,6 +97,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ interventionId, onNotification,
 
   // Expandable rows state
   const [expandedRow, setExpandedRow] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<'edit' | 'files' | 'observations'>('edit');
   const [editForm, setEditForm] = useState<UpdateReportDto>({
     label: '',
     typeCode: '',
@@ -576,123 +577,207 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ interventionId, onNotification,
                           <TableCell colSpan={7} sx={{ p: 0, border: 'none', background: 'grey.50' }}>
                             <Collapse in={expandedRow === report.id} timeout="auto" unmountOnExit>
                               <Box sx={{ p: 3, borderTop: '1px solid', borderColor: 'divider' }}>
-                                <Grid container spacing={3}>
-                                  {/* Colonne gauche : Formulaire d'édition */}
-                                  <Grid size={{ xs: 12, md: 6 }}>
-                                    <Typography variant="h6" gutterBottom color="primary">
-                                      Éditer le rapport
-                                    </Typography>
-                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                      <TextField
-                                        label="Libellé"
-                                        value={editForm.label}
-                                        onChange={(e) => setEditForm(f => ({ ...f, label: e.target.value }))}
-                                        fullWidth
-                                        variant="outlined"
-                                        size="small"
-                                      />
-                                      <Autocomplete<ReportType>
-                                        options={reportTypes || []}
-                                        getOptionLabel={(option: ReportType) => `${option.name} (${option.code})`}
-                                        value={reportTypes?.find(type => type.code === editForm.typeCode) || null}
-                                        onChange={(_, newValue: ReportType | null) => setEditForm(f => ({ ...f, typeCode: newValue?.code || '' }))}
-                                        renderInput={(params: any) => (
-                                          <TextField
-                                            {...params}
-                                            label="Type de rapport"
-                                            size="small"
-                                            variant="outlined"
-                                          />
-                                        )}
-                                      />
-                                      <Autocomplete<Organization>
-                                        options={organizations || []}
-                                        getOptionLabel={(option: Organization) => `${option.name} (${organizationTypeLabels[option.type]})`}
-                                        value={organizations?.find(org => org.id === editForm.organizationId) || null}
-                                        onChange={(_, newValue: Organization | null) => setEditForm(f => ({ ...f, organizationId: newValue?.id || 0 }))}
-                                        renderInput={(params: any) => (
-                                          <TextField
-                                            {...params}
-                                            label="Organisation"
-                                            size="small"
-                                            variant="outlined"
-                                          />
-                                        )}
-                                      />
-                                      <Autocomplete
-                                        freeSolo
-                                        options={TIPOLOGY_CODES}
-                                        value={TIPOLOGY_CODES.find(typology => typology.code === editForm.typologyCode) || editForm.typologyCode}
-                                        onChange={(_, newValue: Typologies | string | null) => {
-                                          const code = typeof newValue === 'string' ? newValue : newValue?.code || '';
-                                          setEditForm(f => ({ ...f, typologyCode: code }));
-                                        }}
-                                        onInputChange={(_, newInputValue) => setEditForm(f => ({ ...f, typologyCode: newInputValue }))}
-                                        getOptionLabel={(option) => {
-                                          if (typeof option === 'string') return option;
-                                          return `${option.code} - ${option.description}`;
-                                        }}
-                                        renderInput={(params) => (
-                                          <TextField
-                                            {...params}
-                                            label="Typologie"
-                                            size="small"
-                                            variant="outlined"
-                                            placeholder="ERP, IGH, BUP, HAB..."
-                                          />
-                                        )}
-                                      />
-                                      <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
-                                        <Button
-                                          variant="contained"
-                                          color="primary"
-                                          onClick={async () => {
-                                            await reportService.updateReport(report.id, editForm);
-                                            onNotification('Rapport modifié avec succès', 'success');
-                                            await loadReports();
-                                            setExpandedRow(null);
-                                          }}
-                                          size="small"
-                                          sx={{
-                                            background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
-                                            '&:hover': {
-                                              background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
-                                            },
-                                          }}
-                                        >
-                                          Sauvegarder
-                                        </Button>
-                                        <Button
+                                <Typography variant="h6" gutterBottom color="primary" sx={{ mb: 3 }}>
+                                  Détails du rapport
+                                </Typography>
+
+                                {/* Onglets pour organiser le contenu */}
+                                <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+                                  <Box sx={{ display: 'flex', gap: 1 }}>
+                                    <Button
+                                      variant="text"
+                                      size="small"
+                                      onClick={() => setActiveTab('edit')}
+                                      sx={{
+                                        color: activeTab === 'edit' ? 'primary.main' : 'text.secondary',
+                                        borderBottom: activeTab === 'edit' ? '2px solid' : 'none',
+                                        borderColor: 'primary.main',
+                                        borderRadius: 0,
+                                        px: 2,
+                                        py: 1,
+                                        '&:hover': {
+                                          color: 'primary.main',
+                                          backgroundColor: 'transparent'
+                                        }
+                                      }}
+                                    >
+                                      Édition
+                                    </Button>
+                                    <Button
+                                      variant="text"
+                                      size="small"
+                                      onClick={() => setActiveTab('files')}
+                                      sx={{
+                                        color: activeTab === 'files' ? 'primary.main' : 'text.secondary',
+                                        borderBottom: activeTab === 'files' ? '2px solid' : 'none',
+                                        borderColor: 'primary.main',
+                                        borderRadius: 0,
+                                        px: 2,
+                                        py: 1,
+                                        '&:hover': {
+                                          color: 'primary.main',
+                                          backgroundColor: 'transparent'
+                                        }
+                                      }}
+                                    >
+                                      Fichiers
+                                    </Button>
+                                    <Button
+                                      variant="text"
+                                      size="small"
+                                      onClick={() => setActiveTab('observations')}
+                                      sx={{
+                                        color: activeTab === 'observations' ? 'primary.main' : 'text.secondary',
+                                        borderBottom: activeTab === 'observations' ? '2px solid' : 'none',
+                                        borderColor: 'primary.main',
+                                        borderRadius: 0,
+                                        px: 2,
+                                        py: 1,
+                                        '&:hover': {
+                                          color: 'primary.main',
+                                          backgroundColor: 'transparent'
+                                        }
+                                      }}
+                                    >
+                                      Observations
+                                    </Button>
+                                  </Box>
+                                </Box>
+
+                                {/* Contenu des onglets */}
+                                {activeTab === 'edit' && (
+                                  <Grid container spacing={3}>
+                                    {/* Onglet Édition */}
+                                    <Grid size={{ xs: 12 }}>
+                                      <Typography variant="subtitle1" gutterBottom color="primary">
+                                        Éditer le rapport
+                                      </Typography>
+                                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 600 }}>
+                                        <TextField
+                                          label="Libellé"
+                                          value={editForm.label}
+                                          onChange={(e) => setEditForm(f => ({ ...f, label: e.target.value }))}
+                                          fullWidth
                                           variant="outlined"
-                                          onClick={() => {
-                                            setExpandedRow(null);
-                                          }}
                                           size="small"
-                                        >
-                                          Annuler
-                                        </Button>
+                                        />
+                                        <Autocomplete<ReportType>
+                                          options={reportTypes || []}
+                                          getOptionLabel={(option: ReportType) => `${option.name} (${option.code})`}
+                                          value={reportTypes?.find(type => type.code === editForm.typeCode) || null}
+                                          onChange={(_, newValue: ReportType | null) => setEditForm(f => ({ ...f, typeCode: newValue?.code || '' }))}
+                                          renderInput={(params: any) => (
+                                            <TextField
+                                              {...params}
+                                              label="Type de rapport"
+                                              size="small"
+                                              variant="outlined"
+                                            />
+                                          )}
+                                        />
+                                        <Autocomplete<Organization>
+                                          options={organizations || []}
+                                          getOptionLabel={(option: Organization) => `${option.name} (${organizationTypeLabels[option.type]})`}
+                                          value={organizations?.find(org => org.id === editForm.organizationId) || null}
+                                          onChange={(_, newValue: Organization | null) => setEditForm(f => ({ ...f, organizationId: newValue?.id || 0 }))}
+                                          renderInput={(params: any) => (
+                                            <TextField
+                                              {...params}
+                                              label="Organisation"
+                                              size="small"
+                                              variant="outlined"
+                                            />
+                                          )}
+                                        />
+                                        <Autocomplete
+                                          freeSolo
+                                          options={TIPOLOGY_CODES}
+                                          value={TIPOLOGY_CODES.find(typology => typology.code === editForm.typologyCode) || editForm.typologyCode}
+                                          onChange={(_, newValue: Typologies | string | null) => {
+                                            const code = typeof newValue === 'string' ? newValue : newValue?.code || '';
+                                            setEditForm(f => ({ ...f, typologyCode: code }));
+                                          }}
+                                          onInputChange={(_, newInputValue) => setEditForm(f => ({ ...f, typologyCode: newInputValue }))}
+                                          getOptionLabel={(option) => {
+                                            if (typeof option === 'string') return option;
+                                            return `${option.code} - ${option.description}`;
+                                          }}
+                                          renderInput={(params) => (
+                                            <TextField
+                                              {...params}
+                                              label="Typologie"
+                                              size="small"
+                                              variant="outlined"
+                                              placeholder="ERP, IGH, BUP, HAB..."
+                                            />
+                                          )}
+                                        />
+                                        <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
+                                          <Button
+                                            variant="contained"
+                                            color="primary"
+                                            onClick={async () => {
+                                              await reportService.updateReport(report.id, editForm);
+                                              onNotification('Rapport modifié avec succès', 'success');
+                                              await loadReports();
+                                              setExpandedRow(null);
+                                            }}
+                                            size="small"
+                                            sx={{
+                                              background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+                                              '&:hover': {
+                                                background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                                              },
+                                            }}
+                                          >
+                                            Sauvegarder
+                                          </Button>
+                                          <Button
+                                            variant="outlined"
+                                            onClick={() => {
+                                              setExpandedRow(null);
+                                            }}
+                                            size="small"
+                                          >
+                                            Annuler
+                                          </Button>
+                                        </Box>
                                       </Box>
-                                    </Box>
+                                    </Grid>
                                   </Grid>
-                                  {/* Colonne droite : Gestionnaire de fichiers */}
-                                  <Grid size={{ xs: 12, md: 6 }}>
-                                    <FileUpload
-                                      entityType="report"
-                                      entityId={report.id}
-                                      onUploadComplete={loadReports}
-                                    />
-                                    <FileList
-                                      entityType="report"
-                                      entityId={report.id}
-                                      title="Fichiers du rapport"
-                                      onFilesChange={loadReports}
-                                    />
-                                    <ObservationsManager
-                                      reportId={report.id}
-                                      onObservationsChange={loadReports}
-                                    />
+                                )}
+
+                                {activeTab === 'files' && (
+                                  <Grid container spacing={3}>
+                                    <Grid size={{ xs: 12 }}>
+                                      <Typography variant="subtitle1" gutterBottom color="primary">
+                                        Gestion des fichiers
+                                      </Typography>
+                                      <FileUpload
+                                        entityType="report"
+                                        entityId={report.id}
+                                        onUploadComplete={loadReports}
+                                      />
+                                      <FileList
+                                        entityType="report"
+                                        entityId={report.id}
+                                        title="Fichiers du rapport"
+                                        onFilesChange={loadReports}
+                                      />
+                                    </Grid>
                                   </Grid>
-                                </Grid>
+                                )}
+
+                                {activeTab === 'observations' && (
+                                  <Grid container spacing={3}>
+                                    <Grid size={{ xs: 12 }}>
+                                      <ObservationsManager
+                                        reportId={report.id}
+                                        onObservationsChange={loadReports}
+                                      />
+                                    </Grid>
+                                  </Grid>
+                                )}
                               </Box>
                             </Collapse>
                           </TableCell>

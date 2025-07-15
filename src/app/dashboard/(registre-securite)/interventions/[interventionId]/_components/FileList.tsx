@@ -19,9 +19,8 @@ import {
 } from '@mui/icons-material';
 import {
   Alert,
+  Box,
   Button,
-  Card,
-  CardContent,
   Dialog,
   DialogActions,
   DialogContent,
@@ -150,56 +149,62 @@ const FileList: React.FC<FileListProps> = ({
   };
 
   return (
-    <Card sx={{ mt: 3 }}>
-      <CardContent>
-        <Typography variant="h6" color="primary" gutterBottom>
-          {title}
-        </Typography>
+    <Box>
+      <Typography variant="subtitle2" color="primary" gutterBottom>
+        {title}
+      </Typography>
 
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
 
-        {/* Liste des fichiers */}
-        {loading ? (
-          <Typography>Chargement des fichiers...</Typography>
-        ) : files.length === 0 ? (
-          <Paper sx={{ p: 3, textAlign: 'center', backgroundColor: 'grey.50' }}>
-            <Typography variant="body2" color="text.secondary">
-              Aucun fichier attaché
-            </Typography>
-          </Paper>
-        ) : (
-          <List>
-            {files.map((file) => (
-              <ListItem
-                key={file.id}
-                divider
-                secondaryAction={
-                  <IconButton
-                    onClick={(e) => handleMenuOpen(e, file)}
-                    size="small"
-                  >
-                    <MoreVertIcon />
-                  </IconButton>
+      {/* Liste des fichiers */}
+      {loading ? (
+        <Typography variant="body2">Chargement des fichiers...</Typography>
+      ) : files.length === 0 ? (
+        <Paper sx={{ p: 2, textAlign: 'center', backgroundColor: 'grey.50' }}>
+          <Typography variant="caption" color="text.secondary">
+            Aucun fichier attaché
+          </Typography>
+        </Paper>
+      ) : (
+        <List sx={{ p: 0 }}>
+          {files.map((file) => (
+            <ListItem
+              key={file.id}
+              divider
+              sx={{ px: 0 }}
+              secondaryAction={
+                <IconButton
+                  onClick={(e) => handleMenuOpen(e, file)}
+                  size="small"
+                >
+                  <MoreVertIcon fontSize="small" />
+                </IconButton>
+              }
+            >
+              <ListItemIcon sx={{ minWidth: 40 }}>
+                {getFileIcon(file.file.mimeType)}
+              </ListItemIcon>
+
+              <ListItemText
+                primary={
+                  <Typography variant="body2">
+                    {file.file.fileName}
+                  </Typography>
                 }
-              >
-                <ListItemIcon>
-                  {getFileIcon(file.file.mimeType)}
-                </ListItemIcon>
-
-                <ListItemText
-                  primary={`${file.file.fileName}`}
-                  secondary={`${(file.file.size / 1024).toFixed(2)} Ko`}
-                />
-
-              </ListItem>
-            ))}
-          </List>
-        )}
-      </CardContent>
+                secondary={
+                  <Typography variant="caption" color="text.secondary">
+                    {(file.file.size / 1024).toFixed(2)} Ko
+                  </Typography>
+                }
+              />
+            </ListItem>
+          ))}
+        </List>
+      )}
 
       {/* Menu contextuel */}
       <Menu
@@ -255,7 +260,7 @@ const FileList: React.FC<FileListProps> = ({
           </Button>
         </DialogActions>
       </Dialog>
-    </Card>
+    </Box>
   );
 };
 
