@@ -138,7 +138,7 @@ export const equipmentService = {
   },
 
   // Familles d'équipements
-  async getFamilies(page: number = 1, limit: number = 10, domainId?: string, search?: string, showDeleted: boolean = false): Promise<ServerPaginatedResponse<EquipmentFamily>> {
+  async getFamilies(page: number = 1, limit: number = 10, domainId?: number | string, search?: string, showDeleted: boolean = false): Promise<ServerPaginatedResponse<EquipmentFamily>> {
     const params = new URLSearchParams();
     
     if (page) {
@@ -149,8 +149,11 @@ export const equipmentService = {
       params.append('limit', limit.toString());
     }
     
+    // Utilisation des paramètres de filtrage pour le domainId
     if (domainId) {
-      params.append('domainId', domainId);
+      params.append('filterField', 'domain');
+      params.append('filterOp', 'equals');
+      params.append('filter', domainId.toString());
     }
     
     if (search) {
@@ -160,6 +163,8 @@ export const equipmentService = {
     if (showDeleted) {
       params.append('includeDeleted', 'true');
     }
+    
+    console.log("Paramètres de requête pour getFamilies:", params.toString());
     
     const queryString = params.toString() ? `?${params.toString()}` : '';
     const response = await api.get(`/equipments/families${queryString}`);

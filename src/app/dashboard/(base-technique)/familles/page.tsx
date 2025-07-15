@@ -60,7 +60,7 @@ export default function FamiliesPage() {
   const [domainsLoading, setDomainsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showDeleted, setShowDeleted] = useState(false);
-  const [selectedDomain, setSelectedDomain] = useState<string>('');
+  const [selectedDomain, setSelectedDomain] = useState<number | ''>('');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [total, setTotal] = useState(0);
@@ -83,6 +83,14 @@ export default function FamiliesPage() {
   const loadFamilies = async () => {
     try {
       setLoading(true);
+      console.log("Chargement des familles avec filtres:", {
+        page: page + 1,
+        rowsPerPage,
+        domainId: selectedDomain || undefined,
+        search: searchTerm,
+        showDeleted
+      });
+      
       const response = await equipmentService.getFamilies(
         page + 1, 
         rowsPerPage, 
@@ -91,7 +99,7 @@ export default function FamiliesPage() {
         showDeleted
       );
       setFamilies(response.results || []);
-      console.log(response);
+      console.log("Réponse familles:", response);
       setTotal(response.totalResults || 0);
     } catch (error) {
       console.error('Erreur lors du chargement des familles:', error);
@@ -421,7 +429,7 @@ export default function FamiliesPage() {
             >
               <MenuItem value="">Tous les domaines</MenuItem>
               {domains.map((domain) => (
-                <MenuItem key={domain.id} value={domain.id}>
+                <MenuItem key={domain.id} value={domain.id as number}>
                   {domain.name}
                 </MenuItem>
               ))}
