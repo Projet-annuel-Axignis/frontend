@@ -14,7 +14,10 @@ import {
   ServerPaginatedResponse,
   Brand,
   CreateBrandRequest,
-  UpdateBrandRequest
+  UpdateBrandRequest,
+  DocumentType,
+  CreateDocumentTypeRequest,
+  UpdateDocumentTypeRequest
 } from '@/types/equipment';
 
 export const equipmentService = {
@@ -352,6 +355,77 @@ export const equipmentService = {
   
   async restoreBrand(id: string): Promise<ApiResponse<Brand>> {
     const response = await api.post(`/brands/${id}/restore`);
+    return response.data;
+  },
+
+  // Types de documents
+  async getDocumentTypes(page: number = 1, limit: number = 10, search?: string, showDeleted: boolean = false): Promise<ServerPaginatedResponse<DocumentType>> {
+    const params = new URLSearchParams();
+    
+    if (page) {
+      params.append('page', page.toString());
+    }
+    
+    if (limit) {
+      params.append('limit', limit.toString());
+    }
+    
+    if (search) {
+      params.append('search', search);
+    }
+    
+    if (showDeleted) {
+      params.append('includeDeleted', 'true');
+    }
+    
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+    const response = await api.get(`/product-document-types${queryString}`);
+    return response.data;
+  },
+  
+  async getDocumentTypeById(id: string): Promise<ApiResponse<DocumentType>> {
+    const response = await api.get(`/product-document-types/${id}`);
+    return response.data;
+  },
+  
+  async getDocumentTypeBySerialNumber(serialNumber: string): Promise<ApiResponse<DocumentType>> {
+    const response = await api.get(`/product-document-types/serial/${serialNumber}`);
+    return response.data;
+  },
+  
+  async createDocumentType(data: CreateDocumentTypeRequest): Promise<ApiResponse<DocumentType>> {
+    console.log("Données pour création de type de document:", data);
+    const response = await api.post('/product-document-types', data);
+    return response.data;
+  },
+  
+  async updateDocumentType(id: string, data: UpdateDocumentTypeRequest): Promise<ApiResponse<DocumentType>> {
+    console.log(`Appel API PATCH /product-document-types/${id} avec données:`, data);
+    try {
+      const response = await api.patch(`/product-document-types/${id}`, data);
+      console.log("Réponse API updateDocumentType:", response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error("Erreur updateDocumentType:", error);
+      if (error.response) {
+        console.error("Statut de l'erreur:", error.response.status);
+        console.error("Données d'erreur:", error.response.data);
+      }
+      throw error;
+    }
+  },
+  
+  async deleteDocumentType(id: string): Promise<ApiResponse<void>> {
+    try {
+      const response = await api.delete(`/product-document-types/${id}`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+  
+  async restoreDocumentType(id: string): Promise<ApiResponse<DocumentType>> {
+    const response = await api.post(`/product-document-types/${id}/restore`);
     return response.data;
   }
 };

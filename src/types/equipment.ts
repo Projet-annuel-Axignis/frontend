@@ -70,6 +70,17 @@ export interface DocumentType {
   serialNumber: string;
   createdAt: string;
   updatedAt: string;
+  deletedAt: string | null;
+}
+
+export interface CreateDocumentTypeRequest {
+  name: string;
+  serialNumber: string;
+}
+
+export interface UpdateDocumentTypeRequest {
+  name?: string;
+  serialNumber?: string;
 }
 
 export interface ProductDocument {
