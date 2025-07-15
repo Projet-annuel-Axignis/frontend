@@ -1,8 +1,11 @@
 import { api } from '@/lib/api';
 import { 
   EquipmentDomain, 
+  EquipmentFamily,
   CreateEquipmentDomainRequest, 
   UpdateEquipmentDomainRequest,
+  CreateEquipmentFamilyRequest,
+  UpdateEquipmentFamilyRequest,
   ApiResponse,
   PaginatedResponse,
   ServerPaginatedResponse
@@ -70,7 +73,7 @@ export const equipmentService = {
   },
 
   // Familles d'équipements
-  async getFamilies(page: number = 1, limit: number = 10, domainId?: string, search?: string): Promise<ServerPaginatedResponse<any>> {
+  async getFamilies(page: number = 1, limit: number = 10, domainId?: string, search?: string, showDeleted: boolean = false): Promise<ServerPaginatedResponse<EquipmentFamily>> {
     const params = new URLSearchParams();
     
     if (page) {
@@ -89,8 +92,46 @@ export const equipmentService = {
       params.append('search', search);
     }
     
+    if (showDeleted) {
+      params.append('includeDeleted', 'true');
+    }
+    
     const queryString = params.toString() ? `?${params.toString()}` : '';
     const response = await api.get(`/equipments/families${queryString}`);
+    return response.data;
+  },
+  
+  async getFamilyById(id: string): Promise<ApiResponse<EquipmentFamily>> {
+    const response = await api.get(`/equipments/families/${id}`);
+    return response.data;
+  },
+  
+  async getFamilyBySerialNumber(serialNumber: string): Promise<ApiResponse<EquipmentFamily>> {
+    const response = await api.get(`/equipments/families/serial/${serialNumber}`);
+    return response.data;
+  },
+  
+  async createFamily(data: CreateEquipmentFamilyRequest): Promise<ApiResponse<EquipmentFamily>> {
+    const response = await api.post('/equipments/families', data);
+    return response.data;
+  },
+  
+  async updateFamily(id: string, data: UpdateEquipmentFamilyRequest): Promise<ApiResponse<EquipmentFamily>> {
+    const response = await api.patch(`/equipments/families/${id}`, data);
+    return response.data;
+  },
+  
+  async deleteFamily(id: string): Promise<ApiResponse<void>> {
+    try {
+      const response = await api.delete(`/equipments/families/${id}`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+  
+  async restoreFamily(id: string): Promise<ApiResponse<EquipmentFamily>> {
+    const response = await api.patch(`/equipments/families/${id}/restore`);
     return response.data;
   },
 

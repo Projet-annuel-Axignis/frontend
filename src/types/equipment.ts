@@ -17,6 +17,7 @@ export interface EquipmentFamily {
   domain?: EquipmentDomain;
   createdAt: string;
   updatedAt: string;
+  deletedAt: string | null;
 }
 
 export interface EquipmentType {
@@ -106,6 +107,18 @@ export interface CreateEquipmentDomainRequest {
 export interface UpdateEquipmentDomainRequest {
   name?: string;
   serialNumber?: string;
+}
+
+export interface CreateEquipmentFamilyRequest {
+  name: string;
+  serialNumber: string;
+  domainId: string;
+}
+
+export interface UpdateEquipmentFamilyRequest {
+  name?: string;
+  serialNumber?: string;
+  domainId?: string;
 }
 
 // Types pour les réponses API
