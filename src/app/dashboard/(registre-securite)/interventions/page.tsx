@@ -2,6 +2,7 @@
 
 import { useUser } from '@/app/_providers/UserProvider';
 import DashBoardHeader from '@/components/dashboard/DashBoardHeader';
+import { useBreadcrumbTitle } from '@/hooks/useBreadcrumbTitle';
 import { useLoading } from '@/hooks/useLoading';
 import { interventionService } from '@/services/interventionService';
 import { Intervention } from '@/types/intervention';
@@ -34,6 +35,8 @@ const InterventionsPage = () => {
   const router = useRouter();
   const { isLoading: loading, withLoading } = useLoading();
   const { user } = useUser();
+
+  useBreadcrumbTitle('interventions', 'Interventions')
 
   // Data states
   const [interventions, setInterventions] = useState<Intervention[]>([]);
