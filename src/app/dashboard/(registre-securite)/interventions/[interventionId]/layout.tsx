@@ -3,7 +3,10 @@
 import DashBoardHeader from '@/components/dashboard/DashBoardHeader';
 import { useBreadcrumbTitle } from '@/hooks/useBreadcrumbTitle';
 import { useLoading } from '@/hooks/useLoading';
+import { fileService } from '@/services/fileService';
 import interventionService from '@/services/interventionService';
+import observationService from '@/services/observationService';
+import reportService from '@/services/reportService';
 import { Intervention, InterventionStatus } from '@/types/intervention';
 import {
   ArrowBack as ArrowBackIcon,
@@ -14,6 +17,7 @@ import {
 } from '@mui/icons-material';
 import {
   Alert,
+  Badge,
   Box,
   Chip,
   IconButton,
@@ -72,6 +76,11 @@ export default function InterventionDetailLayout({
   const [intervention, setIntervention] = useState<Intervention | null>(null);
   const [currentTab, setCurrentTab] = useState(0);
 
+  // États pour les compteurs
+  const [reportsCount, setReportsCount] = useState<number>(0);
+  const [observationsCount, setObservationsCount] = useState<number>(0);
+  const [filesCount, setFilesCount] = useState<number>(0);
+
   // Définir le titre personnalisé pour le breadcrumb
   useBreadcrumbTitle(String(interventionId), intervention?.label || `Intervention ${interventionId}`);
 
@@ -105,12 +114,13 @@ export default function InterventionDetailLayout({
   // Load intervention data
   useEffect(() => {
     if (interventionId) {
-      loadInterventionData();
+      loadIntervention();
+      loadCounts();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [interventionId]);
 
-  const loadInterventionData = async () => {
+  const loadIntervention = async () => {
     await withLoading(async () => {
       try {
         const data = await interventionService.getIntervention(interventionId);
@@ -120,6 +130,40 @@ export default function InterventionDetailLayout({
         showNotification('Erreur lors du chargement de l&apos;intervention', 'error');
       }
     });
+  };
+
+  // Charger les compteurs pour les pastilles
+  const loadCounts = async () => {
+    try {
+      // Charger le nombre de rapports
+      const reportsData = await reportService.getReports({
+        interventionId: interventionId,
+        includeDeleted: false
+      });
+      setReportsCount(reportsData.total);
+
+      // Charger le nombre d'observations 
+      const observationsData = await observationService.getObservations({
+        includeDeleted: false
+      });
+      // Filtrer par intervention (assumant qu'il y a une relation via les rapports)
+      const interventionObservations = observationsData.observations.filter(obs =>
+        obs.report && reportsData.reports.some(report => report.id === obs.report.id)
+      );
+      setObservationsCount(interventionObservations.length);
+
+      // Charger le nombre de fichiers
+      const filesData = await fileService.getFiles({
+        includeDeleted: false
+      });
+      // Filtrer par intervention (assumant qu'il y a une relation via les rapports)
+      const interventionFiles = filesData.files.filter(file =>
+        file.report && file.report.id && reportsData.reports.some(report => report.id === file.report?.id)
+      );
+      setFilesCount(interventionFiles.length);
+    } catch (error) {
+      console.error('Erreur lors du chargement des compteurs:', error);
+    }
   };
 
   const showNotification = (message: string, severity: 'success' | 'error') => {
@@ -293,14 +337,37 @@ export default function InterventionDetailLayout({
               },
             }}
           >
-            {tabs.map((tab, index) => (
-              <Tab
-                key={tab.value || 'main'}
-                icon={tab.icon}
-                label={tab.label}
-                {...a11yProps(index)}
-              />
-            ))}
+            {tabs.map((tab, index) => {
+              let badgeContent = 0;
+              if (index === 1) badgeContent = reportsCount; // Rapports
+              if (index === 2) badgeContent = observationsCount; // Observations  
+              if (index === 3) badgeContent = filesCount; // Fichiers
+
+              return (
+                <Tab
+                  key={tab.value || 'main'}
+                  icon={
+                    index === 0 ? tab.icon : (
+                      <Badge
+                        badgeContent={badgeContent}
+                        color="info"
+                        sx={{
+                          '& .MuiBadge-badge': {
+                            fontSize: '0.625rem',
+                            height: '16px',
+                            minWidth: '16px',
+                          }
+                        }}
+                      >
+                        {tab.icon}
+                      </Badge>
+                    )
+                  }
+                  label={tab.label}
+                  {...a11yProps(index)}
+                />
+              );
+            })}
           </Tabs>
 
           {/* Contenu de la page */}
