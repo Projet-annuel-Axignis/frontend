@@ -11,7 +11,10 @@ import {
   UpdateEquipmentTypeRequest,
   ApiResponse,
   PaginatedResponse,
-  ServerPaginatedResponse
+  ServerPaginatedResponse,
+  Brand,
+  CreateBrandRequest,
+  UpdateBrandRequest
 } from '@/types/equipment';
 
 export const equipmentService = {
@@ -241,8 +244,8 @@ export const equipmentService = {
     return response.data;
   },
 
-  // Marques
-  async getBrands(page: number = 1, limit: number = 10, search?: string): Promise<ServerPaginatedResponse<any>> {
+  // Brands (Marques)
+  async getBrands(page: number = 1, limit: number = 10, search?: string, showDeleted: boolean = false): Promise<[Brand[], number, number]> {
     const params = new URLSearchParams();
     
     if (page) {
@@ -257,37 +260,58 @@ export const equipmentService = {
       params.append('search', search);
     }
     
+    if (showDeleted) {
+      params.append('includeDeleted', 'true');
+    }
+    
     const queryString = params.toString() ? `?${params.toString()}` : '';
-    const response = await api.get(`/equipments/brands${queryString}`);
+    const response = await api.get(`/brands${queryString}`);
     return response.data;
   },
 
-  // Produits
-  async getProducts(page: number = 1, limit: number = 10, typeId?: string, brandId?: string, search?: string): Promise<ServerPaginatedResponse<any>> {
-    const params = new URLSearchParams();
-    
-    if (page) {
-      params.append('page', page.toString());
-    }
-    
-    if (limit) {
-      params.append('limit', limit.toString());
-    }
-    
-    if (typeId) {
-      params.append('typeId', typeId);
-    }
-    
-    if (brandId) {
-      params.append('brandId', brandId);
-    }
-    
-    if (search) {
-      params.append('search', search);
-    }
-    
-    const queryString = params.toString() ? `?${params.toString()}` : '';
-    const response = await api.get(`/equipments/products${queryString}`);
+  async getBrandById(id: string): Promise<ApiResponse<Brand>> {
+    const response = await api.get(`/brands/${id}`);
     return response.data;
   },
-}; 
+  
+  async getBrandBySerialNumber(serialNumber: string): Promise<ApiResponse<Brand>> {
+    const response = await api.get(`/brands/serial/${serialNumber}`);
+    return response.data;
+  },
+
+  async createBrand(data: CreateBrandRequest): Promise<ApiResponse<Brand>> {
+    console.log("Données pour création de marque:", data);
+    const response = await api.post('/brands', data);
+    return response.data;
+  },
+
+  async updateBrand(id: string, data: UpdateBrandRequest): Promise<ApiResponse<Brand>> {
+    console.log(`Appel API PATCH /brands/${id} avec données:`, data);
+    try {
+      const response = await api.patch(`/brands/${id}`, data);
+      console.log("Réponse API updateBrand:", response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error("Erreur updateBrand:", error);
+      if (error.response) {
+        console.error("Statut de l'erreur:", error.response.status);
+        console.error("Données d'erreur:", error.response.data);
+      }
+      throw error;
+    }
+  },
+  
+  async deleteBrand(id: string): Promise<ApiResponse<void>> {
+    try {
+      const response = await api.delete(`/brands/${id}`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+  
+  async restoreBrand(id: string): Promise<ApiResponse<Brand>> {
+    const response = await api.post(`/brands/${id}/restore`);
+    return response.data;
+  }
+};

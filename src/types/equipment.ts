@@ -48,6 +48,7 @@ export interface Brand {
   serialNumber: string;
   createdAt: string;
   updatedAt: string;
+  deletedAt: string | null;
 }
 
 export interface Product {
@@ -106,6 +107,17 @@ export interface CreateEquipmentDomainRequest {
 }
 
 export interface UpdateEquipmentDomainRequest {
+  name?: string;
+  serialNumber?: string;
+}
+
+// Types pour les marques
+export interface CreateBrandRequest {
+  name: string;
+  serialNumber: string;
+}
+
+export interface UpdateBrandRequest {
   name?: string;
   serialNumber?: string;
 }
