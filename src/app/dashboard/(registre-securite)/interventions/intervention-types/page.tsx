@@ -1,6 +1,7 @@
 'use client';
 
 import DashBoardHeader from '@/components/dashboard/DashBoardHeader';
+import { useBreadcrumbTitle } from '@/hooks/useBreadcrumbTitle';
 import interventionTypeService from '@/services/interventionTypeService';
 import { CreateInterventionTypeDto, InterventionType, UpdateInterventionTypeDto } from '@/types/intervention';
 import {
@@ -34,6 +35,7 @@ import InterventionTypeTable from './_components/InterventionTypeTable';
 export default function InterventionTypesPage() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  useBreadcrumbTitle('intervention-types', 'Types d\'intervention');
 
   // État des données
   const [interventionTypes, setInterventionTypes] = useState<InterventionType[]>([]);

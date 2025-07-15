@@ -1,6 +1,7 @@
 'use client';
 
 import DashBoardHeader from '@/components/dashboard/DashBoardHeader';
+import { useBreadcrumbTitle } from '@/hooks/useBreadcrumbTitle';
 import reportTypeService from '@/services/reportTypeService';
 import { CreateReportTypeDto, ReportType, UpdateReportTypeDto } from '@/types/intervention';
 import {
@@ -36,7 +37,7 @@ import ReportTypeTable from './_components/ReportTypeTable';
 export default function ReportTypesPage() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-
+  useBreadcrumbTitle('report-types', 'Types de rapport');
   // État des données
   const [reportTypes, setReportTypes] = useState<ReportType[]>([]);
   const [allReportTypes, setAllReportTypes] = useState<ReportType[]>([]);
@@ -65,6 +66,7 @@ export default function ReportTypesPage() {
   // Chargement initial
   useEffect(() => {
     loadReportTypes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Filtrage côté client
