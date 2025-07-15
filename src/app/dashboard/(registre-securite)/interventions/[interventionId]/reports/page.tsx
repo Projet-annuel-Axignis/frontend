@@ -7,14 +7,17 @@ import { OrganizationType, Report } from '@/types/intervention';
 import {
   Add as AddIcon,
   Assignment as AssignmentIcon,
-  Attachment as AttachmentIcon,
+  Cancel as CancelIcon,
   Delete as DeleteIcon,
   Download as DownloadIcon,
   Edit as EditIcon,
+  ExpandLess as ExpandLessIcon,
+  ExpandMore as ExpandMoreIcon,
   FilterList as FilterListIcon,
   MoreVert as MoreVertIcon,
   Refresh as RefreshIcon,
   Restore as RestoreIcon,
+  Save as SaveIcon,
   Search as SearchIcon,
   Visibility as ViewIcon
 } from '@mui/icons-material';
@@ -32,6 +35,7 @@ import {
   DialogContentText,
   DialogTitle,
   Divider,
+  Grid,
   IconButton,
   InputAdornment,
   Menu,
@@ -86,8 +90,15 @@ export default function InterventionReportsPage() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
 
-  // File management state
-  const [fileManagerReport, setFileManagerReport] = useState<Report | null>(null);
+  // Expandable rows state
+  const [expandedRow, setExpandedRow] = useState<number | null>(null);
+  const [editingReport, setEditingReport] = useState<Report | null>(null);
+  const [editForm, setEditForm] = useState({
+    label: '',
+    typeCode: '',
+    organizationId: 0,
+    typologyCode: ''
+  });
 
   // Dialog states
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -129,6 +140,51 @@ export default function InterventionReportsPage() {
 
   const showNotification = (message: string, severity: 'success' | 'error' | 'info') => {
     setNotification({ open: true, message, severity });
+  };
+
+  // Gestion des lignes expandables
+  const handleRowClick = (report: Report) => {
+    if (expandedRow === report.id) {
+      // Fermer la ligne si elle est déjà ouverte
+      setExpandedRow(null);
+      setEditingReport(null);
+    } else {
+      // Ouvrir la ligne et initialiser le formulaire d'édition
+      setExpandedRow(report.id);
+      setEditingReport(report);
+      setEditForm({
+        label: report.label,
+        typeCode: report.type.code,
+        organizationId: report.organization.id,
+        typologyCode: report.typology.code
+      });
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingReport) return;
+
+    try {
+      // Ici on appellerait le service pour sauvegarder
+      // await reportService.updateReport(editingReport.id, editForm);
+
+      showNotification('Rapport modifié avec succès', 'success');
+      await loadReports();
+      setExpandedRow(null);
+      setEditingReport(null);
+    } catch (error) {
+      console.error('Erreur lors de la modification:', error);
+      showNotification('Erreur lors de la modification du rapport', 'error');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setExpandedRow(null);
+    setEditingReport(null);
+  };
+
+  const handleFormChange = (field: string, value: any) => {
+    setEditForm(prev => ({ ...prev, [field]: value }));
   };
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>, report: Report) => {
@@ -360,69 +416,160 @@ export default function InterventionReportsPage() {
             </TableHead>
             <TableBody>
               {filteredReports.map((report) => (
-                <TableRow
-                  key={report.id}
-                  hover
-                  sx={{
-                    cursor: 'pointer',
-                    opacity: report.deletedAt ? 0.6 : 1,
-                    backgroundColor: report.deletedAt ? 'error.light' : 'inherit',
-                    '&:hover': {
-                      backgroundColor: report.deletedAt ? 'error.light' : 'action.hover',
-                    },
-                  }}
-                  onClick={() => handleView()}
-                >
-                  <TableCell>
-                    <Typography variant="body2" fontWeight={600}>
-                      {report.label}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2">
-                      {report.type.name}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <React.Fragment key={report.id}>
+                  {/* Ligne principale du rapport */}
+                  <TableRow
+                    hover
+                    sx={{
+                      cursor: 'pointer',
+                      opacity: report.deletedAt ? 0.6 : 1,
+                      backgroundColor: report.deletedAt ? 'error.light' : expandedRow === report.id ? 'action.selected' : 'inherit',
+                      '&:hover': {
+                        backgroundColor: report.deletedAt ? 'error.light' : 'action.hover',
+                      },
+                    }}
+                    onClick={() => handleRowClick(report)}
+                  >
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        {expandedRow === report.id ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                        <Typography variant="body2" fontWeight={600}>
+                          {report.label}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell>
                       <Typography variant="body2">
-                        {report.organization.name}
+                        {report.type.name}
                       </Typography>
-                      <Chip
-                        size="small"
-                        label={organizationTypeLabels[report.organization.type]}
-                        color={organizationTypeColors[report.organization.type]}
-                        variant="outlined"
-                      />
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2">
-                      {report.typology.description}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2">
-                      {format(new Date(report.createdAt), 'dd/MM/yyyy à HH:mm', { locale: fr })}
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="center">
-                    <Tooltip title="Actions">
-                      <IconButton
-                        size="small"
-                        onClick={(e) => handleMenuClick(e, report)}
-                        sx={{
-                          color: 'primary.main',
-                          '&:hover': {
-                            backgroundColor: 'primary.light',
-                          },
-                        }}
-                      >
-                        <MoreVertIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
-                </TableRow>
+                    </TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant="body2">
+                          {report.organization.name}
+                        </Typography>
+                        <Chip
+                          size="small"
+                          label={organizationTypeLabels[report.organization.type]}
+                          color={organizationTypeColors[report.organization.type]}
+                          variant="outlined"
+                        />
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2">
+                        {report.typology.description}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2">
+                        {format(new Date(report.createdAt), 'dd/MM/yyyy à HH:mm', { locale: fr })}
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Tooltip title="Actions">
+                        <IconButton
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMenuClick(e, report);
+                          }}
+                          sx={{
+                            color: 'primary.main',
+                            '&:hover': {
+                              backgroundColor: 'primary.light',
+                            },
+                          }}
+                        >
+                          <MoreVertIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Ligne expandable avec formulaire d'édition et FileManager */}
+                  <TableRow>
+                    <TableCell colSpan={6} sx={{ p: 0, border: 'none' }}>
+                      <Collapse in={expandedRow === report.id} timeout="auto" unmountOnExit>
+                        <Box sx={{ p: 3, backgroundColor: 'grey.50', borderTop: '1px solid', borderColor: 'divider' }}>
+                          <Grid container spacing={3}>
+                            {/* Colonne gauche : Formulaire d'édition */}
+                            <Grid size={{ xs: 12, md: 6 }}>
+                              <Typography variant="h6" gutterBottom color="primary">
+                                Éditer le rapport
+                              </Typography>
+
+                              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                <TextField
+                                  label="Libellé"
+                                  value={editForm.label}
+                                  onChange={(e) => handleFormChange('label', e.target.value)}
+                                  fullWidth
+                                  variant="outlined"
+                                  size="small"
+                                />
+
+                                <TextField
+                                  label="Code du type"
+                                  value={editForm.typeCode}
+                                  onChange={(e) => handleFormChange('typeCode', e.target.value)}
+                                  fullWidth
+                                  variant="outlined"
+                                  size="small"
+                                />
+
+                                <TextField
+                                  label="Code de la typologie"
+                                  value={editForm.typologyCode}
+                                  onChange={(e) => handleFormChange('typologyCode', e.target.value)}
+                                  fullWidth
+                                  variant="outlined"
+                                  size="small"
+                                />
+
+                                <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
+                                  <Button
+                                    variant="contained"
+                                    color="primary"
+                                    startIcon={<SaveIcon />}
+                                    onClick={handleSaveEdit}
+                                    size="small"
+                                    sx={{
+                                      background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+                                      '&:hover': {
+                                        background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                                      },
+                                    }}
+                                  >
+                                    Sauvegarder
+                                  </Button>
+                                  <Button
+                                    variant="outlined"
+                                    startIcon={<CancelIcon />}
+                                    onClick={handleCancelEdit}
+                                    size="small"
+                                  >
+                                    Annuler
+                                  </Button>
+                                </Box>
+                              </Box>
+                            </Grid>
+
+                            {/* Colonne droite : Gestionnaire de fichiers */}
+                            <Grid size={{ xs: 12, md: 6 }}>
+                              <FileManager
+                                entityType="report"
+                                entityId={report.id}
+                                title={`Fichiers du rapport`}
+                                onFilesChange={loadReports}
+                              />
+                            </Grid>
+                          </Grid>
+                        </Box>
+                      </Collapse>
+                    </TableCell>
+                  </TableRow>
+                </React.Fragment>
               ))}
               {filteredReports.length === 0 && (
                 <TableRow>
@@ -437,31 +584,6 @@ export default function InterventionReportsPage() {
           </Table>
         </TableContainer>
       </Paper>
-
-      {/* Gestion des fichiers pour le rapport sélectionné */}
-      {fileManagerReport && (
-        <FileManager
-          entityType="report"
-          entityId={fileManagerReport.id}
-          title={`Fichiers du rapport: ${fileManagerReport.label}`}
-          onFilesChange={() => {
-            // Optionnel: recharger les données si nécessaire
-            loadReports();
-          }}
-        />
-      )}
-
-      {/* Bouton pour fermer le gestionnaire de fichiers */}
-      {fileManagerReport && (
-        <Box sx={{ mt: 2, textAlign: 'center' }}>
-          <Button
-            variant="outlined"
-            onClick={() => setFileManagerReport(null)}
-          >
-            Fermer la gestion des fichiers
-          </Button>
-        </Box>
-      )}
 
       {/* Menu contextuel */}
       <Menu
@@ -506,17 +628,6 @@ export default function InterventionReportsPage() {
             )}
           </>
         )}
-        <MenuItem
-          onClick={() => {
-            if (selectedReport) {
-              setFileManagerReport(selectedReport);
-            }
-            handleMenuClose();
-          }}
-        >
-          <AttachmentIcon sx={{ mr: 1 }} />
-          Gérer les fichiers
-        </MenuItem>
       </Menu>
 
       {/* Dialogue de confirmation de suppression */}
