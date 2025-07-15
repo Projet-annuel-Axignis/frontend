@@ -4,51 +4,73 @@ import {
   CreateEquipmentDomainRequest, 
   UpdateEquipmentDomainRequest,
   ApiResponse,
-  PaginatedResponse 
+  PaginatedResponse,
+  ServerPaginatedResponse
 } from '@/types/equipment';
 
 export const equipmentService = {
   // Domaines d'équipements
-  async getDomains(page: number = 1, limit: number = 10, search?: string): Promise<PaginatedResponse<EquipmentDomain>> {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString(),
-    });
+  async getDomains(page: number = 1, limit: number = 10, search?: string): Promise<ServerPaginatedResponse<EquipmentDomain>> {
+    const params = new URLSearchParams();
+    
+    if (page) {
+      params.append('page', page.toString());
+    }
+    
+    if (limit) {
+      params.append('limit', limit.toString());
+    }
     
     if (search) {
       params.append('search', search);
     }
     
-    const response = await api.get(`/equipment/domains?${params}`);
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+    const response = await api.get(`/equipments/domains${queryString}`);
     return response.data;
   },
 
-  async getDomainById(id: string): Promise<EquipmentDomain> {
-    const response = await api.get(`/equipment/domains/${id}`);
+  async getDomainById(id: string): Promise<ApiResponse<EquipmentDomain>> {
+    const response = await api.get(`/equipments/domains/${id}`);
+    return response.data;
+  },
+  
+  async getDomainBySerialNumber(serialNumber: string): Promise<ApiResponse<EquipmentDomain>> {
+    const response = await api.get(`/equipments/domains/serial/${serialNumber}`);
     return response.data;
   },
 
   async createDomain(data: CreateEquipmentDomainRequest): Promise<ApiResponse<EquipmentDomain>> {
-    const response = await api.post('/equipment/domains', data);
+    const response = await api.post('/equipments/domains', data);
     return response.data;
   },
 
   async updateDomain(id: string, data: UpdateEquipmentDomainRequest): Promise<ApiResponse<EquipmentDomain>> {
-    const response = await api.put(`/equipment/domains/${id}`, data);
+    const response = await api.patch(`/equipments/domains/${id}`, data);
     return response.data;
   },
 
   async deleteDomain(id: string): Promise<ApiResponse<void>> {
-    const response = await api.delete(`/equipment/domains/${id}`);
+    const response = await api.delete(`/equipments/domains/${id}`);
+    return response.data;
+  },
+  
+  async restoreDomain(id: string): Promise<ApiResponse<EquipmentDomain>> {
+    const response = await api.patch(`/equipments/domains/${id}/restore`);
     return response.data;
   },
 
   // Familles d'équipements
-  async getFamilies(page: number = 1, limit: number = 10, domainId?: string, search?: string): Promise<PaginatedResponse<any>> {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString(),
-    });
+  async getFamilies(page: number = 1, limit: number = 10, domainId?: string, search?: string): Promise<ServerPaginatedResponse<any>> {
+    const params = new URLSearchParams();
+    
+    if (page) {
+      params.append('page', page.toString());
+    }
+    
+    if (limit) {
+      params.append('limit', limit.toString());
+    }
     
     if (domainId) {
       params.append('domainId', domainId);
@@ -58,16 +80,22 @@ export const equipmentService = {
       params.append('search', search);
     }
     
-    const response = await api.get(`/equipment/families?${params}`);
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+    const response = await api.get(`/equipments/families${queryString}`);
     return response.data;
   },
 
   // Types d'équipements
-  async getTypes(page: number = 1, limit: number = 10, familyId?: string, search?: string): Promise<PaginatedResponse<any>> {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString(),
-    });
+  async getTypes(page: number = 1, limit: number = 10, familyId?: string, search?: string): Promise<ServerPaginatedResponse<any>> {
+    const params = new URLSearchParams();
+    
+    if (page) {
+      params.append('page', page.toString());
+    }
+    
+    if (limit) {
+      params.append('limit', limit.toString());
+    }
     
     if (familyId) {
       params.append('familyId', familyId);
@@ -77,31 +105,43 @@ export const equipmentService = {
       params.append('search', search);
     }
     
-    const response = await api.get(`/equipment/types?${params}`);
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+    const response = await api.get(`/equipments/types${queryString}`);
     return response.data;
   },
 
   // Marques
-  async getBrands(page: number = 1, limit: number = 10, search?: string): Promise<PaginatedResponse<any>> {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString(),
-    });
+  async getBrands(page: number = 1, limit: number = 10, search?: string): Promise<ServerPaginatedResponse<any>> {
+    const params = new URLSearchParams();
+    
+    if (page) {
+      params.append('page', page.toString());
+    }
+    
+    if (limit) {
+      params.append('limit', limit.toString());
+    }
     
     if (search) {
       params.append('search', search);
     }
     
-    const response = await api.get(`/equipment/brands?${params}`);
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+    const response = await api.get(`/equipments/brands${queryString}`);
     return response.data;
   },
 
   // Produits
-  async getProducts(page: number = 1, limit: number = 10, typeId?: string, brandId?: string, search?: string): Promise<PaginatedResponse<any>> {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString(),
-    });
+  async getProducts(page: number = 1, limit: number = 10, typeId?: string, brandId?: string, search?: string): Promise<ServerPaginatedResponse<any>> {
+    const params = new URLSearchParams();
+    
+    if (page) {
+      params.append('page', page.toString());
+    }
+    
+    if (limit) {
+      params.append('limit', limit.toString());
+    }
     
     if (typeId) {
       params.append('typeId', typeId);
@@ -115,7 +155,8 @@ export const equipmentService = {
       params.append('search', search);
     }
     
-    const response = await api.get(`/equipment/products?${params}`);
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+    const response = await api.get(`/equipments/products${queryString}`);
     return response.data;
   },
 }; 

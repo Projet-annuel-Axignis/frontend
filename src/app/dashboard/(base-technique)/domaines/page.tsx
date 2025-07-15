@@ -51,7 +51,7 @@ export default function DomainesPage() {
   const [total, setTotal] = useState(0);
   const [openDialog, setOpenDialog] = useState(false);
   const [editingDomain, setEditingDomain] = useState<EquipmentDomain | null>(null);
-  const [formData, setFormData] = useState<CreateEquipmentDomainRequest>({ name: '' });
+  const [formData, setFormData] = useState<CreateEquipmentDomainRequest>({ name: '', serialNumber: '' });
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
     open: false,
     message: '',
@@ -63,8 +63,10 @@ export default function DomainesPage() {
     try {
       setLoading(true);
       const response = await equipmentService.getDomains(page + 1, rowsPerPage, searchTerm);
-      setDomains(response.data);
-      setTotal(response.total);
+      console.log(response);
+      // Adapter la structure de réponse
+      setDomains(response.results);
+      setTotal(response.totalResults);
     } catch (error) {
       console.error('Erreur lors du chargement des domaines:', error);
       setSnackbar({
@@ -79,7 +81,14 @@ export default function DomainesPage() {
 
   useEffect(() => {
     loadDomains();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, rowsPerPage, searchTerm]);
+
+  // Vérifier si les données sont chargées au montage
+  useEffect(() => {
+    loadDomains();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Gestion des formulaires
   const handleSubmit = async () => {
@@ -134,20 +143,23 @@ export default function DomainesPage() {
 
   const handleEdit = (domain: EquipmentDomain) => {
     setEditingDomain(domain);
-    setFormData({ name: domain.name });
+    setFormData({ 
+      name: domain.name, 
+      serialNumber: domain.serialNumber 
+    });
     setOpenDialog(true);
   };
 
   const handleAdd = () => {
     setEditingDomain(null);
-    setFormData({ name: '' });
+    setFormData({ name: '', serialNumber: '' });
     setOpenDialog(true);
   };
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setEditingDomain(null);
-    setFormData({ name: '' });
+    setFormData({ name: '', serialNumber: '' });
   };
 
   const handleChangePage = (event: unknown, newPage: number) => {
@@ -259,7 +271,7 @@ export default function DomainesPage() {
                     <CircularProgress />
                   </TableCell>
                 </TableRow>
-              ) : domains.length === 0 ? (
+              ) : !domains || domains.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
                     <Typography variant="body1" color="text.secondary">
@@ -354,6 +366,17 @@ export default function DomainesPage() {
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             sx={{ mt: 2 }}
+            helperText="Ex: électricité"
+          />
+          <TextField
+            margin="dense"
+            label="Numéro de série"
+            fullWidth
+            variant="outlined"
+            value={formData.serialNumber}
+            onChange={(e) => setFormData({ ...formData, serialNumber: e.target.value })}
+            sx={{ mt: 2 }}
+            helperText="Ex: ELEC001 (3-50 caractères)"
           />
         </DialogContent>
         <DialogActions>
@@ -361,7 +384,7 @@ export default function DomainesPage() {
           <Button 
             onClick={handleSubmit} 
             variant="contained"
-            disabled={!formData.name.trim()}
+            disabled={!formData.name.trim() || !formData.serialNumber.trim() || formData.serialNumber.length < 3 || formData.serialNumber.length > 50}
             sx={{
               background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
               '&:hover': {

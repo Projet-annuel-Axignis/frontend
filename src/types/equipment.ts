@@ -99,10 +99,12 @@ export interface InventoryItem {
 // Types pour les formulaires
 export interface CreateEquipmentDomainRequest {
   name: string;
+  serialNumber: string;
 }
 
 export interface UpdateEquipmentDomainRequest {
-  name: string;
+  name?: string;
+  serialNumber?: string;
 }
 
 // Types pour les réponses API
@@ -119,3 +121,10 @@ export interface PaginatedResponse<T> {
   limit: number;
   totalPages: number;
 } 
+
+export interface ServerPaginatedResponse<T> {
+  sortField: string;
+  totalResults: number;
+  currentResults: number;
+  results: T[];
+}
