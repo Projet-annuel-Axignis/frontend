@@ -35,6 +35,7 @@ export interface Intervention {
   endedAt: string;
   type: InterventionType;
   terminatedBy: User;
+  parts: Part[];
 }
 
 export interface CreateInterventionDto {
@@ -47,6 +48,7 @@ export interface CreateInterventionDto {
   endedAt: string;
   typeId: number;
   terminatedById: number;
+  partIds: number[];
 }
 
 export interface UpdateInterventionDto {
@@ -59,6 +61,7 @@ export interface UpdateInterventionDto {
   endedAt?: string;
   typeId?: number;
   terminatedById?: number;
+  partIds?: number[];
 }
 
 
