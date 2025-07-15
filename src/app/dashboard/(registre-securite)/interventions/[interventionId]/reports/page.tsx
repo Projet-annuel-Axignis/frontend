@@ -11,8 +11,6 @@ import {
   Assignment as AssignmentIcon,
   Cancel as CancelIcon,
   Delete as DeleteIcon,
-  Download as DownloadIcon,
-  Edit as EditIcon,
   ExpandLess as ExpandLessIcon,
   ExpandMore as ExpandMoreIcon,
   FilterList as FilterListIcon,
@@ -20,8 +18,7 @@ import {
   Refresh as RefreshIcon,
   Restore as RestoreIcon,
   Save as SaveIcon,
-  Search as SearchIcon,
-  Visibility as ViewIcon
+  Search as SearchIcon
 } from '@mui/icons-material';
 import {
   Alert,
@@ -246,44 +243,7 @@ export default function InterventionReportsPage() {
     setSelectedReport(null);
   };
 
-  const handleView = () => {
-    if (selectedReport) {
-      // TODO: Naviguer vers le détail du rapport
-      showNotification('Affichage du détail - Fonctionnalité en cours de développement', 'info');
-    }
-    handleMenuClose();
-  };
 
-  const handleEdit = () => {
-    if (selectedReport) {
-      // TODO: Ouvrir dialogue d'édition
-      showNotification('Édition - Fonctionnalité en cours de développement', 'info');
-    }
-    handleMenuClose();
-  };
-
-  const handleDownload = async () => {
-    if (!selectedReport) return;
-
-    await withLoading(async () => {
-      try {
-        const blob = await reportService.downloadReport(selectedReport.id);
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `rapport-${selectedReport.label}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-        showNotification('Rapport téléchargé avec succès', 'success');
-      } catch (error) {
-        console.error('Erreur lors du téléchargement:', error);
-        showNotification('Erreur lors du téléchargement du rapport', 'error');
-      }
-    });
-    handleMenuClose();
-  };
 
   const handleDelete = () => {
     if (selectedReport) {
@@ -714,27 +674,13 @@ export default function InterventionReportsPage() {
           },
         }}
       >
-        <MenuItem onClick={handleView}>
-          <ViewIcon sx={{ mr: 1 }} fontSize="small" />
-          Voir le détail
-        </MenuItem>
-        <MenuItem onClick={handleDownload}>
-          <DownloadIcon sx={{ mr: 1 }} fontSize="small" />
-          Télécharger
-        </MenuItem>
         {selectedReport && (
           <>
             {!selectedReport.deletedAt && (
-              <>
-                <MenuItem onClick={handleEdit}>
-                  <EditIcon sx={{ mr: 1 }} fontSize="small" />
-                  Éditer
-                </MenuItem>
-                <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
-                  <DeleteIcon sx={{ mr: 1 }} fontSize="small" />
-                  Archiver
-                </MenuItem>
-              </>
+              <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
+                <DeleteIcon sx={{ mr: 1 }} fontSize="small" />
+                Archiver
+              </MenuItem>
             )}
             {selectedReport.deletedAt && (
               <MenuItem onClick={handleRestore}>
