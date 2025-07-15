@@ -5,7 +5,8 @@ import DashBoardHeader from '@/components/dashboard/DashBoardHeader';
 import { useBreadcrumbTitle } from '@/hooks/useBreadcrumbTitle';
 import { useLoading } from '@/hooks/useLoading';
 import { interventionService } from '@/services/interventionService';
-import { Intervention } from '@/types/intervention';
+import interventionTypeService from '@/services/interventionTypeService';
+import { CreateInterventionDto, Intervention, InterventionType, UpdateInterventionDto } from '@/types/intervention';
 import {
   Add as AddIcon,
   Build as BuildIcon,
@@ -29,6 +30,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import InterventionCard from './_components/InterventionCard';
+import InterventionDialog from './_components/InterventionDialog';
 import InterventionFilters from './_components/InterventionFilters';
 import InterventionTable from './_components/InterventionTable';
 
@@ -41,6 +43,7 @@ const InterventionsPage = () => {
 
   // Data states
   const [interventions, setInterventions] = useState<Intervention[]>([]);
+  const [interventionTypes, setInterventionTypes] = useState<InterventionType[]>([]);
 
   // Filter states
   const [search, setSearch] = useState('');
@@ -51,6 +54,8 @@ const InterventionsPage = () => {
   // Dialog states
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [interventionToDelete, setInterventionToDelete] = useState<Intervention | null>(null);
+  const [interventionDialogOpen, setInterventionDialogOpen] = useState(false);
+  const [editingIntervention, setEditingIntervention] = useState<Intervention | null>(null);
 
   // Notification states
   const [notification, setNotification] = useState<{
@@ -72,7 +77,11 @@ const InterventionsPage = () => {
   const loadData = async () => {
     await withLoading(async () => {
       try {
-        await loadInterventions();
+        // Charger les interventions et les types en parallèle
+        await Promise.all([
+          loadInterventions(),
+          loadInterventionTypes()
+        ]);
       } catch (error) {
         console.error('Error loading data:', error);
         showNotification('Erreur lors du chargement des données', 'error');
@@ -94,6 +103,22 @@ const InterventionsPage = () => {
     }
   };
 
+  const loadInterventionTypes = async () => {
+    try {
+      const result = await interventionTypeService.getInterventionTypes({
+        limit: 1000,
+        page: 1,
+        sortBy: 'name',
+        sortOrder: 'asc',
+        search: '',
+      });
+      setInterventionTypes(result.data);
+    } catch (error) {
+      console.error('Error loading intervention types:', error);
+      showNotification('Erreur lors du chargement des types d\'intervention', 'error');
+    }
+  };
+
   // Reload interventions when filters change
   useEffect(() => {
     loadInterventions();
@@ -105,13 +130,36 @@ const InterventionsPage = () => {
   };
 
   const handleCreateIntervention = () => {
-    // TODO: Ouvrir un dialogue de création
-    showNotification('Création - Fonctionnalité en cours de développement', 'info');
+    setEditingIntervention(null);
+    setInterventionDialogOpen(true);
   };
 
-  const handleEditIntervention = () => {
-    // TODO: Ouvrir un dialogue d'édition
-    showNotification('Édition - Fonctionnalité en cours de développement', 'info');
+  const handleEditIntervention = (intervention: Intervention) => {
+    setEditingIntervention(intervention);
+    setInterventionDialogOpen(true);
+  };
+
+  const handleSubmitIntervention = async (data: CreateInterventionDto | UpdateInterventionDto) => {
+    await withLoading(async () => {
+      try {
+        if (editingIntervention) {
+          // Mode édition
+          await interventionService.updateIntervention(editingIntervention.id, data as UpdateInterventionDto);
+          showNotification('Intervention modifiée avec succès', 'success');
+        } else {
+          // Mode création
+          await interventionService.createIntervention(data as CreateInterventionDto);
+          showNotification('Intervention créée avec succès', 'success');
+        }
+
+        await loadInterventions();
+        setInterventionDialogOpen(false);
+        setEditingIntervention(null);
+      } catch (error) {
+        console.error('Error submitting intervention:', error);
+        throw error; // Let the dialog handle the error display
+      }
+    });
   };
 
   const handleViewIntervention = (intervention: Intervention) => {
@@ -343,6 +391,19 @@ const InterventionsPage = () => {
           </Box>
         </CardContent>
       </Card>
+
+      {/* Intervention Dialog */}
+      <InterventionDialog
+        open={interventionDialogOpen}
+        onClose={() => {
+          setInterventionDialogOpen(false);
+          setEditingIntervention(null);
+        }}
+        onSubmit={handleSubmitIntervention}
+        intervention={editingIntervention}
+        interventionTypes={interventionTypes}
+        loading={loading}
+      />
 
       {/* Delete Confirmation Dialog */}
       <Dialog
