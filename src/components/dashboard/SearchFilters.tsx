@@ -29,12 +29,19 @@ interface SearchFiltersProps {
   onSearchChange: (value: string) => void;
   searchPlaceholder?: string;
 
-  // Select filter
+  // First select filter
   selectValue: string | number;
   onSelectChange: (value: string | number) => void;
   selectLabel: string;
   selectOptions: FilterOption[];
   selectAllLabel?: string;
+
+  // Second select filter (optional)
+  secondSelectValue?: string | number;
+  onSecondSelectChange?: (value: string | number) => void;
+  secondSelectLabel?: string;
+  secondSelectOptions?: FilterOption[];
+  secondSelectAllLabel?: string;
 
   // Include deleted toggle
   includeDeleted: boolean;
@@ -55,6 +62,11 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
   selectLabel,
   selectOptions,
   selectAllLabel = "Tous",
+  secondSelectValue,
+  onSecondSelectChange,
+  secondSelectLabel,
+  secondSelectOptions,
+  secondSelectAllLabel = "Tous",
   includeDeleted,
   onIncludeDeletedChange,
   includeDeletedLabel = "Inclure supprimés",
@@ -111,6 +123,25 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
             ))}
           </Select>
         </FormControl>
+
+        {/* Second select filter (optional) */}
+        {secondSelectLabel && secondSelectOptions && onSecondSelectChange && (
+          <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 200 } }}>
+            <InputLabel>{secondSelectLabel}</InputLabel>
+            <Select
+              value={secondSelectValue || ''}
+              onChange={(e) => onSecondSelectChange(e.target.value)}
+              label={secondSelectLabel}
+            >
+              <MenuItem value="">{secondSelectAllLabel}</MenuItem>
+              {secondSelectOptions.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        )}
 
         <FormControlLabel
           control={
