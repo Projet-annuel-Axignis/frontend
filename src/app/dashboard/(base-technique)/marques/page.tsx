@@ -26,7 +26,6 @@ import {
   Tooltip,
   Card,
   CardContent,
-  Fab,
   Switch
 } from '@mui/material';
 import {
@@ -248,24 +247,50 @@ export default function BrandsPage() {
 
   return (
     <Box sx={{ p: 3 }}>
-      {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom sx={{ 
-          fontWeight: 600,
-          background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
-          backgroundClip: 'text',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent'
-        }}>
-          Marques
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Gérez les marques d&apos;équipements de votre organisation
-        </Typography>
+      {/* Header avec titre et bouton principal */}
+      <Box sx={{ 
+        display: 'flex', 
+        flexDirection: { xs: 'column', sm: 'row' },
+        justifyContent: 'space-between', 
+        alignItems: { xs: 'stretch', sm: 'flex-start' },
+        gap: 2,
+        mb: 4 
+      }}>
+        <Box sx={{ flex: 1 }}>
+          <Typography variant="h4" component="h1" gutterBottom sx={{ 
+            fontWeight: 600,
+            background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent'
+          }}>
+            Marques
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Gérez les marques d&apos;équipements de votre organisation
+          </Typography>
+        </Box>
+        
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={handleAdd}
+          sx={{
+            background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+            '&:hover': {
+              background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+            },
+            alignSelf: { xs: 'stretch', sm: 'flex-start' },
+            height: 'fit-content',
+            whiteSpace: 'nowrap'
+          }}
+        >
+          Nouvelle marque
+        </Button>
       </Box>
 
       {/* Statistiques */}
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 4 }}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 3 }}>
         <Box sx={{ flex: '1 1 280px', minWidth: 0 }}>
           <Card sx={{ 
             background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
@@ -288,8 +313,8 @@ export default function BrandsPage() {
         </Box>
       </Box>
 
-      {/* Barre d'outils */}
-      <Paper sx={{ p: 2, mb: 3 }}>
+      {/* Filtres */}
+      <Paper sx={{ p: 3, mb: 3 }}>
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
           <TextField
             size="small"
@@ -299,7 +324,7 @@ export default function BrandsPage() {
             InputProps={{
               startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />
             }}
-            sx={{ minWidth: 250 }}
+            sx={{ minWidth: 250, flex: { xs: '1 1 auto', sm: '0 1 250px' } }}
           />
           
           <Box 
@@ -307,7 +332,6 @@ export default function BrandsPage() {
               display: 'flex', 
               alignItems: 'center', 
               gap: 1,
-              ml: 2,
               border: '1px solid',
               borderColor: 'divider',
               borderRadius: 1,
@@ -332,20 +356,6 @@ export default function BrandsPage() {
               <RefreshIcon />
             </IconButton>
           </Tooltip>
-          
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={handleAdd}
-            sx={{
-              background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
-              '&:hover': {
-                background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
-              }
-            }}
-          >
-            Nouvelle marque
-          </Button>
         </Box>
       </Paper>
 
@@ -597,25 +607,6 @@ export default function BrandsPage() {
           {snackbar.message}
         </Alert>
       </Snackbar>
-
-      {/* FAB pour mobile */}
-      <Fab
-        color="primary"
-        aria-label="Ajouter une marque"
-        onClick={handleAdd}
-        sx={{
-          position: 'fixed',
-          bottom: 16,
-          right: 16,
-          background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
-          '&:hover': {
-            background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
-          },
-          display: { xs: 'flex', md: 'none' }
-        }}
-      >
-        <AddIcon />
-      </Fab>
     </Box>
   );
 }

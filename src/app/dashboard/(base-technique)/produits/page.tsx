@@ -504,24 +504,50 @@ export default function ProductsPage() {
 
   return (
     <Box sx={{ p: 3 }}>
-      {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom sx={{ 
-          fontWeight: 600,
-          background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
-          backgroundClip: 'text',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent'
-        }}>
-          Produits
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Gérez les produits disponibles dans votre catalogue
-        </Typography>
+      {/* Header avec titre et bouton principal */}
+      <Box sx={{ 
+        display: 'flex', 
+        flexDirection: { xs: 'column', sm: 'row' },
+        justifyContent: 'space-between', 
+        alignItems: { xs: 'stretch', sm: 'flex-start' },
+        gap: 2,
+        mb: 4 
+      }}>
+        <Box sx={{ flex: 1 }}>
+          <Typography variant="h4" component="h1" gutterBottom sx={{ 
+            fontWeight: 600,
+            background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent'
+          }}>
+            Produits
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Gérez les produits disponibles dans votre catalogue
+          </Typography>
+        </Box>
+        
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={handleAdd}
+          sx={{
+            background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+            '&:hover': {
+              background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+            },
+            alignSelf: { xs: 'stretch', sm: 'flex-start' },
+            height: 'fit-content',
+            whiteSpace: 'nowrap'
+          }}
+        >
+          Nouveau produit
+        </Button>
       </Box>
 
       {/* Statistiques */}
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 4 }}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 3 }}>
         <Box sx={{ flex: '1 1 280px', minWidth: 0 }}>
           <Card sx={{ 
             background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
@@ -582,28 +608,6 @@ export default function ProductsPage() {
                 Réinitialiser tout
               </Button>
             )}
-            
-            <Button
-              variant="contained"
-              size="medium"
-              startIcon={<AddIcon />}
-              onClick={handleAdd}
-              sx={{
-                background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
-                px: 3,
-                py: 1,
-                fontSize: '0.95rem',
-                fontWeight: 600,
-                boxShadow: '0 3px 10px rgba(0,0,0,0.12)',
-                '&:hover': {
-                  background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
-                  boxShadow: '0 5px 15px rgba(0,0,0,0.18)',
-                },
-                minWidth: { xs: '100%', sm: 'auto' }
-              }}
-            >
-              Nouveau produit
-            </Button>
           </Box>
         </Box>
         
