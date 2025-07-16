@@ -34,10 +34,10 @@ import {
   Select,
   MenuItem,
   InputAdornment,
-  FormHelperText
+  FormHelperText,
+  Autocomplete
 } from '@mui/material';
 import {
-  Add as AddIcon,
   Delete as DeleteIcon,
   Search as SearchIcon,
   Refresh as RefreshIcon,
@@ -47,7 +47,8 @@ import {
   Cancel as CancelIcon,
   Update as UpdateIcon,
   InsertDriveFile as InsertDriveFileIcon,
-  Verified as VerifiedIcon
+  Verified as VerifiedIcon,
+  Inventory as InventoryIcon
 } from '@mui/icons-material';
 import { equipmentService } from '@/services/equipmentService';
 import { 
@@ -773,24 +774,136 @@ export default function ProductDocumentsPage() {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={fr}>
-      <Box sx={{ p: 3 }}>
-        {/* Header */}
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" component="h1" gutterBottom sx={{ 
-            fontWeight: 600,
-            background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent'
-          }}>
-            Documents produits
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Gérez les documents associés à vos produits (manuels, fiches techniques, certificats...)
-          </Typography>
-        </Box>
-
-        {/* Statistiques */}
+      <Box sx={{ p: 3 }}>      {/* Header avec sélecteur de produit principal */}
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" component="h1" gutterBottom sx={{ 
+          fontWeight: 600,
+          background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+          backgroundClip: 'text',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent'
+        }}>
+          Documents produits
+        </Typography>
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+          Gérez les documents associés à vos produits (manuels, fiches techniques, certificats...)
+        </Typography>
+        
+        {/* Sélecteur de produit principal */}
+        <Paper sx={{ 
+          p: 3, 
+          mb: 3,
+          background: 'linear-gradient(135deg, rgba(var(--color-axignis-primary-rgb), 0.05), rgba(var(--color-axignis-secondary-rgb), 0.05))',
+          border: '1px solid',
+          borderColor: 'divider'
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+            <InventoryIcon sx={{ color: 'var(--color-axignis-primary)', fontSize: '1.5rem' }} />
+            <Typography variant="h6" sx={{ fontWeight: 600, color: 'var(--color-axignis-primary)' }}>
+              Sélectionner un produit
+            </Typography>
+          </Box>
+          
+          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+            <Autocomplete
+              options={products}
+              loading={loading}
+              value={products.find(p => p.id.toString() === filterProductId) || null}
+              onChange={(event, newValue) => {
+                setFilterProductId(newValue ? newValue.id.toString() : '');
+              }}
+              getOptionLabel={(option) => option.name}
+              isOptionEqualToValue={(option, value) => option.id === value.id}
+              filterOptions={(options, { inputValue }) => {
+                if (!inputValue) return options;
+                
+                const searchTerm = inputValue.toLowerCase();
+                return options.filter(option => 
+                  option.name.toLowerCase().includes(searchTerm) ||
+                  option.serialNumber.toLowerCase().includes(searchTerm) ||
+                  (option.brand?.name && option.brand.name.toLowerCase().includes(searchTerm))
+                );
+              }}
+              renderOption={(props, option) => (
+                <Box component="li" {...props}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
+                    <InventoryIcon sx={{ fontSize: '1rem', color: 'var(--color-axignis-primary)' }} />
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {option.name}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {option.serialNumber} • {option.brand?.name}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
+              )}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Choisir le produit à consulter"
+                  placeholder="Rechercher par nom, série ou marque..."
+                  helperText={
+                    filterProductId 
+                      ? `Documents du produit: ${products.find(p => p.id.toString() === filterProductId)?.name}`
+                      : "Tapez pour rechercher ou sélectionner un produit dans la liste"
+                  }
+                  InputProps={{
+                    ...params.InputProps,
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <InventoryIcon sx={{ color: 'var(--color-axignis-primary)' }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{ 
+                    '& .MuiOutlinedInput-root': {
+                      '& fieldset': {
+                        borderColor: 'var(--color-axignis-primary)',
+                        borderWidth: 2
+                      },
+                      '&:hover fieldset': {
+                        borderColor: 'var(--color-axignis-secondary)',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: 'var(--color-axignis-primary)',
+                      }
+                    }
+                  }}
+                />
+              )}
+              sx={{ minWidth: 400, maxWidth: { xs: '100%', md: 500 } }}
+              size="medium"
+              noOptionsText="Aucun produit trouvé pour cette recherche"
+              clearText="Effacer"
+              openText="Ouvrir la liste"
+              closeText="Fermer la liste"
+              loadingText="Chargement des produits..."
+            />
+            
+            {filterProductId && (
+              <Button
+                variant="outlined"
+                size="medium"
+                onClick={() => setFilterProductId('')}
+                startIcon={<RefreshIcon />}
+                sx={{ 
+                  borderColor: 'var(--color-axignis-primary)',
+                  color: 'var(--color-axignis-primary)',
+                  '&:hover': {
+                    borderColor: 'var(--color-axignis-secondary)',
+                    backgroundColor: 'rgba(var(--color-axignis-primary-rgb), 0.1)'
+                  }
+                }}
+              >
+                Changer de produit
+              </Button>
+            )}
+          </Box>
+        </Paper>
+      </Box>      {/* Statistiques conditionnelles */}
+      {filterProductId && (
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 4 }}>
           <Box sx={{ flex: '1 1 280px', minWidth: 0 }}>
             <Card sx={{ 
@@ -804,7 +917,10 @@ export default function ProductDocumentsPage() {
                       {total}
                     </Typography>
                     <Typography variant="body2">
-                      Documents produits
+                      Document{total !== 1 ? 's' : ''} pour ce produit
+                    </Typography>
+                    <Typography variant="caption" sx={{ opacity: 0.8, mt: 0.5 }}>
+                      {products.find(p => p.id.toString() === filterProductId)?.name}
                     </Typography>
                   </Box>
                   <InsertDriveFileIcon sx={{ fontSize: 40, opacity: 0.8 }} />
@@ -812,38 +928,52 @@ export default function ProductDocumentsPage() {
               </CardContent>
             </Card>
           </Box>
+          
+          {/* Bouton d'action principal */}
+          <Box sx={{ flex: '0 0 auto', display: 'flex', alignItems: 'center' }}>
+            <Button
+              variant="contained"
+              size="large"
+              startIcon={<CloudUploadIcon />}
+              onClick={handleAdd}
+              sx={{
+                background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                px: 4,
+                py: 1.5,
+                fontSize: '1rem',
+                fontWeight: 600,
+                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+                  boxShadow: '0 6px 20px rgba(0,0,0,0.2)',
+                }
+              }}
+            >
+              Ajouter un document
+            </Button>
+          </Box>
         </Box>
-
-        {/* Barre d'outils et filtres */}
-        <Paper sx={{ p: 2, mb: 3 }}>
+      )}      {/* Filtres secondaires - uniquement visible si un produit est sélectionné */}
+      {filterProductId && (
+        <Paper sx={{ p: 2, mb: 3, border: '1px solid', borderColor: 'divider' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+            <SearchIcon sx={{ color: 'text.secondary', fontSize: '1.2rem' }} />
+            <Typography variant="subtitle2" color="text.secondary" sx={{ fontWeight: 600 }}>
+              Filtres avancés
+            </Typography>
+          </Box>
+          
           <Box sx={{ display: 'flex', flexDirection: {xs: 'column', md: 'row'}, gap: 2, alignItems: {xs: 'stretch', md: 'center'}, flexWrap: 'wrap' }}>
             <TextField
               size="small"
-              placeholder="Rechercher un document..."
+              placeholder="Rechercher dans les documents..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               InputProps={{
                 startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />
               }}
-              sx={{ minWidth: {xs: '100%', md: 220} }}
+              sx={{ minWidth: {xs: '100%', md: 280} }}
             />
-            
-            <FormControl size="small" sx={{ minWidth: {xs: '100%', md: 200} }}>
-              <InputLabel>Produit</InputLabel>
-              <Select
-                value={filterProductId}
-                onChange={(e) => setFilterProductId(e.target.value)}
-                label="Produit"
-              >
-                <MenuItem value="">Tous les produits</MenuItem>
-                {/* Idéalement, cette liste serait alimentée par une requête API */}
-                {products.map(product => (
-                  <MenuItem key={product.id} value={product.id}>
-                    {product.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
             
             <FormControl size="small" sx={{ minWidth: {xs: '100%', md: 200} }}>
               <InputLabel>Type de document</InputLabel>
@@ -889,7 +1019,7 @@ export default function ProductDocumentsPage() {
               }}
             >
               <Typography variant="body2" color="text.secondary">
-                Inclure les supprimés
+                Inclure supprimés
               </Typography>
               <Switch
                 checked={showDeleted}
@@ -905,34 +1035,74 @@ export default function ProductDocumentsPage() {
               startIcon={<RefreshIcon />}
               sx={{ minWidth: {xs: '100%', md: 'auto'} }}
             >
-              Réinitialiser les filtres
-            </Button>
-            
-            <Box sx={{ flexGrow: 1 }} />
-            
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={handleAdd}
-              disabled={!filterProductId}
-              title={!filterProductId ? "Veuillez d'abord sélectionner un produit" : ""}
-              sx={{
-                background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
-                '&:hover': {
-                  background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
-                },
-                minWidth: {xs: '100%', md: 'auto'},
-                '&.Mui-disabled': {
-                  background: 'rgba(0, 0, 0, 0.12)'
-                }
-              }}
-            >
-              Téléverser un document
+              Réinitialiser
             </Button>
           </Box>
         </Paper>
+      )}
 
-        {/* Table */}
+      {/* Contenu principal */}
+      {!filterProductId ? (
+        /* État par défaut - Aucun produit sélectionné */
+        <Paper sx={{ 
+          p: 6, 
+          textAlign: 'center',
+          background: 'linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid',
+          borderColor: 'divider'
+        }}>
+          <Box sx={{ maxWidth: 600, mx: 'auto' }}>
+            <InsertDriveFileIcon sx={{ 
+              fontSize: '4rem', 
+              color: 'text.secondary', 
+              mb: 2,
+              opacity: 0.5 
+            }} />
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, color: 'text.primary' }}>
+              Gestion des documents produits
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 4, lineHeight: 1.6 }}>
+              Organisez et gérez tous les documents associés à vos produits : manuels d&apos;utilisation, 
+              fiches techniques, certificats de conformité, et bien plus encore.
+            </Typography>
+            
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 4, fontStyle: 'italic' }}>
+              👆 Utilisez le sélecteur de produit ci-dessus pour commencer
+            </Typography>
+            
+            <Box sx={{ 
+              display: 'grid', 
+              gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
+              gap: 2,
+              mt: 4
+            }}>
+              <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                <CloudUploadIcon sx={{ color: 'var(--color-axignis-primary)', mb: 1 }} />
+                <Typography variant="subtitle2" gutterBottom>Téléversement facile</Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Ajoutez vos documents en quelques clics
+                </Typography>
+              </Box>
+              <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                <VerifiedIcon sx={{ color: 'var(--color-axignis-primary)', mb: 1 }} />
+                <Typography variant="subtitle2" gutterBottom>Vérification d&apos;intégrité</Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Contrôlez l&apos;authenticité de vos fichiers
+                </Typography>
+              </Box>
+              <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                <UpdateIcon sx={{ color: 'var(--color-axignis-primary)', mb: 1 }} />
+                <Typography variant="subtitle2" gutterBottom>Gestion des versions</Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Suivez l&apos;évolution de vos documents
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+        </Paper>
+      ) : (
+        /* Table des documents */
         <Paper sx={{ width: '100%', overflow: 'hidden' }}>
           <TableContainer>
             <Table stickyHeader>
@@ -954,45 +1124,38 @@ export default function ProductDocumentsPage() {
                       <CircularProgress />
                     </TableCell>
                   </TableRow>
-                ) : !filterProductId ? (
-                  <TableRow>
-                    <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
-                      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                        <Typography variant="body1" color="text.secondary">
-                          Veuillez sélectionner un produit pour afficher ses documents
-                        </Typography>
-                        <FormControl size="small" sx={{ minWidth: 300 }}>
-                          <InputLabel>Sélectionner un produit</InputLabel>
-                          <Select
-                            value={filterProductId}
-                            onChange={(e) => setFilterProductId(e.target.value)}
-                            label="Sélectionner un produit"
-                          >
-                            <MenuItem value="">-- Sélectionnez --</MenuItem>
-                            {products.map(product => (
-                              <MenuItem key={product.id} value={product.id.toString()}>
-                                {product.name}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
-                      </Box>
-                    </TableCell>
-                  </TableRow>
                 ) : documents.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
-                      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                        <Typography variant="body1" color="text.secondary">
-                          Aucun document trouvé pour ce produit
-                        </Typography>
+                    <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+                        <InsertDriveFileIcon sx={{ 
+                          fontSize: '3rem', 
+                          color: 'text.secondary',
+                          opacity: 0.5 
+                        }} />
+                        <Box sx={{ textAlign: 'center' }}>
+                          <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                            Aucun document pour ce produit
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                            Commencez par ajouter votre premier document pour ce produit
+                          </Typography>
+                        </Box>
                         <Button
-                          variant="outlined"
+                          variant="contained"
                           startIcon={<CloudUploadIcon />}
                           onClick={handleAdd}
-                          size="small"
+                          size="large"
+                          sx={{
+                            background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+                            '&:hover': {
+                              background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                            },
+                            px: 4,
+                            py: 1.5
+                          }}
                         >
-                          Téléverser votre premier document
+                          Ajouter le premier document
                         </Button>
                       </Box>
                     </TableCell>
@@ -1138,6 +1301,7 @@ export default function ProductDocumentsPage() {
             labelDisplayedRows={({ from, to, count }) => `${from}-${to} sur ${count}`}
           />
         </Paper>
+      )}
 
         {/* Dialog pour téléverser un document */}
         <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
@@ -1525,28 +1689,28 @@ export default function ProductDocumentsPage() {
           </Alert>
         </Snackbar>
 
-        {/* FAB pour mobile */}
-        <Fab
-          color="primary"
-          aria-label="Téléverser un document"
-          onClick={handleAdd}
-          disabled={!filterProductId}
-          sx={{
-            position: 'fixed',
-            bottom: 16,
-            right: 16,
-            background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
-            '&:hover': {
-              background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
-            },
-            '&.Mui-disabled': {
-              background: 'rgba(0, 0, 0, 0.12)'
-            },
-            display: { xs: 'flex', md: 'none' }
-          }}
-        >
-          <CloudUploadIcon />
-        </Fab>
+        {/* FAB pour mobile - uniquement visible si un produit est sélectionné */}
+        {filterProductId && (
+          <Fab
+            color="primary"
+            aria-label="Ajouter un document"
+            onClick={handleAdd}
+            sx={{
+              position: 'fixed',
+              bottom: 16,
+              right: 16,
+              background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+              display: { xs: 'flex', md: 'none' },
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                boxShadow: '0 6px 20px rgba(0,0,0,0.25)',
+              }
+            }}
+          >
+            <CloudUploadIcon />
+          </Fab>
+        )}
       </Box>
     </LocalizationProvider>
   );
