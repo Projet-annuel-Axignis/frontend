@@ -57,7 +57,8 @@ export const reportService = {
 
   async getReport(id: number): Promise<Report> {
     const response = await api.get<Report>(`/reports/${id}`);
-    return response.data;
+    const report = response.data;
+    return report;
   },
 
   async createReport(data: CreateReportDto): Promise<Report> {
