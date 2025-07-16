@@ -1,5 +1,8 @@
 'use client';
 
+
+import { equipmentService } from '@/services/equipmentService';
+import { EquipmentType } from '@/types/equipment';
 import { CreateReportDto, Organization, OrganizationType, ReportType } from '@/types/intervention';
 import {
   Add as AddIcon,
@@ -69,10 +72,28 @@ const ReportDialog: React.FC<ReportDialogProps> = ({
     typologyCode: '',
     interventionId: interventionId,
     partIds: [],
-    fileIds: []
+    fileIds: [],
+    equipmentIds: []
   });
 
   const [loading, setLoading] = React.useState(false);
+  const [equipmentTypes, setEquipmentTypes] = React.useState<EquipmentType[]>([]);
+
+  // Load equipment types when dialog opens
+  React.useEffect(() => {
+    if (open) {
+      loadEquipmentTypes();
+    }
+  }, [open]);
+
+  const loadEquipmentTypes = async () => {
+    try {
+      const result = await equipmentService.getTypes();
+      setEquipmentTypes(result.results);
+    } catch (error) {
+      console.error('Erreur lors du chargement des types d\'équipements:', error);
+    }
+  };
 
   // Reset form when dialog opens
   React.useEffect(() => {
@@ -84,7 +105,8 @@ const ReportDialog: React.FC<ReportDialogProps> = ({
         typologyCode: '',
         interventionId: interventionId,
         partIds: [],
-        fileIds: []
+        fileIds: [],
+        equipmentIds: []
       });
     }
   }, [open, interventionId]);
@@ -134,6 +156,50 @@ const ReportDialog: React.FC<ReportDialogProps> = ({
             variant="outlined"
             placeholder="Entrez le libellé du rapport..."
             disabled={loading}
+          />
+
+          <Autocomplete
+            multiple
+            options={equipmentTypes || []}
+            getOptionLabel={(option: EquipmentType) => `${option.title} (${option.family?.name})`}
+            value={equipmentTypes?.filter(type => formData.equipmentIds?.includes(Number(type.id))) || []}
+            onChange={(_, newValue) => {
+              const equipmentIds = newValue.map((type: EquipmentType) => Number(type.id));
+              handleFieldChange('equipmentIds', equipmentIds);
+            }}
+            disabled={loading}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Types d'équipements"
+                variant="outlined"
+                placeholder="Sélectionner les types d'équipements..."
+              />
+            )}
+            renderValue={(value, getTagProps) =>
+              value.map((option, index) => (
+                <Chip
+                  {...getTagProps({ index })}
+                  key={option.id}
+                  label={`${option.title}`}
+                  size="small"
+                  color="primary"
+                  variant="outlined"
+                />
+              ))
+            }
+            renderOption={(props: any, option: EquipmentType) => (
+              <Box component="li" {...props}>
+                <Box>
+                  <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                    {option.title}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {option.family?.name}
+                  </Typography>
+                </Box>
+              </Box>
+            )}
           />
 
           <Autocomplete<ReportType>

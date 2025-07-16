@@ -713,6 +713,18 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ interventionId, onNotification,
                                               />
                                             ))
                                           }
+                                          renderOption={(props: any, option: EquipmentType) => (
+                                            <Box component="li" {...props}>
+                                              <Box>
+                                                <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                                                  {option.title}
+                                                </Typography>
+                                                <Typography variant="caption" color="text.secondary">
+                                                  {option.family?.name}
+                                                </Typography>
+                                              </Box>
+                                            </Box>
+                                          )}
                                         />
 
                                         <Autocomplete<ReportType>
