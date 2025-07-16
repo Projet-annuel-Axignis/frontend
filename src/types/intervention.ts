@@ -205,12 +205,14 @@ export interface CreateReportFileDto {
   fileId: number;
   title?: string;
   description?: string;
+  version?: number;
 }
 
 export interface UpdateReportFileDto {
   fileId?: number;
   title?: string;
   description?: string;
+  version?: number;
 }
 
 // =========================

@@ -33,23 +33,55 @@ export const fileService = {
   },
 
   // Uploader un fichier directement vers un rapport
-  async uploadReportFile(reportId: number, file: globalThis.File): Promise<File> {
+  /**
+   * Upload un fichier vers un rapport avec titre, description et progression
+   * @param reportId ID du rapport
+   * @param file Fichier à uploader
+   * @param title Titre du document
+   * @param description Description du document
+   * @param onProgress Callback de progression (0-100)
+   */
+  async uploadReportFile(reportId: number, file: globalThis.File, title?: string, description?: string, onProgress?: (progress: number) => void): Promise<File> {
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('version', '1');
+    if (title) formData.append('title', title);
+    if (description) formData.append('description', description);
 
     const response = await api.post<File>(`/reports/${reportId}/files`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+      onUploadProgress: (progressEvent: any) => {
+        if (progressEvent.total && onProgress) {
+          onProgress(Math.round((progressEvent.loaded * 100) / progressEvent.total));
+        }
+      },
     });
     return response.data;
   },
 
   // Uploader un fichier directement vers une observation
-  async uploadObservationFile(observationId: number, file: globalThis.File): Promise<File> {
+  /**
+   * Upload un fichier vers une observation avec titre, description et progression
+   * @param observationId ID de l'observation
+   * @param file Fichier à uploader
+   * @param title Titre du document
+   * @param description Description du document
+   * @param onProgress Callback de progression (0-100)
+   */
+  async uploadObservationFile(observationId: number, file: globalThis.File, title?: string, description?: string, onProgress?: (progress: number) => void): Promise<File> {
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('version', '1');
+    if (title) formData.append('title', title);
+    if (description) formData.append('description', description);
 
     const response = await api.post<File>(`/observations/${observationId}/files`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+      onUploadProgress: (progressEvent: any) => {
+        if (progressEvent.total && onProgress) {
+          onProgress(Math.round((progressEvent.loaded * 100) / progressEvent.total));
+        }
+      },
     });
     return response.data;
   },
