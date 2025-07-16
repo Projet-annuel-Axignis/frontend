@@ -260,39 +260,6 @@ export default function FamiliesPage() {
     }
   };
 
-  const handleRestore = async (id: string) => {
-    try {
-      setLoading(true);
-      await equipmentService.restoreFamily(id);
-      setSnackbar({
-        open: true,
-        message: 'Famille restaurée avec succès',
-        severity: 'success'
-      });
-      loadFamilies();
-    } catch (error: any) {
-      console.error('Erreur lors de la restauration:', error);
-      // Gestion des erreurs spécifiques
-      let errorMessage = 'Erreur lors de la restauration';
-      
-      if (error.response) {
-        if (error.response.status === 404) {
-          errorMessage = 'Famille introuvable';
-        } else if (error.response.data && error.response.data.message) {
-          errorMessage = error.response.data.message;
-        }
-      }
-      
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: 'error'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleEdit = (family: EquipmentFamily) => {
     setEditingFamily(family);
     

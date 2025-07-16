@@ -319,39 +319,6 @@ export default function EquipmentTypesPage() {
     }
   };
 
-  const handleRestore = async (id: string) => {
-    try {
-      setLoading(true);
-      await equipmentService.restoreType(id);
-      setSnackbar({
-        open: true,
-        message: 'Type restauré avec succès',
-        severity: 'success'
-      });
-      loadTypes();
-    } catch (error: any) {
-      console.error('Erreur lors de la restauration:', error);
-      // Gestion des erreurs spécifiques
-      let errorMessage = 'Erreur lors de la restauration';
-      
-      if (error.response) {
-        if (error.response.status === 404) {
-          errorMessage = 'Type introuvable';
-        } else if (error.response.data && error.response.data.message) {
-          errorMessage = error.response.data.message;
-        }
-      }
-      
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: 'error'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleViewDetails = (equipmentType: EquipmentType) => {
     setSelectedTypeDetails(equipmentType);
     setDetailsDialogOpen(true);

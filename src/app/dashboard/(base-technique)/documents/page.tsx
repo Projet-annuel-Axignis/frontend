@@ -762,14 +762,6 @@ export default function ProductDocumentsPage() {
     setPage(0);
   };
 
-  const resetFilters = () => {
-    setFilterProductId('');
-    setFilterDocumentTypeId('');
-    setFilterStatus('');
-    setSearchTerm('');
-    setPage(0);
-  };
-
   // Fonctions de débug supprimées pour éviter les warnings
 
   return (

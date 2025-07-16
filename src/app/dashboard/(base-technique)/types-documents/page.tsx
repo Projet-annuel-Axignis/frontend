@@ -209,39 +209,6 @@ export default function DocumentTypesPage() {
     }
   };
 
-  const handleRestore = async (id: string) => {
-    try {
-      setLoading(true);
-      await equipmentService.restoreDocumentType(id);
-      setSnackbar({
-        open: true,
-        message: 'Type de document restauré avec succès',
-        severity: 'success'
-      });
-      loadDocumentTypes();
-    } catch (error: any) {
-      console.error('Erreur lors de la restauration:', error);
-      // Gestion des erreurs spécifiques
-      let errorMessage = 'Erreur lors de la restauration';
-      
-      if (error.response) {
-        if (error.response.status === 404) {
-          errorMessage = 'Type de document introuvable';
-        } else if (error.response.data && error.response.data.message) {
-          errorMessage = error.response.data.message;
-        }
-      }
-      
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: 'error'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleEdit = (documentType: DocumentType) => {
     setEditingDocumentType(documentType);
     

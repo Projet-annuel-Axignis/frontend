@@ -3,15 +3,6 @@
 import { equipmentService } from '@/services/equipmentService';
 import { CreateEquipmentDomainRequest, EquipmentDomain, UpdateEquipmentDomainRequest } from '@/types/equipment';
 import {
-  Add as AddIcon,
-  Delete as DeleteIcon,
-  Edit as EditIcon,
-  Folder as FolderIcon,
-  Refresh as RefreshIcon,
-  Search as SearchIcon,
-  Visibility as ViewIcon
-} from '@mui/icons-material';
-import {
   Alert,
   Box,
   Button,
@@ -23,7 +14,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Fab,
   IconButton,
   Paper,
   Snackbar,
@@ -36,8 +26,6 @@ import {
   TableRow,
   TextField,
   Tooltip,
-  Card,
-  CardContent,
   Switch,
   Typography
 } from '@mui/material';
@@ -49,8 +37,6 @@ import {
   Refresh as RefreshIcon,
   Folder as FolderIcon
 } from '@mui/icons-material';
-import { equipmentService } from '@/services/equipmentService';
-import { EquipmentDomain, CreateEquipmentDomainRequest, UpdateEquipmentDomainRequest } from '@/types/equipment';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useEffect, useState } from 'react';
@@ -212,39 +198,6 @@ export default function DomainesPage() {
     } finally {
       setLoading(false);
       closeDeleteDialog();
-    }
-  };
-
-  const handleRestore = async (id: number) => {
-    try {
-      setLoading(true);
-      await equipmentService.restoreDomain(id);
-      setSnackbar({
-        open: true,
-        message: 'Domaine restauré avec succès',
-        severity: 'success'
-      });
-      loadDomains();
-    } catch (error: any) {
-      console.error('Erreur lors de la restauration:', error);
-      // Gestion des erreurs spécifiques
-      let errorMessage = 'Erreur lors de la restauration';
-      
-      if (error.response) {
-        if (error.response.status === 404) {
-          errorMessage = 'Domaine introuvable';
-        } else if (error.response.data && error.response.data.message) {
-          errorMessage = error.response.data.message;
-        }
-      }
-      
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: 'error'
-      });
-    } finally {
-      setLoading(false);
     }
   };
 

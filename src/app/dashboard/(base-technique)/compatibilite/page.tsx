@@ -27,9 +27,7 @@ import {
   CardContent,
   Fab,
   Switch,
-  FormControl,
   Grid,
-  FormHelperText
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -38,7 +36,6 @@ import {
   Search as SearchIcon,
   Refresh as RefreshIcon,
   LinkOff as LinkOffIcon,
-  Link as LinkIcon,
   Group as GroupIcon
 } from '@mui/icons-material';
 import { equipmentService } from '@/services/equipmentService';
@@ -407,7 +404,7 @@ export default function CompatibilityGroupsPage() {
     
     try {
       return format(new Date(dateString), 'dd/MM/yyyy HH:mm', { locale: fr });
-    } catch (error) {
+    } catch {
       return 'Date invalide';
     }
   };

@@ -19,7 +19,6 @@ import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
 import StorageIcon from '@mui/icons-material/Storage';
 import SupportRoundedIcon from '@mui/icons-material/SupportRounded';
 import InventoryIcon from '@mui/icons-material/Inventory';
-import DescriptionIcon from '@mui/icons-material/Description';
 import ArticleIcon from '@mui/icons-material/Article';
 import {
   Box,

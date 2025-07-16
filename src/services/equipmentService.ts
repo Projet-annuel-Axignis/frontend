@@ -10,7 +10,6 @@ import {
   CreateEquipmentTypeRequest,
   UpdateEquipmentTypeRequest,
   ApiResponse,
-  PaginatedResponse,
   ServerPaginatedResponse,
   ArrayPaginatedResponse,
   Brand,
