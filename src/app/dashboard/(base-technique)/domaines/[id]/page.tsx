@@ -1,36 +1,36 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { 
-  Box, 
-  Typography, 
-  Button, 
-  Card, 
-  CardContent, 
-  Chip, 
+import { equipmentService } from '@/services/equipmentService';
+import { EquipmentDomain } from '@/types/equipment';
+import {
+  ArrowBack as ArrowBackIcon,
+  Cable as CableIcon,
+  DashboardRounded as DashboardRoundedIcon,
+  Delete as DeleteIcon,
+  Edit as EditIcon,
+  Folder as FolderIcon,
+  ShoppingCart as ShoppingCartIcon
+} from '@mui/icons-material';
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  CircularProgress,
   Divider,
+  IconButton,
   List,
   ListItem,
   ListItemText,
-  CircularProgress,
-  Alert,
-  IconButton,
-  Tooltip
+  Tooltip,
+  Typography
 } from '@mui/material';
-import {
-  ArrowBack as ArrowBackIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Folder as FolderIcon,
-  DashboardRounded as DashboardRoundedIcon,
-  Cable as CableIcon,
-  ShoppingCart as ShoppingCartIcon
-} from '@mui/icons-material';
-import { equipmentService } from '@/services/equipmentService';
-import { EquipmentDomain } from '@/types/equipment';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function DomaineDetailsPage() {
   const params = useParams();
@@ -45,7 +45,7 @@ export default function DomaineDetailsPage() {
     const loadDomain = async () => {
       try {
         setLoading(true);
-        const data = await equipmentService.getDomainById(domainId);
+        const data = await equipmentService.getDomainById(Number(domainId));
         setDomain(data.data);
       } catch (err) {
         console.error('Erreur lors du chargement du domaine:', err);
@@ -67,7 +67,7 @@ export default function DomaineDetailsPage() {
 
   const handleDelete = async () => {
     if (!domain) return;
-    
+
     if (window.confirm('Êtes-vous sûr de vouloir supprimer ce domaine ?')) {
       try {
         await equipmentService.deleteDomain(domain.id);
@@ -128,8 +128,8 @@ export default function DomaineDetailsPage() {
             </IconButton>
           </Tooltip>
         </Box>
-        
-        <Typography variant="h4" component="h1" gutterBottom sx={{ 
+
+        <Typography variant="h4" component="h1" gutterBottom sx={{
           fontWeight: 600,
           background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
           backgroundClip: 'text',
@@ -138,8 +138,8 @@ export default function DomaineDetailsPage() {
         }}>
           {domain.name}
         </Typography>
-        
-        <Chip 
+
+        <Chip
           label={`Numéro de série: ${domain.serialNumber}`}
           variant="outlined"
           sx={{ fontFamily: 'monospace' }}
@@ -156,7 +156,7 @@ export default function DomaineDetailsPage() {
                 Informations générales
               </Typography>
               <Divider sx={{ mb: 2 }} />
-              
+
               <List dense>
                 <ListItem>
                   <ListItemText
@@ -200,7 +200,7 @@ export default function DomaineDetailsPage() {
                 Statistiques
               </Typography>
               <Divider sx={{ mb: 2 }} />
-              
+
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
                 <Box sx={{ flex: '1 1 120px', textAlign: 'center', p: 2 }}>
                   <Typography variant="h4" color="primary" sx={{ fontWeight: 600 }}>
@@ -245,7 +245,7 @@ export default function DomaineDetailsPage() {
         <Typography variant="h5" gutterBottom>
           Éléments liés
         </Typography>
-        
+
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
           <Box sx={{ flex: '1 1 300px', minWidth: 0 }}>
             <Card sx={{ cursor: 'pointer', '&:hover': { boxShadow: 4 } }}>
@@ -262,7 +262,7 @@ export default function DomaineDetailsPage() {
               </CardContent>
             </Card>
           </Box>
-          
+
           <Box sx={{ flex: '1 1 300px', minWidth: 0 }}>
             <Card sx={{ cursor: 'pointer', '&:hover': { boxShadow: 4 } }}>
               <CardContent>
@@ -278,7 +278,7 @@ export default function DomaineDetailsPage() {
               </CardContent>
             </Card>
           </Box>
-          
+
           <Box sx={{ flex: '1 1 300px', minWidth: 0 }}>
             <Card sx={{ cursor: 'pointer', '&:hover': { boxShadow: 4 } }}>
               <CardContent>

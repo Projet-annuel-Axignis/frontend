@@ -1,49 +1,49 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Paper, 
-  Button, 
-  TextField, 
+import { equipmentService } from '@/services/equipmentService';
+import {
+  CreateDocumentTypeRequest,
+  DocumentType,
+  UpdateDocumentTypeRequest
+} from '@/types/equipment';
+import {
+  Add as AddIcon,
+  Delete as DeleteIcon,
+  Description as DescriptionIcon,
+  Edit as EditIcon,
+  Refresh as RefreshIcon,
+  Search as SearchIcon
+} from '@mui/icons-material';
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   IconButton,
+  Paper,
+  Snackbar,
+  Switch,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
-  TableRow,
   TablePagination,
-  Chip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Alert,
-  Snackbar,
-  CircularProgress,
+  TableRow,
+  TextField,
   Tooltip,
-  Card,
-  CardContent,
-  Switch
+  Typography
 } from '@mui/material';
-import {
-  Add as AddIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Search as SearchIcon,
-  Refresh as RefreshIcon,
-  Description as DescriptionIcon
-} from '@mui/icons-material';
-import { equipmentService } from '@/services/equipmentService';
-import { 
-  DocumentType, 
-  CreateDocumentTypeRequest, 
-  UpdateDocumentTypeRequest 
-} from '@/types/equipment';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useEffect, useState } from 'react';
 
 export default function DocumentTypesPage() {
   const [documentTypes, setDocumentTypes] = useState<DocumentType[]>([]);
@@ -58,7 +58,7 @@ export default function DocumentTypesPage() {
   const [documentTypeToDelete, setDocumentTypeToDelete] = useState<string | null>(null);
   const [editingDocumentType, setEditingDocumentType] = useState<DocumentType | null>(null);
   const [formData, setFormData] = useState<CreateDocumentTypeRequest>({
-    name: '', 
+    name: '',
     serialNumber: ''
   });
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
@@ -72,12 +72,12 @@ export default function DocumentTypesPage() {
     try {
       setLoading(true);
       const response = await equipmentService.getDocumentTypes(
-        page + 1, 
-        rowsPerPage, 
-        searchTerm, 
+        page + 1,
+        rowsPerPage,
+        searchTerm,
         showDeleted
       );
-      
+
       // La réponse est un tableau [results, totalResults, totalPages]
       if (Array.isArray(response)) {
         const [results, totalResults, totalPages] = response;
@@ -119,7 +119,10 @@ export default function DocumentTypesPage() {
 
       if (editingDocumentType) {
         console.log(`Mise à jour du type de document (ID: ${editingDocumentType.id})`);
-        await equipmentService.updateDocumentType(editingDocumentType.id, formData as UpdateDocumentTypeRequest);
+        await equipmentService.updateDocumentType(
+          String(editingDocumentType.id), // S'assurer que l'ID est bien une chaîne
+          formData as UpdateDocumentTypeRequest
+        );
         setSnackbar({
           open: true,
           message: 'Type de document mis à jour avec succès',
@@ -139,11 +142,11 @@ export default function DocumentTypesPage() {
     } catch (error: any) {
       console.error('Erreur lors de la sauvegarde:', error);
       let errorMessage = 'Erreur lors de la sauvegarde';
-      
+
       if (error.response) {
         console.error("Code d'erreur:", error.response.status);
         console.error("Détails de l'erreur:", error.response.data);
-        
+
         if (error.response.status === 409) {
           errorMessage = 'Un type de document avec ce numéro de série existe déjà';
         } else if (error.response.status === 500) {
@@ -152,7 +155,7 @@ export default function DocumentTypesPage() {
           errorMessage = error.response.data.message;
         }
       }
-      
+
       setSnackbar({
         open: true,
         message: errorMessage,
@@ -173,7 +176,7 @@ export default function DocumentTypesPage() {
 
   const handleDelete = async () => {
     if (!documentTypeToDelete) return;
-    
+
     try {
       setLoading(true);
       await equipmentService.deleteDocumentType(documentTypeToDelete);
@@ -187,7 +190,7 @@ export default function DocumentTypesPage() {
       console.error('Erreur lors de la suppression:', error);
       // Gestion des erreurs spécifiques
       let errorMessage = 'Erreur lors de la suppression';
-      
+
       if (error.response) {
         if (error.response.status === 409) {
           errorMessage = 'Ce type de document est utilisé par d\'autres éléments et ne peut pas être supprimé';
@@ -197,7 +200,7 @@ export default function DocumentTypesPage() {
           errorMessage = error.response.data.message;
         }
       }
-      
+
       setSnackbar({
         open: true,
         message: errorMessage,
@@ -211,9 +214,9 @@ export default function DocumentTypesPage() {
 
   const handleEdit = (documentType: DocumentType) => {
     setEditingDocumentType(documentType);
-    
+
     // Convertir en string si nécessaire pour le formulaire
-    setFormData({ 
+    setFormData({
       name: documentType.name,
       serialNumber: documentType.serialNumber
     });
@@ -222,8 +225,8 @@ export default function DocumentTypesPage() {
 
   const handleAdd = () => {
     setEditingDocumentType(null);
-    setFormData({ 
-      name: '', 
+    setFormData({
+      name: '',
       serialNumber: ''
     });
     setOpenDialog(true);
@@ -232,8 +235,8 @@ export default function DocumentTypesPage() {
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setEditingDocumentType(null);
-    setFormData({ 
-      name: '', 
+    setFormData({
+      name: '',
       serialNumber: ''
     });
   };
@@ -250,16 +253,16 @@ export default function DocumentTypesPage() {
   return (
     <Box sx={{ p: 3 }}>
       {/* Header avec titre et bouton principal */}
-      <Box sx={{ 
-        display: 'flex', 
+      <Box sx={{
+        display: 'flex',
         flexDirection: { xs: 'column', sm: 'row' },
-        justifyContent: 'space-between', 
+        justifyContent: 'space-between',
         alignItems: { xs: 'stretch', sm: 'flex-start' },
         gap: 2,
-        mb: 4 
+        mb: 4
       }}>
         <Box sx={{ flex: 1 }}>
-          <Typography variant="h4" component="h1" gutterBottom sx={{ 
+          <Typography variant="h4" component="h1" gutterBottom sx={{
             fontWeight: 600,
             background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
             backgroundClip: 'text',
@@ -272,7 +275,7 @@ export default function DocumentTypesPage() {
             Gérez les types de documents utilisés pour vos produits
           </Typography>
         </Box>
-        
+
         <Button
           variant="contained"
           startIcon={<AddIcon />}
@@ -294,7 +297,7 @@ export default function DocumentTypesPage() {
       {/* Statistiques */}
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 3 }}>
         <Box sx={{ flex: '1 1 280px', minWidth: 0 }}>
-          <Card sx={{ 
+          <Card sx={{
             background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
             color: 'white'
           }}>
@@ -325,7 +328,7 @@ export default function DocumentTypesPage() {
               Filtres et recherche
             </Typography>
           </Box>
-          
+
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Button
               variant="outlined"
@@ -333,7 +336,7 @@ export default function DocumentTypesPage() {
               onClick={loadDocumentTypes}
               disabled={loading}
               startIcon={<RefreshIcon />}
-              sx={{ 
+              sx={{
                 borderColor: 'var(--color-axignis-primary)',
                 color: 'var(--color-axignis-primary)',
                 '&:hover': {
@@ -346,9 +349,9 @@ export default function DocumentTypesPage() {
             </Button>
           </Box>
         </Box>
-        
+
         {/* Grille de filtres responsive */}
-        <Box sx={{ 
+        <Box sx={{
           display: 'flex',
           flexWrap: 'wrap',
           gap: 2,
@@ -364,11 +367,11 @@ export default function DocumentTypesPage() {
             }}
             sx={{ minWidth: 280, flex: { xs: '1 1 100%', sm: '1 1 280px' } }}
           />
-          
-          <Box 
-            sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
+
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
               gap: 1,
               border: '1px solid',
               borderColor: 'divider',
@@ -420,10 +423,10 @@ export default function DocumentTypesPage() {
                 </TableRow>
               ) : (
                 documentTypes.map((docType) => (
-                  <TableRow 
-                    key={docType.id} 
+                  <TableRow
+                    key={docType.id}
                     hover
-                    sx={{ 
+                    sx={{
                       opacity: docType.deletedAt ? 0.6 : 1,
                       backgroundColor: docType.deletedAt ? 'rgba(244, 67, 54, 0.05)' : 'inherit'
                     }}
@@ -431,10 +434,10 @@ export default function DocumentTypesPage() {
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <DescriptionIcon sx={{ color: docType.deletedAt ? 'text.disabled' : 'var(--color-axignis-primary)' }} />
-                        <Typography 
-                          variant="body1" 
+                        <Typography
+                          variant="body1"
                           fontWeight={500}
-                          sx={{ 
+                          sx={{
                             textDecoration: docType.deletedAt ? 'line-through' : 'none',
                             display: 'flex',
                             alignItems: 'center',
@@ -443,21 +446,21 @@ export default function DocumentTypesPage() {
                         >
                           {docType.name}
                           {docType.deletedAt && (
-                            <Chip 
-                              label="Supprimé" 
-                              size="small" 
-                              color="error" 
-                              variant="outlined" 
-                              sx={{ fontSize: '0.7rem', height: 20 }} 
+                            <Chip
+                              label="Supprimé"
+                              size="small"
+                              color="error"
+                              variant="outlined"
+                              sx={{ fontSize: '0.7rem', height: 20 }}
                             />
                           )}
                         </Typography>
                       </Box>
                     </TableCell>
                     <TableCell>
-                      <Chip 
-                        label={docType.serialNumber} 
-                        size="small" 
+                      <Chip
+                        label={docType.serialNumber}
+                        size="small"
                         variant="outlined"
                         sx={{ fontFamily: 'monospace' }}
                       />
@@ -476,8 +479,8 @@ export default function DocumentTypesPage() {
                         ) : (
                           <>
                             <Tooltip title="Modifier">
-                              <IconButton 
-                                size="small" 
+                              <IconButton
+                                size="small"
                                 color="primary"
                                 onClick={() => handleEdit(docType)}
                               >
@@ -485,10 +488,10 @@ export default function DocumentTypesPage() {
                               </IconButton>
                             </Tooltip>
                             <Tooltip title="Supprimer">
-                              <IconButton 
-                                size="small" 
+                              <IconButton
+                                size="small"
                                 color="error"
-                                onClick={() => openDeleteDialog(docType.id)}
+                                onClick={() => openDeleteDialog(String(docType.id))}
                               >
                                 <DeleteIcon />
                               </IconButton>
@@ -503,7 +506,7 @@ export default function DocumentTypesPage() {
             </TableBody>
           </Table>
         </TableContainer>
-        
+
         <TablePagination
           rowsPerPageOptions={[5, 10, 25, 50]}
           component="div"
@@ -535,7 +538,7 @@ export default function DocumentTypesPage() {
               helperText="Ex: Manuel d'utilisation (2-100 caractères)"
               required
             />
-            
+
             <TextField
               margin="dense"
               label="Numéro de série"
@@ -550,15 +553,15 @@ export default function DocumentTypesPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog}>Annuler</Button>
-          <Button 
-            onClick={handleSubmit} 
+          <Button
+            onClick={handleSubmit}
             variant="contained"
             disabled={
-              !formData.name.trim() || 
-              formData.name.length < 2 || 
+              !formData.name.trim() ||
+              formData.name.length < 2 ||
               formData.name.length > 100 ||
-              !formData.serialNumber.trim() || 
-              formData.serialNumber.length < 3 || 
+              !formData.serialNumber.trim() ||
+              formData.serialNumber.length < 3 ||
               formData.serialNumber.length > 50
             }
             sx={{
@@ -586,7 +589,7 @@ export default function DocumentTypesPage() {
           }
         }}
       >
-        <DialogTitle sx={{ 
+        <DialogTitle sx={{
           pb: 1,
           display: 'flex',
           alignItems: 'center',
@@ -605,19 +608,19 @@ export default function DocumentTypesPage() {
           </Box>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3, justifyContent: 'space-between' }}>
-          <Button 
-            onClick={closeDeleteDialog} 
+          <Button
+            onClick={closeDeleteDialog}
             variant="outlined"
             startIcon={<RefreshIcon />}
           >
             Annuler
           </Button>
-          <Button 
-            onClick={handleDelete} 
+          <Button
+            onClick={handleDelete}
             variant="contained"
             color="error"
             startIcon={<DeleteIcon />}
-            sx={{ 
+            sx={{
               bgcolor: 'error.main',
               '&:hover': { bgcolor: 'error.dark' }
             }}
@@ -633,8 +636,8 @@ export default function DocumentTypesPage() {
         autoHideDuration={6000}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
       >
-        <Alert 
-          onClose={() => setSnackbar({ ...snackbar, open: false })} 
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
           severity={snackbar.severity}
           sx={{ width: '100%' }}
         >
