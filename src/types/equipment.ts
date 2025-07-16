@@ -127,17 +127,23 @@ export interface ProductDocument {
 export interface UploadProductDocumentRequest {
   reference: string;
   serialNumber: string;
-  // Champs modifiés pour correspondre au format backend
-  products: Product[]; // Tableau d'objets produits au lieu de productId
-  type: DocumentType;  // Objet type de document complet au lieu de documentTypeId
-  // Garder les anciens champs pour compatibilité avec le code existant
-  productId?: string;
-  documentTypeId?: string;
+  title?: string; // Titre du document (optionnel, utilisera reference par défaut)
+  description?: string; // Description (optionnelle)
   issueDate: string;
   expiryDate?: string;
   version: number;
+  typeId?: number; // ID du type de document (format backend)
+  productIds?: number[]; // Array des IDs de produits (format backend)
   uploadedBy?: number; // ID de l'utilisateur qui téléverse le document
+  checksum?: string; // Checksum pour vérification d'intégrité (optionnel)
+  status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'; // Statut du document (optionnel)
   file: File;
+  
+  // Champs de compatibilité avec le format frontend existant
+  products?: Product[]; // Tableau d'objets produits (conversion vers productIds)
+  type?: DocumentType;  // Objet type de document complet (conversion vers typeId)
+  productId?: string | number; // ID de produit unique (conversion vers productIds)
+  documentTypeId?: string | number; // ID de type de document (conversion vers typeId)
 }
 
 export interface UpdateProductDocumentStatusRequest {

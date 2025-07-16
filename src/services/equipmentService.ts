@@ -660,54 +660,60 @@ export const equipmentService = {
     // Création d'un FormData pour l'upload du fichier
     const formData = new FormData();
     formData.append('file', data.file);
-    formData.append('reference', data.reference);
     formData.append('serialNumber', data.serialNumber);
+    formData.append('reference', data.reference || '');
     
-    // Formatage des produits associés (tableau d'objets)
-    if (data.products && data.products.length > 0) {
-      // Conversion du tableau d'objets en JSON string pour l'envoi
-      formData.append('products', JSON.stringify(data.products));
-    } else if (data.productId) {
-      // Rétrocompatibilité: si productId est fourni mais pas products
-      const productObj = [{ id: data.productId }];
-      formData.append('products', JSON.stringify(productObj));
-    }
-    
-    // Formatage du type de document (objet complet)
-    if (data.type && data.type.id) {
-      // Conversion de l'objet en JSON string pour l'envoi
-      formData.append('type', JSON.stringify(data.type));
-      // Ajouter aussi typeId comme champ séparé (exigé par l'API)
-      // S'assurer que typeId est un nombre valide
-      const typeIdValue = typeof data.type.id === 'string' ? parseInt(data.type.id, 10) : data.type.id;
-      formData.append('typeId', typeIdValue.toString());
-    } else if (data.documentTypeId) {
-      // Rétrocompatibilité: si documentTypeId est fourni mais pas type
-      const typeObj = { id: data.documentTypeId };
-      formData.append('type', JSON.stringify(typeObj));
-      // Ajouter aussi typeId comme champ séparé (exigé par l'API)
-      // S'assurer que typeId est un nombre valide
-      const typeIdValue = typeof data.documentTypeId === 'string' ? parseInt(data.documentTypeId, 10) : data.documentTypeId;
-      formData.append('typeId', typeIdValue.toString());
-    }
-    
-    // Ajouter l'ID de l'utilisateur qui a téléversé le document
-    // On utilise 1 par défaut si non spécifié (l'API pourra utiliser l'utilisateur courant)
-    formData.append('uploadedBy', '1');
-    
+    // Champs obligatoires selon la spec API
+    formData.append('title', data.reference); // Utiliser la référence comme titre par défaut
     formData.append('issueDate', data.issueDate);
     formData.append('version', data.version.toString());
+    formData.append('uploadedBy', '1'); // ID utilisateur par défaut
     
+    // Champs optionnels
     if (data.expiryDate) {
       formData.append('expiryDate', data.expiryDate);
     }
     
+    // typeId - ID du type de document (obligatoire)
+    if (data.type && data.type.id) {
+      const typeId = typeof data.type.id === 'string' ? parseInt(data.type.id, 10) : data.type.id;
+      formData.append('typeId', typeId.toString());
+    } else if (data.documentTypeId) {
+      const typeId = typeof data.documentTypeId === 'string' ? parseInt(data.documentTypeId, 10) : data.documentTypeId;
+      formData.append('typeId', typeId.toString());
+    }
+    
+    // productIds - Array des IDs de produits (obligatoire)
+    const productIds: number[] = [];
+    if (data.products && data.products.length > 0) {
+      // Convertir tous les IDs de produits en nombres
+      productIds.push(...data.products.map(product => 
+        typeof product.id === 'string' ? parseInt(product.id, 10) : product.id
+      ));
+    } else if (data.productId) {
+      // Si un seul productId est fourni
+      const productId = typeof data.productId === 'string' ? parseInt(data.productId, 10) : data.productId;
+      productIds.push(productId);
+    }
+    
+    // Ajouter le tableau des IDs de produits
+    if (productIds.length > 0) {
+      // Envoyer chaque ID comme un élément séparé du array
+      productIds.forEach(id => {
+        formData.append('productIds[]', id.toString());
+      });
+    }
+    
     console.log("Envoi de la requête d'upload avec formData:", {
-      reference: formData.get('reference'),
+      file: data.file.name,
       serialNumber: formData.get('serialNumber'),
-      products: formData.get('products'),
-      type: formData.get('type'),
+      reference: formData.get('reference'),
+      title: formData.get('title'),
       typeId: formData.get('typeId'),
+      productIds: formData.getAll('productIds[]'),
+      issueDate: formData.get('issueDate'),
+      expiryDate: formData.get('expiryDate'),
+      version: formData.get('version'),
       uploadedBy: formData.get('uploadedBy')
     });
     

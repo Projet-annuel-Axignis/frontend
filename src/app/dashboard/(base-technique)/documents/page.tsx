@@ -401,15 +401,25 @@ export default function ProductDocumentsPage() {
       const formattedUploadForm = {
         reference: uploadForm.reference,
         serialNumber: uploadForm.serialNumber,
-        products: [selectedProduct],
-        type: selectedDocumentType,
+        productId: selectedProduct.id.toString(), // Envoyer l'ID du produit directement
+        productIds: [selectedProduct.id.toString()], // Format alternatif au cas où
+        products: [selectedProduct], // Format actuel
+        typeId: selectedDocumentType.id.toString(), // Envoyer l'ID du type directement
+        documentTypeId: selectedDocumentType.id.toString(), // Format alternatif
+        type: selectedDocumentType, // Format actuel
         issueDate: uploadForm.issueDate,
         expiryDate: uploadForm.expiryDate,
         version: uploadForm.version,
         file: uploadForm.file
       };
       
+      console.log("Données envoyées à l'API:", {
+        ...formattedUploadForm,
+        file: uploadForm.file ? `${uploadForm.file.name} (${uploadForm.file.size} bytes)` : null
+      });
+      
       const response = await equipmentService.uploadProductDocument(formattedUploadForm);
+      console.log("Réponse de l'upload:", response);
       
       // Afficher un message de succès avec plus de détails
       setSnackbar({
