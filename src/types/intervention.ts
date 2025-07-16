@@ -244,8 +244,8 @@ export interface CreateObservationsDto {
   location: string;
   priority: number;
   status: ObservationStatus;
-  startedAt: string;
-  endedAt: string;
+  startedAt?: string;
+  endedAt?: string;
   reportId: number;
   partIds: number[];
   fileIds: number[];

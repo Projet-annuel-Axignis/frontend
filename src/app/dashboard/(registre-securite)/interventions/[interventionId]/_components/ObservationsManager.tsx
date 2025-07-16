@@ -77,8 +77,8 @@ const ObservationsManager: React.FC<ObservationsManagerProps> = ({
     location: '',
     priority: 1,
     status: 'OPEN',
-    startedAt: '',
-    endedAt: '',
+    startedAt: undefined,
+    endedAt: undefined,
     reportId: reportId,
     partIds: [],
     fileIds: []
@@ -89,10 +89,10 @@ const ObservationsManager: React.FC<ObservationsManagerProps> = ({
     comment: '',
     reference: '',
     location: '',
+    startedAt: undefined,
+    endedAt: undefined,
     priority: 1,
     status: 'OPEN',
-    startedAt: '',
-    endedAt: ''
   });
 
   useEffect(() => {
@@ -128,8 +128,8 @@ const ObservationsManager: React.FC<ObservationsManagerProps> = ({
         location: '',
         priority: 1,
         status: 'OPEN',
-        startedAt: '',
-        endedAt: '',
+        startedAt: undefined,
+        endedAt: undefined,
         reportId: reportId,
         partIds: [],
         fileIds: []
@@ -533,6 +533,24 @@ const ObservationsManager: React.FC<ObservationsManagerProps> = ({
                 <MenuItem value="IN_PROGRESS">En cours</MenuItem>
                 <MenuItem value="FINISHED">Terminée</MenuItem>
               </TextField>
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                label="Date de début"
+                type="datetime-local"
+                value={editForm.startedAt || ''}
+                onChange={e => setEditForm(f => ({ ...f, startedAt: e.target.value || undefined }))}
+                fullWidth
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                label="Date de fin"
+                type="datetime-local"
+                value={editForm.endedAt || ''}
+                onChange={e => setEditForm(f => ({ ...f, endedAt: e.target.value || undefined }))}
+                fullWidth
+              />
             </Grid>
           </Grid>
         </DialogContent>
