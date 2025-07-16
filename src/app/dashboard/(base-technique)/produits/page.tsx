@@ -27,7 +27,6 @@ import {
   Tooltip,
   Card,
   CardContent,
-  Fab,
   Switch,
   FormControl,
   InputLabel,
@@ -545,9 +544,81 @@ export default function ProductsPage() {
         </Box>
       </Box>
 
-      {/* Barre d'outils et filtres */}
-      <Paper sx={{ p: 2, mb: 3 }}>
-        <Box sx={{ display: 'flex', flexDirection: {xs: 'column', md: 'row'}, gap: 2, alignItems: {xs: 'stretch', md: 'center'}, flexWrap: 'wrap' }}>
+      {/* Barre de filtres avec bouton d'action */}
+      <Paper sx={{ p: 3, mb: 3, border: '1px solid', borderColor: 'divider' }}>
+        {/* En-tête des filtres avec bouton d'action */}
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, flexWrap: 'wrap', gap: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
+            <SearchIcon sx={{ color: 'var(--color-axignis-primary)', fontSize: '1.5rem' }} />
+            <Typography variant="h6" sx={{ fontWeight: 600, color: 'var(--color-axignis-primary)' }}>
+              Filtres et recherche
+            </Typography>
+            {activeFiltersCount > 0 && (
+              <Chip 
+                label={`${activeFiltersCount} filtre${activeFiltersCount > 1 ? 's' : ''} actif${activeFiltersCount > 1 ? 's' : ''}`}
+                color="primary" 
+                size="small" 
+                sx={{ fontWeight: 500 }}
+              />
+            )}
+          </Box>
+          
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            {activeFiltersCount > 0 && (
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={resetFilters}
+                startIcon={<RefreshIcon />}
+                sx={{ 
+                  borderColor: 'var(--color-axignis-primary)',
+                  color: 'var(--color-axignis-primary)',
+                  '&:hover': {
+                    borderColor: 'var(--color-axignis-secondary)',
+                    backgroundColor: 'rgba(var(--color-axignis-primary-rgb), 0.1)'
+                  }
+                }}
+              >
+                Réinitialiser tout
+              </Button>
+            )}
+            
+            <Button
+              variant="contained"
+              size="medium"
+              startIcon={<AddIcon />}
+              onClick={handleAdd}
+              sx={{
+                background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+                px: 3,
+                py: 1,
+                fontSize: '0.95rem',
+                fontWeight: 600,
+                boxShadow: '0 3px 10px rgba(0,0,0,0.12)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                  boxShadow: '0 5px 15px rgba(0,0,0,0.18)',
+                },
+                minWidth: { xs: '100%', sm: 'auto' }
+              }}
+            >
+              Nouveau produit
+            </Button>
+          </Box>
+        </Box>
+        
+        {/* Grille de filtres responsive */}
+        <Box sx={{ 
+          display: 'grid', 
+          gridTemplateColumns: { 
+            xs: '1fr', 
+            sm: 'repeat(2, 1fr)', 
+            md: 'repeat(3, 1fr)', 
+            lg: 'repeat(4, 1fr)', 
+            xl: 'repeat(5, 1fr)' 
+          }, 
+          gap: 2
+        }}>
           <TextField
             size="small"
             placeholder="Rechercher un produit..."
@@ -556,10 +627,10 @@ export default function ProductsPage() {
             InputProps={{
               startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />
             }}
-            sx={{ minWidth: {xs: '100%', md: 220} }}
+            sx={{ gridColumn: { xs: '1', sm: '1 / -1', md: '1' } }}
           />
           
-          <FormControl size="small" sx={{ minWidth: {xs: '100%', md: 200} }}>
+          <FormControl size="small">
             <InputLabel>Marque</InputLabel>
             <Select
               value={filterBrandId || ''}
@@ -575,7 +646,7 @@ export default function ProductsPage() {
             </Select>
           </FormControl>
           
-          <FormControl size="small" sx={{ minWidth: {xs: '100%', md: 200} }}>
+          <FormControl size="small">
             <InputLabel>Type d&apos;équipement</InputLabel>
             <Select
               value={filterTypeId || ''}
@@ -591,7 +662,7 @@ export default function ProductsPage() {
             </Select>
           </FormControl>
           
-          <FormControl size="small" sx={{ minWidth: {xs: '100%', md: 200} }}>
+          <FormControl size="small">
             <InputLabel>Groupe de compatibilité</InputLabel>
             <Select
               value={filterCompatibilityGroupId || ''}
@@ -616,12 +687,12 @@ export default function ProductsPage() {
               borderColor: 'divider',
               borderRadius: 1,
               px: 2,
-              py: 0.5,
-              minWidth: {xs: '100%', md: 'auto'}
+              py: 1,
+              backgroundColor: 'background.paper'
             }}
           >
-            <Typography variant="body2" color="text.secondary">
-              Inclure les supprimés
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
+              Inclure supprimés
             </Typography>
             <Switch
               checked={showDeleted}
@@ -629,109 +700,94 @@ export default function ProductsPage() {
               size="small"
             />
           </Box>
-          
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={resetFilters}
-            startIcon={<RefreshIcon />}
-            sx={{ minWidth: {xs: '100%', md: 'auto'} }}
-          >
-            <Box sx={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
-              Réinitialiser les filtres
-              {activeFiltersCount > 0 && (
-                <Chip 
-                  label={activeFiltersCount} 
-                  color="primary" 
-                  size="small" 
-                  sx={{ ml: 1, height: 20, fontSize: '0.7rem' }} 
-                />
-              )}
-            </Box>
-          </Button>
-          
-          <Box sx={{ flexGrow: 1 }} />
-          
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={handleAdd}
-            sx={{
-              background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
-              '&:hover': {
-                background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
-              },
-              minWidth: {xs: '100%', md: 'auto'}
-            }}
-          >
-            Nouveau produit
-          </Button>
         </Box>
       </Paper>
 
       {/* Résumé des filtres actifs */}
       {activeFiltersCount > 0 && (
-        <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
-          <Typography variant="body2" color="text.secondary" sx={{ mr: 1 }}>
-            Filtres actifs:
-          </Typography>
-          
-          {filterBrandId && (
-            <Chip 
-              size="small" 
-              label={`Marque: ${brands.find(b => b.id === filterBrandId.toString())?.name || 'ID ' + filterBrandId}`}
-              onDelete={() => setFilterBrandId(null)} 
-              color="primary" 
-              variant="outlined"
-            />
-          )}
-          
-          {filterTypeId && (
-            <Chip 
-              size="small" 
-              label={`Type: ${equipmentTypes.find(t => t.id === filterTypeId.toString())?.title || 'ID ' + filterTypeId}`} 
-              onDelete={() => setFilterTypeId(null)} 
-              color="primary"
-              variant="outlined"
-            />
-          )}
-          
-          {filterCompatibilityGroupId && (
-            <Chip 
-              size="small" 
-              label={`Groupe: ${compatibilityGroups.find(g => g.id === filterCompatibilityGroupId)?.name || 'ID ' + filterCompatibilityGroupId}`} 
-              onDelete={() => setFilterCompatibilityGroupId(null)} 
-              color="primary"
-              variant="outlined"
-            />
-          )}
-          
-          {debouncedSearchTerm && (
-            <Chip 
-              size="small" 
-              label={`Recherche: "${debouncedSearchTerm}"`} 
-              onDelete={() => {setSearchTerm(''); setDebouncedSearchTerm('');}} 
-              color="primary"
-              variant="outlined"
-            />
-          )}
-          
-          {showDeleted && (
-            <Chip 
-              size="small" 
-              label="Inclut les supprimés" 
-              onDelete={() => setShowDeleted(false)} 
-              color="error"
-              variant="outlined"
-            />
-          )}
-          
-          <Box sx={{ flexGrow: 1 }} />
-          
-          <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'text.secondary' }}>
-            {total} résultat{total !== 1 ? 's' : ''} trouvé{total !== 1 ? 's' : ''}
-          </Typography>
-        </Box>
+        <Paper sx={{ 
+          p: 2, 
+          mb: 3, 
+          backgroundColor: 'rgba(var(--color-axignis-primary-rgb), 0.02)',
+          border: '1px solid rgba(var(--color-axignis-primary-rgb), 0.1)'
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mr: 1, fontWeight: 500 }}>
+              Filtres appliqués ({activeFiltersCount}):
+            </Typography>
+            
+            {filterBrandId && (
+              <Chip 
+                size="small" 
+                label={`Marque: ${brands.find(b => b.id === filterBrandId.toString())?.name || 'ID ' + filterBrandId}`}
+                onDelete={() => setFilterBrandId(null)} 
+                color="primary" 
+                variant="filled"
+                sx={{ fontWeight: 500 }}
+              />
+            )}
+            
+            {filterTypeId && (
+              <Chip 
+                size="small" 
+                label={`Type: ${equipmentTypes.find(t => t.id === filterTypeId.toString())?.title || 'ID ' + filterTypeId}`} 
+                onDelete={() => setFilterTypeId(null)} 
+                color="primary"
+                variant="filled"
+                sx={{ fontWeight: 500 }}
+              />
+            )}
+            
+            {filterCompatibilityGroupId && (
+              <Chip 
+                size="small" 
+                label={`Groupe: ${compatibilityGroups.find(g => g.id === filterCompatibilityGroupId)?.name || 'ID ' + filterCompatibilityGroupId}`} 
+                onDelete={() => setFilterCompatibilityGroupId(null)} 
+                color="primary"
+                variant="filled"
+                sx={{ fontWeight: 500 }}
+              />
+            )}
+            
+            {debouncedSearchTerm && (
+              <Chip 
+                size="small" 
+                label={`Recherche: "${debouncedSearchTerm}"`} 
+                onDelete={() => {setSearchTerm(''); setDebouncedSearchTerm('');}} 
+                color="primary"
+                variant="filled"
+                sx={{ fontWeight: 500 }}
+              />
+            )}
+            
+            {showDeleted && (
+              <Chip 
+                size="small" 
+                label="Inclut les supprimés" 
+                onDelete={() => setShowDeleted(false)} 
+                color="error"
+                variant="filled"
+                sx={{ fontWeight: 500 }}
+              />
+            )}
+            
+            <Box sx={{ flexGrow: 1 }} />
+            
+            <Typography variant="body2" sx={{ 
+              fontStyle: 'italic', 
+              color: 'text.secondary',
+              fontWeight: 500,
+              px: 2,
+              py: 0.5,
+              backgroundColor: 'background.paper',
+              borderRadius: 1,
+              border: '1px solid',
+              borderColor: 'divider'
+            }}>
+              {total} résultat{total !== 1 ? 's' : ''} trouvé{total !== 1 ? 's' : ''}
+            </Typography>
+          </Box>
+        </Paper>
       )}
 
       {/* Table */}
@@ -1131,25 +1187,6 @@ export default function ProductsPage() {
           {snackbar.message}
         </Alert>
       </Snackbar>
-
-      {/* FAB pour mobile */}
-      <Fab
-        color="primary"
-        aria-label="Ajouter un produit"
-        onClick={handleAdd}
-        sx={{
-          position: 'fixed',
-          bottom: 16,
-          right: 16,
-          background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
-          '&:hover': {
-            background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
-          },
-          display: { xs: 'flex', md: 'none' }
-        }}
-      >
-        <AddIcon />
-      </Fab>
     </Box>
   );
 }
