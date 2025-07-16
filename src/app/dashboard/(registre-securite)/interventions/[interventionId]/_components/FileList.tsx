@@ -140,9 +140,9 @@ const FileList = forwardRef(function FileList(
   const handleDelete = async (file: File) => {
     try {
       if (entityType === 'report') {
-        await fileService.removeFileFromReport(entityId, file.id);
+        await fileService.removeFileFromReport(entityId, file.fileId);
       } else {
-        await fileService.removeFileFromObservation(entityId, file.id);
+        await fileService.removeFileFromObservation(entityId, file.fileId);
       }
 
       await loadFiles();
