@@ -1,33 +1,32 @@
 'use client';
 
-import { equipmentService } from '@/services/equipmentService';
-import { CreateEquipmentDomainRequest, EquipmentDomain, UpdateEquipmentDomainRequest } from '@/types/equipment';
-import {
-  Alert,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Chip,
-  CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
+import { useState, useEffect } from 'react';
+import { 
+  Box, 
+  Typography, 
+  Paper, 
+  Button, 
+  TextField, 
   IconButton,
-  Paper,
-  Snackbar,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
-  TablePagination,
   TableRow,
-  TextField,
+  TablePagination,
+  Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Alert,
+  Snackbar,
+  CircularProgress,
   Tooltip,
-  Switch,
-  Typography
+  Card,
+  CardContent,
+  Switch
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -35,14 +34,19 @@ import {
   Delete as DeleteIcon,
   Search as SearchIcon,
   Refresh as RefreshIcon,
-  Folder as FolderIcon
+  Description as DescriptionIcon
 } from '@mui/icons-material';
+import { equipmentService } from '@/services/equipmentService';
+import { 
+  DocumentType, 
+  CreateDocumentTypeRequest, 
+  UpdateDocumentTypeRequest 
+} from '@/types/equipment';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { useEffect, useState } from 'react';
 
-export default function DomainesPage() {
-  const [domains, setDomains] = useState<EquipmentDomain[]>([]);
+export default function DocumentTypesPage() {
+  const [documentTypes, setDocumentTypes] = useState<DocumentType[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showDeleted, setShowDeleted] = useState(false);
@@ -50,30 +54,52 @@ export default function DomainesPage() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [total, setTotal] = useState(0);
   const [openDialog, setOpenDialog] = useState(false);
-  const [editingDomain, setEditingDomain] = useState<EquipmentDomain | null>(null);
-  const [formData, setFormData] = useState<CreateEquipmentDomainRequest>({ name: '', serialNumber: '' });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [domainToDelete, setDomainToDelete] = useState<number | null>(null);
+  const [documentTypeToDelete, setDocumentTypeToDelete] = useState<string | null>(null);
+  const [editingDocumentType, setEditingDocumentType] = useState<DocumentType | null>(null);
+  const [formData, setFormData] = useState<CreateDocumentTypeRequest>({
+    name: '', 
+    serialNumber: ''
+  });
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
     open: false,
     message: '',
     severity: 'success'
   });
 
-  // Charger les domaines
-  const loadDomains = async () => {
+  // Charger les types de documents
+  const loadDocumentTypes = async () => {
     try {
       setLoading(true);
-      const response = await equipmentService.getDomains(page + 1, rowsPerPage, searchTerm, showDeleted);
-      console.log(response);
-      // Adapter la structure de réponse
-      setDomains(response.results || []);
-      setTotal(response.totalResults || 0);
+      const response = await equipmentService.getDocumentTypes(
+        page + 1, 
+        rowsPerPage, 
+        searchTerm, 
+        showDeleted
+      );
+      
+      // La réponse est un tableau [results, totalResults, totalPages]
+      if (Array.isArray(response)) {
+        const [results, totalResults, totalPages] = response;
+        setDocumentTypes(Array.isArray(results) ? results : []);
+        setTotal(typeof totalResults === 'number' ? totalResults : 0);
+        console.log(`Types de documents chargés: ${results?.length || 0} résultats sur ${totalResults} total (${totalPages} pages)`);
+      } else if (response && typeof response === 'object') {
+        // Compatibilité avec l'ancien format de réponse (objet)
+        const { results, totalResults } = response as any;
+        setDocumentTypes(Array.isArray(results) ? results : []);
+        setTotal(typeof totalResults === 'number' ? totalResults : 0);
+      } else {
+        // Fallback au cas où la structure de réponse ne serait pas celle attendue
+        console.error('Format de réponse API inattendu:', response);
+        setDocumentTypes([]);
+        setTotal(0);
+      }
     } catch (error) {
-      console.error('Erreur lors du chargement des domaines:', error);
+      console.error('Erreur lors du chargement des types de documents:', error);
       setSnackbar({
         open: true,
-        message: 'Erreur lors du chargement des domaines',
+        message: 'Erreur lors du chargement des types de documents',
         severity: 'error'
       });
     } finally {
@@ -82,64 +108,46 @@ export default function DomainesPage() {
   };
 
   useEffect(() => {
-    loadDomains();
+    loadDocumentTypes();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, rowsPerPage, searchTerm, showDeleted]);
-
-  // Vérifier si les données sont chargées au montage
-  useEffect(() => {
-    loadDomains();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // Gestion des formulaires
   const handleSubmit = async () => {
     try {
-      if (editingDomain) {
-        await equipmentService.updateDomain(editingDomain.id, formData as UpdateEquipmentDomainRequest);
+      console.log("handleSubmit - Données du formulaire avant soumission:", formData);
+
+      if (editingDocumentType) {
+        console.log(`Mise à jour du type de document (ID: ${editingDocumentType.id})`);
+        await equipmentService.updateDocumentType(editingDocumentType.id, formData as UpdateDocumentTypeRequest);
         setSnackbar({
           open: true,
-          message: 'Domaine mis à jour avec succès',
+          message: 'Type de document mis à jour avec succès',
           severity: 'success'
         });
       } else {
-        await equipmentService.createDomain(formData);
+        console.log("Création d'un nouveau type de document");
+        await equipmentService.createDocumentType(formData);
         setSnackbar({
           open: true,
-          message: 'Domaine créé avec succès',
+          message: 'Type de document créé avec succès',
           severity: 'success'
         });
       }
       handleCloseDialog();
-      loadDomains();
+      loadDocumentTypes();
     } catch (error: any) {
       console.error('Erreur lors de la sauvegarde:', error);
-      
-      // Gestion des erreurs spécifiques
       let errorMessage = 'Erreur lors de la sauvegarde';
       
       if (error.response) {
-        console.error('Status code:', error.response.status);
-        console.error('Error data:', error.response.data);
+        console.error("Code d'erreur:", error.response.status);
+        console.error("Détails de l'erreur:", error.response.data);
         
-        // Erreurs spécifiques selon le code HTTP
         if (error.response.status === 409) {
-          if (error.response.data && error.response.data.message) {
-            if (error.response.data.message.includes('name already exists')) {
-              errorMessage = 'Un domaine avec ce nom existe déjà';
-            } else if (error.response.data.message.includes('serial number already exists')) {
-              errorMessage = 'Un domaine avec ce numéro de série existe déjà';
-            } else {
-              errorMessage = error.response.data.message;
-            }
-          } else {
-            errorMessage = 'Conflit : cette ressource existe déjà';
-          }
-        } else if (error.response.status === 400) {
-          errorMessage = 'Données invalides. Veuillez vérifier les champs du formulaire.';
-          if (error.response.data && error.response.data.message) {
-            errorMessage = error.response.data.message;
-          }
+          errorMessage = 'Un type de document avec ce numéro de série existe déjà';
+        } else if (error.response.status === 500) {
+          errorMessage = 'Erreur serveur. Vérifiez les formats de données et réessayez.';
         } else if (error.response.data && error.response.data.message) {
           errorMessage = error.response.data.message;
         }
@@ -153,28 +161,28 @@ export default function DomainesPage() {
     }
   };
 
-  const openDeleteDialog = (id: number) => {
-    setDomainToDelete(id);
+  const openDeleteDialog = (id: string) => {
+    setDocumentTypeToDelete(id);
     setDeleteDialogOpen(true);
   };
 
   const closeDeleteDialog = () => {
     setDeleteDialogOpen(false);
-    setDomainToDelete(null);
+    setDocumentTypeToDelete(null);
   };
 
   const handleDelete = async () => {
-    if (!domainToDelete) return;
+    if (!documentTypeToDelete) return;
     
     try {
       setLoading(true);
-      await equipmentService.deleteDomain(domainToDelete);
+      await equipmentService.deleteDocumentType(documentTypeToDelete);
       setSnackbar({
         open: true,
-        message: 'Domaine supprimé avec succès',
+        message: 'Type de document supprimé avec succès',
         severity: 'success'
       });
-      loadDomains();
+      loadDocumentTypes();
     } catch (error: any) {
       console.error('Erreur lors de la suppression:', error);
       // Gestion des erreurs spécifiques
@@ -182,9 +190,9 @@ export default function DomainesPage() {
       
       if (error.response) {
         if (error.response.status === 409) {
-          errorMessage = 'Ce domaine est utilisé par d\'autres éléments et ne peut pas être supprimé';
+          errorMessage = 'Ce type de document est utilisé par d\'autres éléments et ne peut pas être supprimé';
         } else if (error.response.status === 404) {
-          errorMessage = 'Domaine introuvable';
+          errorMessage = 'Type de document introuvable';
         } else if (error.response.data && error.response.data.message) {
           errorMessage = error.response.data.message;
         }
@@ -201,25 +209,33 @@ export default function DomainesPage() {
     }
   };
 
-  const handleEdit = (domain: EquipmentDomain) => {
-    setEditingDomain(domain);
+  const handleEdit = (documentType: DocumentType) => {
+    setEditingDocumentType(documentType);
+    
+    // Convertir en string si nécessaire pour le formulaire
     setFormData({ 
-      name: domain.name, 
-      serialNumber: domain.serialNumber 
+      name: documentType.name,
+      serialNumber: documentType.serialNumber
     });
     setOpenDialog(true);
   };
 
   const handleAdd = () => {
-    setEditingDomain(null);
-    setFormData({ name: '', serialNumber: '' });
+    setEditingDocumentType(null);
+    setFormData({ 
+      name: '', 
+      serialNumber: ''
+    });
     setOpenDialog(true);
   };
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
-    setEditingDomain(null);
-    setFormData({ name: '', serialNumber: '' });
+    setEditingDocumentType(null);
+    setFormData({ 
+      name: '', 
+      serialNumber: ''
+    });
   };
 
   const handleChangePage = (event: unknown, newPage: number) => {
@@ -250,10 +266,10 @@ export default function DomainesPage() {
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent'
           }}>
-            Domaines d&apos;équipements
+            Types de documents
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Gérez les domaines d&apos;équipements techniques de votre organisation
+            Gérez les types de documents utilisés pour vos produits
           </Typography>
         </Box>
         
@@ -271,14 +287,14 @@ export default function DomainesPage() {
             whiteSpace: 'nowrap'
           }}
         >
-          Nouveau domaine
+          Nouveau type de document
         </Button>
       </Box>
 
       {/* Statistiques */}
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 3 }}>
         <Box sx={{ flex: '1 1 280px', minWidth: 0 }}>
-          <Card sx={{
+          <Card sx={{ 
             background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
             color: 'white'
           }}>
@@ -289,10 +305,10 @@ export default function DomainesPage() {
                     {total}
                   </Typography>
                   <Typography variant="body2">
-                    Domaines total
+                    Types de documents total
                   </Typography>
                 </Box>
-                <FolderIcon sx={{ fontSize: 40, opacity: 0.8 }} />
+                <DescriptionIcon sx={{ fontSize: 40, opacity: 0.8 }} />
               </Box>
             </CardContent>
           </Card>
@@ -314,7 +330,7 @@ export default function DomainesPage() {
             <Button
               variant="outlined"
               size="small"
-              onClick={loadDomains}
+              onClick={loadDocumentTypes}
               disabled={loading}
               startIcon={<RefreshIcon />}
               sx={{ 
@@ -340,7 +356,7 @@ export default function DomainesPage() {
         }}>
           <TextField
             size="small"
-            placeholder="Rechercher un domaine..."
+            placeholder="Rechercher un type de document..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             InputProps={{
@@ -380,7 +396,7 @@ export default function DomainesPage() {
           <Table stickyHeader>
             <TableHead>
               <TableRow>
-                <TableCell sx={{ fontWeight: 600 }}>Nom du domaine</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Nom</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Numéro de série</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Date de création</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Dernière modification</TableCell>
@@ -394,39 +410,39 @@ export default function DomainesPage() {
                     <CircularProgress />
                   </TableCell>
                 </TableRow>
-              ) : !domains || domains.length === 0 ? (
+              ) : !documentTypes || documentTypes.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
                     <Typography variant="body1" color="text.secondary">
-                      Aucun domaine trouvé
+                      Aucun type de document trouvé
                     </Typography>
                   </TableCell>
                 </TableRow>
               ) : (
-                domains.map((domain) => (
+                documentTypes.map((docType) => (
                   <TableRow 
-                    key={domain.id} 
+                    key={docType.id} 
                     hover
                     sx={{ 
-                      opacity: domain.deletedAt ? 0.6 : 1,
-                      backgroundColor: domain.deletedAt ? 'rgba(244, 67, 54, 0.05)' : 'inherit'
+                      opacity: docType.deletedAt ? 0.6 : 1,
+                      backgroundColor: docType.deletedAt ? 'rgba(244, 67, 54, 0.05)' : 'inherit'
                     }}
                   >
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <FolderIcon sx={{ color: domain.deletedAt ? 'text.disabled' : 'var(--color-axignis-primary)' }} />
+                        <DescriptionIcon sx={{ color: docType.deletedAt ? 'text.disabled' : 'var(--color-axignis-primary)' }} />
                         <Typography 
                           variant="body1" 
                           fontWeight={500}
                           sx={{ 
-                            textDecoration: domain.deletedAt ? 'line-through' : 'none',
+                            textDecoration: docType.deletedAt ? 'line-through' : 'none',
                             display: 'flex',
                             alignItems: 'center',
                             gap: 1
                           }}
                         >
-                          {domain.name}
-                          {domain.deletedAt && (
+                          {docType.name}
+                          {docType.deletedAt && (
                             <Chip 
                               label="Supprimé" 
                               size="small" 
@@ -439,22 +455,23 @@ export default function DomainesPage() {
                       </Box>
                     </TableCell>
                     <TableCell>
-                      <Chip
-                        label={domain.serialNumber}
-                        size="small"
+                      <Chip 
+                        label={docType.serialNumber} 
+                        size="small" 
                         variant="outlined"
                         sx={{ fontFamily: 'monospace' }}
                       />
                     </TableCell>
                     <TableCell>
-                      {format(new Date(domain.createdAt), 'dd/MM/yyyy HH:mm', { locale: fr })}
+                      {format(new Date(docType.createdAt), 'dd/MM/yyyy HH:mm', { locale: fr })}
                     </TableCell>
                     <TableCell>
-                      {format(new Date(domain.updatedAt), 'dd/MM/yyyy HH:mm', { locale: fr })}
+                      {format(new Date(docType.updatedAt), 'dd/MM/yyyy HH:mm', { locale: fr })}
                     </TableCell>
                     <TableCell align="center">
                       <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-                        {domain.deletedAt ? (
+                        {docType.deletedAt ? (
+                          /* Ne rien faire */
                           <></>
                         ) : (
                           <>
@@ -462,7 +479,7 @@ export default function DomainesPage() {
                               <IconButton 
                                 size="small" 
                                 color="primary"
-                                onClick={() => handleEdit(domain)}
+                                onClick={() => handleEdit(docType)}
                               >
                                 <EditIcon />
                               </IconButton>
@@ -471,7 +488,7 @@ export default function DomainesPage() {
                               <IconButton 
                                 size="small" 
                                 color="error"
-                                onClick={() => openDeleteDialog(domain.id)}
+                                onClick={() => openDeleteDialog(docType.id)}
                               >
                                 <DeleteIcon />
                               </IconButton>
@@ -486,7 +503,7 @@ export default function DomainesPage() {
             </TableBody>
           </Table>
         </TableContainer>
-
+        
         <TablePagination
           rowsPerPageOptions={[5, 10, 25, 50]}
           component="div"
@@ -501,44 +518,49 @@ export default function DomainesPage() {
       </Paper>
 
       {/* Dialog pour créer/modifier */}
-      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
         <DialogTitle>
-          {editingDomain ? 'Modifier le domaine' : 'Nouveau domaine'}
+          {editingDocumentType ? 'Modifier le type de document' : 'Nouveau type de document'}
         </DialogTitle>
-        <DialogContent>
-          <Box sx={{ mb: 2, mt: 2, p: 1.5, backgroundColor: 'info.light', borderRadius: 1 }}>
-            <Typography variant="body2" color="info.contrastText">
-              <strong>Note:</strong> Les <u>noms de domaines</u> et les <u>numéros de série</u> doivent être uniques dans le système.
-            </Typography>
+        <DialogContent dividers>
+          <Box sx={{ mb: 3 }}>
+            <TextField
+              autoFocus
+              margin="dense"
+              label="Nom"
+              fullWidth
+              variant="outlined"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              helperText="Ex: Manuel d'utilisation (2-100 caractères)"
+              required
+            />
+            
+            <TextField
+              margin="dense"
+              label="Numéro de série"
+              fullWidth
+              variant="outlined"
+              value={formData.serialNumber}
+              onChange={(e) => setFormData({ ...formData, serialNumber: e.target.value })}
+              helperText="Ex: DOC-MANUAL-001 (3-50 caractères)"
+              required
+            />
           </Box>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Nom du domaine"
-            fullWidth
-            variant="outlined"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            required
-            helperText="Ex: électricité (doit être unique)"
-          />
-          <TextField
-            margin="dense"
-            label="Numéro de série"
-            fullWidth
-            variant="outlined"
-            value={formData.serialNumber}
-            onChange={(e) => setFormData({ ...formData, serialNumber: e.target.value })}
-            required
-            helperText="Ex: ELEC001 (3-50 caractères, doit être unique)"
-          />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog}>Annuler</Button>
-          <Button
-            onClick={handleSubmit}
+          <Button 
+            onClick={handleSubmit} 
             variant="contained"
-            disabled={!formData.name.trim() || !formData.serialNumber.trim() || formData.serialNumber.length < 3 || formData.serialNumber.length > 50}
+            disabled={
+              !formData.name.trim() || 
+              formData.name.length < 2 || 
+              formData.name.length > 100 ||
+              !formData.serialNumber.trim() || 
+              formData.serialNumber.length < 3 || 
+              formData.serialNumber.length > 50
+            }
             sx={{
               background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
               '&:hover': {
@@ -546,7 +568,7 @@ export default function DomainesPage() {
               }
             }}
           >
-            {editingDomain ? 'Modifier' : 'Créer'}
+            {editingDocumentType ? 'Modifier' : 'Créer'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -574,11 +596,11 @@ export default function DomainesPage() {
         </DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
           <Typography variant="body1">
-            Êtes-vous sûr de vouloir supprimer ce domaine d&apos;équipement ?
+            Êtes-vous sûr de vouloir supprimer ce type de document ?
           </Typography>
           <Box sx={{ mt: 2, bgcolor: 'rgba(244, 67, 54, 0.08)', p: 2, borderRadius: 1 }}>
             <Typography variant="body2" color="text.secondary">
-              <strong>Note :</strong> Cette action effectuera une suppression réversible. Le domaine pourra être restauré ultérieurement en activant l&apos;option &quot;Inclure les supprimés&quot;.
+              <strong>Note :</strong> Cette action effectuera une suppression réversible. Le type de document pourra être restauré ultérieurement en activant l&apos;option &quot;Inclure les supprimés&quot;.
             </Typography>
           </Box>
         </DialogContent>
@@ -611,8 +633,8 @@ export default function DomainesPage() {
         autoHideDuration={6000}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
       >
-        <Alert
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
+        <Alert 
+          onClose={() => setSnackbar({ ...snackbar, open: false })} 
           severity={snackbar.severity}
           sx={{ width: '100%' }}
         >

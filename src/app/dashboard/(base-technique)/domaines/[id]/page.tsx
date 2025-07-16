@@ -46,7 +46,7 @@ export default function DomaineDetailsPage() {
       try {
         setLoading(true);
         const data = await equipmentService.getDomainById(domainId);
-        setDomain(data);
+        setDomain(data.data);
       } catch (err) {
         console.error('Erreur lors du chargement du domaine:', err);
         setError('Erreur lors du chargement du domaine');

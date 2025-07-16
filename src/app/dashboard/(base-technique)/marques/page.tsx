@@ -1,33 +1,32 @@
 'use client';
 
-import { equipmentService } from '@/services/equipmentService';
-import { CreateEquipmentDomainRequest, EquipmentDomain, UpdateEquipmentDomainRequest } from '@/types/equipment';
-import {
-  Alert,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Chip,
-  CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
+import { useState, useEffect } from 'react';
+import { 
+  Box, 
+  Typography, 
+  Paper, 
+  Button, 
+  TextField, 
   IconButton,
-  Paper,
-  Snackbar,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
-  TablePagination,
   TableRow,
-  TextField,
+  TablePagination,
+  Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Alert,
+  Snackbar,
+  CircularProgress,
   Tooltip,
-  Switch,
-  Typography
+  Card,
+  CardContent,
+  Switch
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -35,14 +34,16 @@ import {
   Delete as DeleteIcon,
   Search as SearchIcon,
   Refresh as RefreshIcon,
-  Folder as FolderIcon
+  BrandingWatermark as BrandIcon,
+  Label as LabelIcon
 } from '@mui/icons-material';
+import { equipmentService } from '@/services/equipmentService';
+import { Brand, CreateBrandRequest, UpdateBrandRequest } from '@/types/equipment';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { useEffect, useState } from 'react';
 
-export default function DomainesPage() {
-  const [domains, setDomains] = useState<EquipmentDomain[]>([]);
+export default function BrandsPage() {
+  const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showDeleted, setShowDeleted] = useState(false);
@@ -50,30 +51,31 @@ export default function DomainesPage() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [total, setTotal] = useState(0);
   const [openDialog, setOpenDialog] = useState(false);
-  const [editingDomain, setEditingDomain] = useState<EquipmentDomain | null>(null);
-  const [formData, setFormData] = useState<CreateEquipmentDomainRequest>({ name: '', serialNumber: '' });
+  const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
+  const [formData, setFormData] = useState<CreateBrandRequest>({ name: '', serialNumber: '' });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [domainToDelete, setDomainToDelete] = useState<number | null>(null);
+  const [brandToDelete, setBrandToDelete] = useState<string | null>(null);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
     open: false,
     message: '',
     severity: 'success'
   });
 
-  // Charger les domaines
-  const loadDomains = async () => {
+  // Charger les marques
+  const loadBrands = async () => {
     try {
       setLoading(true);
-      const response = await equipmentService.getDomains(page + 1, rowsPerPage, searchTerm, showDeleted);
-      console.log(response);
-      // Adapter la structure de réponse
-      setDomains(response.results || []);
-      setTotal(response.totalResults || 0);
+      const [brandsData, totalResults, currentResults] = await equipmentService.getBrands(page + 1, rowsPerPage, searchTerm, showDeleted);
+      console.log('Réponse de l\'API pour les marques:', { brandsData, totalResults, currentResults });
+      
+      // Adapter la structure de réponse au format attendu par l'interface
+      setBrands(brandsData || []);
+      setTotal(totalResults || 0);
     } catch (error) {
-      console.error('Erreur lors du chargement des domaines:', error);
+      console.error('Erreur lors du chargement des marques:', error);
       setSnackbar({
         open: true,
-        message: 'Erreur lors du chargement des domaines',
+        message: 'Erreur lors du chargement des marques',
         severity: 'error'
       });
     } finally {
@@ -82,64 +84,43 @@ export default function DomainesPage() {
   };
 
   useEffect(() => {
-    loadDomains();
+    loadBrands();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, rowsPerPage, searchTerm, showDeleted]);
 
   // Vérifier si les données sont chargées au montage
   useEffect(() => {
-    loadDomains();
+    loadBrands();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Gestion des formulaires
   const handleSubmit = async () => {
     try {
-      if (editingDomain) {
-        await equipmentService.updateDomain(editingDomain.id, formData as UpdateEquipmentDomainRequest);
+      if (editingBrand) {
+        await equipmentService.updateBrand(editingBrand.id, formData as UpdateBrandRequest);
         setSnackbar({
           open: true,
-          message: 'Domaine mis à jour avec succès',
+          message: 'Marque mise à jour avec succès',
           severity: 'success'
         });
       } else {
-        await equipmentService.createDomain(formData);
+        await equipmentService.createBrand(formData);
         setSnackbar({
           open: true,
-          message: 'Domaine créé avec succès',
+          message: 'Marque créée avec succès',
           severity: 'success'
         });
       }
       handleCloseDialog();
-      loadDomains();
+      loadBrands();
     } catch (error: any) {
       console.error('Erreur lors de la sauvegarde:', error);
-      
-      // Gestion des erreurs spécifiques
       let errorMessage = 'Erreur lors de la sauvegarde';
       
       if (error.response) {
-        console.error('Status code:', error.response.status);
-        console.error('Error data:', error.response.data);
-        
-        // Erreurs spécifiques selon le code HTTP
         if (error.response.status === 409) {
-          if (error.response.data && error.response.data.message) {
-            if (error.response.data.message.includes('name already exists')) {
-              errorMessage = 'Un domaine avec ce nom existe déjà';
-            } else if (error.response.data.message.includes('serial number already exists')) {
-              errorMessage = 'Un domaine avec ce numéro de série existe déjà';
-            } else {
-              errorMessage = error.response.data.message;
-            }
-          } else {
-            errorMessage = 'Conflit : cette ressource existe déjà';
-          }
-        } else if (error.response.status === 400) {
-          errorMessage = 'Données invalides. Veuillez vérifier les champs du formulaire.';
-          if (error.response.data && error.response.data.message) {
-            errorMessage = error.response.data.message;
-          }
+          errorMessage = 'Une marque avec ce nom ou ce numéro de série existe déjà';
         } else if (error.response.data && error.response.data.message) {
           errorMessage = error.response.data.message;
         }
@@ -153,28 +134,28 @@ export default function DomainesPage() {
     }
   };
 
-  const openDeleteDialog = (id: number) => {
-    setDomainToDelete(id);
+  const openDeleteDialog = (id: string) => {
+    setBrandToDelete(id);
     setDeleteDialogOpen(true);
   };
 
   const closeDeleteDialog = () => {
     setDeleteDialogOpen(false);
-    setDomainToDelete(null);
+    setBrandToDelete(null);
   };
 
   const handleDelete = async () => {
-    if (!domainToDelete) return;
+    if (!brandToDelete) return;
     
     try {
       setLoading(true);
-      await equipmentService.deleteDomain(domainToDelete);
+      await equipmentService.deleteBrand(brandToDelete);
       setSnackbar({
         open: true,
-        message: 'Domaine supprimé avec succès',
+        message: 'Marque supprimée avec succès',
         severity: 'success'
       });
-      loadDomains();
+      loadBrands();
     } catch (error: any) {
       console.error('Erreur lors de la suppression:', error);
       // Gestion des erreurs spécifiques
@@ -182,9 +163,9 @@ export default function DomainesPage() {
       
       if (error.response) {
         if (error.response.status === 409) {
-          errorMessage = 'Ce domaine est utilisé par d\'autres éléments et ne peut pas être supprimé';
+          errorMessage = 'Cette marque est utilisée par d\'autres éléments et ne peut pas être supprimée';
         } else if (error.response.status === 404) {
-          errorMessage = 'Domaine introuvable';
+          errorMessage = 'Marque introuvable';
         } else if (error.response.data && error.response.data.message) {
           errorMessage = error.response.data.message;
         }
@@ -201,24 +182,24 @@ export default function DomainesPage() {
     }
   };
 
-  const handleEdit = (domain: EquipmentDomain) => {
-    setEditingDomain(domain);
+  const handleEdit = (brand: Brand) => {
+    setEditingBrand(brand);
     setFormData({ 
-      name: domain.name, 
-      serialNumber: domain.serialNumber 
+      name: brand.name, 
+      serialNumber: brand.serialNumber 
     });
     setOpenDialog(true);
   };
 
   const handleAdd = () => {
-    setEditingDomain(null);
+    setEditingBrand(null);
     setFormData({ name: '', serialNumber: '' });
     setOpenDialog(true);
   };
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
-    setEditingDomain(null);
+    setEditingBrand(null);
     setFormData({ name: '', serialNumber: '' });
   };
 
@@ -250,10 +231,10 @@ export default function DomainesPage() {
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent'
           }}>
-            Domaines d&apos;équipements
+            Marques
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Gérez les domaines d&apos;équipements techniques de votre organisation
+            Gérez les marques d&apos;équipements de votre organisation
           </Typography>
         </Box>
         
@@ -271,14 +252,14 @@ export default function DomainesPage() {
             whiteSpace: 'nowrap'
           }}
         >
-          Nouveau domaine
+          Nouvelle marque
         </Button>
       </Box>
 
       {/* Statistiques */}
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 3 }}>
         <Box sx={{ flex: '1 1 280px', minWidth: 0 }}>
-          <Card sx={{
+          <Card sx={{ 
             background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
             color: 'white'
           }}>
@@ -289,10 +270,10 @@ export default function DomainesPage() {
                     {total}
                   </Typography>
                   <Typography variant="body2">
-                    Domaines total
+                    Marques total
                   </Typography>
                 </Box>
-                <FolderIcon sx={{ fontSize: 40, opacity: 0.8 }} />
+                <BrandIcon sx={{ fontSize: 40, opacity: 0.8 }} />
               </Box>
             </CardContent>
           </Card>
@@ -314,7 +295,7 @@ export default function DomainesPage() {
             <Button
               variant="outlined"
               size="small"
-              onClick={loadDomains}
+              onClick={loadBrands}
               disabled={loading}
               startIcon={<RefreshIcon />}
               sx={{ 
@@ -340,7 +321,7 @@ export default function DomainesPage() {
         }}>
           <TextField
             size="small"
-            placeholder="Rechercher un domaine..."
+            placeholder="Rechercher une marque..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             InputProps={{
@@ -380,7 +361,7 @@ export default function DomainesPage() {
           <Table stickyHeader>
             <TableHead>
               <TableRow>
-                <TableCell sx={{ fontWeight: 600 }}>Nom du domaine</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Nom de la marque</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Numéro de série</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Date de création</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Dernière modification</TableCell>
@@ -394,39 +375,39 @@ export default function DomainesPage() {
                     <CircularProgress />
                   </TableCell>
                 </TableRow>
-              ) : !domains || domains.length === 0 ? (
+              ) : !brands || brands.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
                     <Typography variant="body1" color="text.secondary">
-                      Aucun domaine trouvé
+                      Aucune marque trouvée
                     </Typography>
                   </TableCell>
                 </TableRow>
               ) : (
-                domains.map((domain) => (
+                brands.map((brand) => (
                   <TableRow 
-                    key={domain.id} 
+                    key={brand.id} 
                     hover
                     sx={{ 
-                      opacity: domain.deletedAt ? 0.6 : 1,
-                      backgroundColor: domain.deletedAt ? 'rgba(244, 67, 54, 0.05)' : 'inherit'
+                      opacity: brand.deletedAt ? 0.6 : 1,
+                      backgroundColor: brand.deletedAt ? 'rgba(244, 67, 54, 0.05)' : 'inherit'
                     }}
                   >
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <FolderIcon sx={{ color: domain.deletedAt ? 'text.disabled' : 'var(--color-axignis-primary)' }} />
+                        <LabelIcon sx={{ color: brand.deletedAt ? 'text.disabled' : 'var(--color-axignis-primary)' }} />
                         <Typography 
                           variant="body1" 
                           fontWeight={500}
                           sx={{ 
-                            textDecoration: domain.deletedAt ? 'line-through' : 'none',
+                            textDecoration: brand.deletedAt ? 'line-through' : 'none',
                             display: 'flex',
                             alignItems: 'center',
                             gap: 1
                           }}
                         >
-                          {domain.name}
-                          {domain.deletedAt && (
+                          {brand.name}
+                          {brand.deletedAt && (
                             <Chip 
                               label="Supprimé" 
                               size="small" 
@@ -439,22 +420,22 @@ export default function DomainesPage() {
                       </Box>
                     </TableCell>
                     <TableCell>
-                      <Chip
-                        label={domain.serialNumber}
-                        size="small"
+                      <Chip 
+                        label={brand.serialNumber} 
+                        size="small" 
                         variant="outlined"
                         sx={{ fontFamily: 'monospace' }}
                       />
                     </TableCell>
                     <TableCell>
-                      {format(new Date(domain.createdAt), 'dd/MM/yyyy HH:mm', { locale: fr })}
+                      {format(new Date(brand.createdAt), 'dd/MM/yyyy HH:mm', { locale: fr })}
                     </TableCell>
                     <TableCell>
-                      {format(new Date(domain.updatedAt), 'dd/MM/yyyy HH:mm', { locale: fr })}
+                      {format(new Date(brand.updatedAt), 'dd/MM/yyyy HH:mm', { locale: fr })}
                     </TableCell>
                     <TableCell align="center">
                       <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-                        {domain.deletedAt ? (
+                        {brand.deletedAt ? (
                           <></>
                         ) : (
                           <>
@@ -462,7 +443,7 @@ export default function DomainesPage() {
                               <IconButton 
                                 size="small" 
                                 color="primary"
-                                onClick={() => handleEdit(domain)}
+                                onClick={() => handleEdit(brand)}
                               >
                                 <EditIcon />
                               </IconButton>
@@ -471,7 +452,7 @@ export default function DomainesPage() {
                               <IconButton 
                                 size="small" 
                                 color="error"
-                                onClick={() => openDeleteDialog(domain.id)}
+                                onClick={() => openDeleteDialog(brand.id)}
                               >
                                 <DeleteIcon />
                               </IconButton>
@@ -486,7 +467,7 @@ export default function DomainesPage() {
             </TableBody>
           </Table>
         </TableContainer>
-
+        
         <TablePagination
           rowsPerPageOptions={[5, 10, 25, 50]}
           component="div"
@@ -503,24 +484,19 @@ export default function DomainesPage() {
       {/* Dialog pour créer/modifier */}
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
         <DialogTitle>
-          {editingDomain ? 'Modifier le domaine' : 'Nouveau domaine'}
+          {editingBrand ? 'Modifier la marque' : 'Nouvelle marque'}
         </DialogTitle>
         <DialogContent>
-          <Box sx={{ mb: 2, mt: 2, p: 1.5, backgroundColor: 'info.light', borderRadius: 1 }}>
-            <Typography variant="body2" color="info.contrastText">
-              <strong>Note:</strong> Les <u>noms de domaines</u> et les <u>numéros de série</u> doivent être uniques dans le système.
-            </Typography>
-          </Box>
           <TextField
             autoFocus
             margin="dense"
-            label="Nom du domaine"
+            label="Nom de la marque"
             fullWidth
             variant="outlined"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            required
-            helperText="Ex: électricité (doit être unique)"
+            sx={{ mt: 2 }}
+            helperText="Ex: Apple, Samsung, etc."
           />
           <TextField
             margin="dense"
@@ -529,14 +505,14 @@ export default function DomainesPage() {
             variant="outlined"
             value={formData.serialNumber}
             onChange={(e) => setFormData({ ...formData, serialNumber: e.target.value })}
-            required
-            helperText="Ex: ELEC001 (3-50 caractères, doit être unique)"
+            sx={{ mt: 2 }}
+            helperText="Ex: BR-APPLE-001 (3-50 caractères)"
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog}>Annuler</Button>
-          <Button
-            onClick={handleSubmit}
+          <Button 
+            onClick={handleSubmit} 
             variant="contained"
             disabled={!formData.name.trim() || !formData.serialNumber.trim() || formData.serialNumber.length < 3 || formData.serialNumber.length > 50}
             sx={{
@@ -546,7 +522,7 @@ export default function DomainesPage() {
               }
             }}
           >
-            {editingDomain ? 'Modifier' : 'Créer'}
+            {editingBrand ? 'Modifier' : 'Créer'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -574,11 +550,11 @@ export default function DomainesPage() {
         </DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
           <Typography variant="body1">
-            Êtes-vous sûr de vouloir supprimer ce domaine d&apos;équipement ?
+            Êtes-vous sûr de vouloir supprimer cette marque ?
           </Typography>
           <Box sx={{ mt: 2, bgcolor: 'rgba(244, 67, 54, 0.08)', p: 2, borderRadius: 1 }}>
             <Typography variant="body2" color="text.secondary">
-              <strong>Note :</strong> Cette action effectuera une suppression réversible. Le domaine pourra être restauré ultérieurement en activant l&apos;option &quot;Inclure les supprimés&quot;.
+              <strong>Note :</strong> Cette action effectuera une suppression réversible. La marque pourra être restaurée ultérieurement en activant l&apos;option &quot;Inclure les supprimés&quot;.
             </Typography>
           </Box>
         </DialogContent>
@@ -611,8 +587,8 @@ export default function DomainesPage() {
         autoHideDuration={6000}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
       >
-        <Alert
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
+        <Alert 
+          onClose={() => setSnackbar({ ...snackbar, open: false })} 
           severity={snackbar.severity}
           sx={{ width: '100%' }}
         >
