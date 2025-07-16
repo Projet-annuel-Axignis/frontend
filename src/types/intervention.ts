@@ -225,6 +225,7 @@ export interface Observations {
   updatedAt: string;
   deletedAt?: string;
   title: string;
+  comment: string;
   reference: string;
   location: string;
   priority: number;
@@ -238,6 +239,7 @@ export interface Observations {
 
 export interface CreateObservationsDto {
   title: string;
+  comment: string;
   reference: string;
   location: string;
   priority: number;
@@ -251,6 +253,7 @@ export interface CreateObservationsDto {
 
 export interface UpdateObservationsDto {
   title?: string;
+  comment?: string;
   reference?: string;
   location?: string;
   priority?: number;
