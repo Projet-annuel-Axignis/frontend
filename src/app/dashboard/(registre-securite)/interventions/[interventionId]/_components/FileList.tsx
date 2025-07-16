@@ -37,7 +37,7 @@ import {
   useMediaQuery,
   useTheme
 } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 
 interface FileListProps {
   /** Type d'entité (report ou observation) */
@@ -55,12 +55,16 @@ interface FileWithMenu {
   anchorEl: HTMLElement | null;
 }
 
-const FileList: React.FC<FileListProps> = ({
-  entityType,
-  entityId,
-  title = "Fichiers",
-  onFilesChange
-}) => {
+// FileList avec ref pour rafraîchissement externe
+const FileList = forwardRef(function FileList(
+  {
+    entityType,
+    entityId,
+    title = "Fichiers",
+    onFilesChange
+  }: FileListProps,
+  ref
+) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -84,11 +88,6 @@ const FileList: React.FC<FileListProps> = ({
     return <DescriptionIcon color="primary" />;
   };
 
-  useEffect(() => {
-    loadFiles();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [entityId, entityType]);
-
   const loadFiles = async () => {
     setLoading(true);
     setError('');
@@ -110,6 +109,16 @@ const FileList: React.FC<FileListProps> = ({
       setLoading(false);
     }
   };
+
+  // Expose la méthode imperative pour le parent
+  useImperativeHandle(ref, () => ({
+    refresh: loadFiles
+  }));
+
+  useEffect(() => {
+    loadFiles();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entityId, entityType]);
 
   const handleDownload = async (file: File) => {
     try {
@@ -307,6 +316,35 @@ const FileList: React.FC<FileListProps> = ({
       </Dialog>
     </Box>
   );
-};
+});
 
-export default FileList; 
+export default FileList;
+
+// Exemple de composant parent garantissant l'actualisation automatique
+// à placer dans le dossier _components si besoin
+import { useRef } from 'react';
+import FileUpload from './FileUpload';
+
+export function FileSection({ entityType, entityId, title }: { entityType: 'report' | 'observation', entityId: number, title?: string }) {
+  const fileListRef = useRef<{ refresh: () => void }>(null);
+
+  const handleUploadComplete = () => {
+    fileListRef.current?.refresh();
+  };
+
+  return (
+    <>
+      <FileUpload
+        entityType={entityType}
+        entityId={entityId}
+        onUploadComplete={handleUploadComplete}
+      />
+      <FileList
+        ref={fileListRef}
+        entityType={entityType}
+        entityId={entityId}
+        title={title}
+      />
+    </>
+  );
+} 
