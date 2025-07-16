@@ -1,55 +1,55 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Paper, 
-  Button, 
-  TextField, 
+import { equipmentService } from '@/services/equipmentService';
+import {
+  CreateEquipmentFamilyRequest,
+  EquipmentDomain,
+  EquipmentFamily,
+  UpdateEquipmentFamilyRequest
+} from '@/types/equipment';
+import {
+  Add as AddIcon,
+  Delete as DeleteIcon,
+  Edit as EditIcon,
+  Folder as FolderIcon,
+  FolderOpen as FolderOpenIcon,
+  Refresh as RefreshIcon,
+  Search as SearchIcon
+} from '@mui/icons-material';
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
   IconButton,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  Snackbar,
+  Switch,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
-  TableRow,
   TablePagination,
-  Chip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Alert,
-  Snackbar,
-  CircularProgress,
+  TableRow,
+  TextField,
   Tooltip,
-  Card,
-  CardContent,
-  Switch,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Select
+  Typography
 } from '@mui/material';
-import {
-  Add as AddIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Search as SearchIcon,
-  Refresh as RefreshIcon,
-  Folder as FolderIcon,
-  FolderOpen as FolderOpenIcon
-} from '@mui/icons-material';
-import { equipmentService } from '@/services/equipmentService';
-import { 
-  EquipmentFamily, 
-  EquipmentDomain,
-  CreateEquipmentFamilyRequest, 
-  UpdateEquipmentFamilyRequest 
-} from '@/types/equipment';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useEffect, useState } from 'react';
 
 export default function FamiliesPage() {
   const [families, setFamilies] = useState<EquipmentFamily[]>([]);
@@ -66,8 +66,8 @@ export default function FamiliesPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [familyToDelete, setFamilyToDelete] = useState<string | null>(null);
   const [editingFamily, setEditingFamily] = useState<EquipmentFamily | null>(null);
-  const [formData, setFormData] = useState<CreateEquipmentFamilyRequest>({ 
-    name: '', 
+  const [formData, setFormData] = useState<CreateEquipmentFamilyRequest>({
+    name: '',
     serialNumber: '',
     domainId: ''
   });
@@ -88,12 +88,12 @@ export default function FamiliesPage() {
         search: searchTerm,
         showDeleted
       });
-      
+
       const response = await equipmentService.getFamilies(
-        page + 1, 
-        rowsPerPage, 
-        selectedDomain || undefined, 
-        searchTerm, 
+        page + 1,
+        rowsPerPage,
+        selectedDomain || undefined,
+        searchTerm,
         showDeleted
       );
       setFamilies(response.results || []);
@@ -145,23 +145,23 @@ export default function FamiliesPage() {
       if (editingFamily) {
         console.log("Mise à jour de la famille ID:", editingFamily.id);
         console.log("Données du formulaire avant traitement:", formData);
-        
+
         // Préparer les données pour la mise à jour
         const updateData: UpdateEquipmentFamilyRequest = {
           name: formData.name,
           serialNumber: formData.serialNumber,
         };
-        
+
         // Ajouter domainId seulement s'il est présent et non vide
         if (formData.domainId) {
           updateData.domainId = formData.domainId;
         }
-        
+
         console.log("Données finales pour la requête PATCH:", updateData);
-        
+
         const response = await equipmentService.updateFamily(editingFamily.id, updateData);
         console.log("Réponse de mise à jour réussie:", response);
-        
+
         setSnackbar({
           open: true,
           message: 'Famille mise à jour avec succès',
@@ -171,7 +171,7 @@ export default function FamiliesPage() {
         console.log("Création d'une nouvelle famille:", formData);
         const response = await equipmentService.createFamily(formData);
         console.log("Réponse de création:", response);
-        
+
         setSnackbar({
           open: true,
           message: 'Famille créée avec succès',
@@ -183,7 +183,7 @@ export default function FamiliesPage() {
     } catch (error: any) {
       console.error('Erreur lors de la sauvegarde:', error);
       let errorMessage = 'Erreur lors de la sauvegarde';
-      
+
       if (error.response) {
         console.error('Détails de l\'erreur:', {
           status: error.response.status,
@@ -191,19 +191,19 @@ export default function FamiliesPage() {
           data: error.response.data,
           headers: error.response.headers
         });
-        
+
         if (error.response.status === 409) {
           errorMessage = 'Une famille avec ce numéro de série existe déjà';
         } else if (error.response.status === 500) {
           errorMessage = 'Erreur serveur interne. Veuillez contacter l\'administrateur.';
-          
+
           // Afficher plus de détails sur l'erreur serveur pour le débogage
           console.error('Corps de la requête qui a provoqué l\'erreur 500:', error.config?.data);
         } else if (error.response.data && error.response.data.message) {
           errorMessage = error.response.data.message;
         }
       }
-      
+
       setSnackbar({
         open: true,
         message: errorMessage,
@@ -224,7 +224,7 @@ export default function FamiliesPage() {
 
   const handleDelete = async () => {
     if (!familyToDelete) return;
-    
+
     try {
       setLoading(true);
       await equipmentService.deleteFamily(familyToDelete);
@@ -238,7 +238,7 @@ export default function FamiliesPage() {
       console.error('Erreur lors de la suppression:', error);
       // Gestion des erreurs spécifiques
       let errorMessage = 'Erreur lors de la suppression';
-      
+
       if (error.response) {
         if (error.response.status === 409) {
           errorMessage = 'Cette famille est utilisée par d\'autres éléments et ne peut pas être supprimée';
@@ -248,7 +248,7 @@ export default function FamiliesPage() {
           errorMessage = error.response.data.message;
         }
       }
-      
+
       setSnackbar({
         open: true,
         message: errorMessage,
@@ -262,13 +262,13 @@ export default function FamiliesPage() {
 
   const handleEdit = (family: EquipmentFamily) => {
     setEditingFamily(family);
-    
+
     // Analyser le domainId selon la structure retournée par l'API
     let domainId;
-    
+
     // Log complet de l'objet family pour vérifier sa structure
     console.log("Objet famille complet reçu par handleEdit:", JSON.stringify(family, null, 2));
-    
+
     if (family.domain && family.domain.id) {
       // Si l'API renvoie un objet domain complet
       domainId = family.domain.id;
@@ -282,13 +282,13 @@ export default function FamiliesPage() {
       console.warn("Aucun domainId trouvé pour la famille:", family.id);
       domainId = '';
     }
-    
-    const formattedData = { 
-      name: family.name, 
+
+    const formattedData = {
+      name: family.name,
       serialNumber: family.serialNumber,
       domainId: domainId
     };
-    
+
     setFormData(formattedData);
     console.log("FormData préparé pour l'édition:", formattedData);
     setOpenDialog(true);
@@ -322,23 +322,24 @@ export default function FamiliesPage() {
       return family.domain.name;
     }
     // Sinon, essayer de trouver le domaine par ID
-    const domain = domains.find(d => d.id === family.domainId);
+    // On force la comparaison sur le même type (string) pour éviter l'erreur de type
+    const domain = domains.find(d => String(d.id) === String(family.domainId));
     return domain ? domain.name : 'Domaine inconnu';
   };
 
   return (
     <Box sx={{ p: 3 }}>
       {/* Header avec titre et bouton principal */}
-      <Box sx={{ 
-        display: 'flex', 
+      <Box sx={{
+        display: 'flex',
         flexDirection: { xs: 'column', sm: 'row' },
-        justifyContent: 'space-between', 
+        justifyContent: 'space-between',
         alignItems: { xs: 'stretch', sm: 'flex-start' },
         gap: 2,
-        mb: 4 
+        mb: 4
       }}>
         <Box sx={{ flex: 1 }}>
-          <Typography variant="h4" component="h1" gutterBottom sx={{ 
+          <Typography variant="h4" component="h1" gutterBottom sx={{
             fontWeight: 600,
             background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
             backgroundClip: 'text',
@@ -351,7 +352,7 @@ export default function FamiliesPage() {
             Gérez les familles d&apos;équipements techniques de votre organisation
           </Typography>
         </Box>
-        
+
         <Button
           variant="contained"
           startIcon={<AddIcon />}
@@ -373,7 +374,7 @@ export default function FamiliesPage() {
       {/* Statistiques */}
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 3 }}>
         <Box sx={{ flex: '1 1 280px', minWidth: 0 }}>
-          <Card sx={{ 
+          <Card sx={{
             background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
             color: 'white'
           }}>
@@ -404,7 +405,7 @@ export default function FamiliesPage() {
               Filtres et recherche
             </Typography>
           </Box>
-          
+
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Button
               variant="outlined"
@@ -412,7 +413,7 @@ export default function FamiliesPage() {
               onClick={loadFamilies}
               disabled={loading}
               startIcon={<RefreshIcon />}
-              sx={{ 
+              sx={{
                 borderColor: 'var(--color-axignis-primary)',
                 color: 'var(--color-axignis-primary)',
                 '&:hover': {
@@ -425,9 +426,9 @@ export default function FamiliesPage() {
             </Button>
           </Box>
         </Box>
-        
+
         {/* Grille de filtres responsive */}
-        <Box sx={{ 
+        <Box sx={{
           display: 'flex',
           flexWrap: 'wrap',
           gap: 2,
@@ -443,7 +444,7 @@ export default function FamiliesPage() {
             }}
             sx={{ minWidth: 280, flex: { xs: '1 1 100%', sm: '1 1 280px' } }}
           />
-          
+
           <FormControl size="small" sx={{ minWidth: 200 }}>
             <InputLabel>Filtrer par domaine</InputLabel>
             <Select
@@ -459,11 +460,11 @@ export default function FamiliesPage() {
               ))}
             </Select>
           </FormControl>
-          
-          <Box 
-            sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
+
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
               gap: 1,
               border: '1px solid',
               borderColor: 'divider',
@@ -516,10 +517,10 @@ export default function FamiliesPage() {
                 </TableRow>
               ) : (
                 families.map((family) => (
-                  <TableRow 
-                    key={family.id} 
+                  <TableRow
+                    key={family.id}
                     hover
-                    sx={{ 
+                    sx={{
                       opacity: family.deletedAt ? 0.6 : 1,
                       backgroundColor: family.deletedAt ? 'rgba(244, 67, 54, 0.05)' : 'inherit'
                     }}
@@ -527,10 +528,10 @@ export default function FamiliesPage() {
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <FolderOpenIcon sx={{ color: family.deletedAt ? 'text.disabled' : 'var(--color-axignis-primary)' }} />
-                        <Typography 
-                          variant="body1" 
+                        <Typography
+                          variant="body1"
                           fontWeight={500}
-                          sx={{ 
+                          sx={{
                             textDecoration: family.deletedAt ? 'line-through' : 'none',
                             display: 'flex',
                             alignItems: 'center',
@@ -539,21 +540,21 @@ export default function FamiliesPage() {
                         >
                           {family.name}
                           {family.deletedAt && (
-                            <Chip 
-                              label="Supprimé" 
-                              size="small" 
-                              color="error" 
-                              variant="outlined" 
-                              sx={{ fontSize: '0.7rem', height: 20 }} 
+                            <Chip
+                              label="Supprimé"
+                              size="small"
+                              color="error"
+                              variant="outlined"
+                              sx={{ fontSize: '0.7rem', height: 20 }}
                             />
                           )}
                         </Typography>
                       </Box>
                     </TableCell>
                     <TableCell>
-                      <Chip 
-                        label={family.serialNumber} 
-                        size="small" 
+                      <Chip
+                        label={family.serialNumber}
+                        size="small"
                         variant="outlined"
                         sx={{ fontFamily: 'monospace' }}
                       />
@@ -580,8 +581,8 @@ export default function FamiliesPage() {
                         ) : (
                           <>
                             <Tooltip title="Modifier">
-                              <IconButton 
-                                size="small" 
+                              <IconButton
+                                size="small"
                                 color="primary"
                                 onClick={() => handleEdit(family)}
                               >
@@ -589,8 +590,8 @@ export default function FamiliesPage() {
                               </IconButton>
                             </Tooltip>
                             <Tooltip title="Supprimer">
-                              <IconButton 
-                                size="small" 
+                              <IconButton
+                                size="small"
                                 color="error"
                                 onClick={() => openDeleteDialog(family.id)}
                               >
@@ -607,7 +608,7 @@ export default function FamiliesPage() {
             </TableBody>
           </Table>
         </TableContainer>
-        
+
         <TablePagination
           rowsPerPageOptions={[5, 10, 25, 50]}
           component="div"
@@ -678,13 +679,13 @@ export default function FamiliesPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog}>Annuler</Button>
-          <Button 
-            onClick={handleSubmit} 
+          <Button
+            onClick={handleSubmit}
             variant="contained"
             disabled={
-              !formData.name.trim() || 
-              !formData.serialNumber.trim() || 
-              formData.serialNumber.length < 3 || 
+              !formData.name.trim() ||
+              !formData.serialNumber.trim() ||
+              formData.serialNumber.length < 3 ||
               formData.serialNumber.length > 50 ||
               !formData.domainId
             }
@@ -713,7 +714,7 @@ export default function FamiliesPage() {
           }
         }}
       >
-        <DialogTitle sx={{ 
+        <DialogTitle sx={{
           pb: 1,
           display: 'flex',
           alignItems: 'center',
@@ -732,19 +733,19 @@ export default function FamiliesPage() {
           </Box>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3, justifyContent: 'space-between' }}>
-          <Button 
-            onClick={closeDeleteDialog} 
+          <Button
+            onClick={closeDeleteDialog}
             variant="outlined"
             startIcon={<RefreshIcon />}
           >
             Annuler
           </Button>
-          <Button 
-            onClick={handleDelete} 
+          <Button
+            onClick={handleDelete}
             variant="contained"
             color="error"
             startIcon={<DeleteIcon />}
-            sx={{ 
+            sx={{
               bgcolor: 'error.main',
               '&:hover': { bgcolor: 'error.dark' }
             }}
@@ -760,8 +761,8 @@ export default function FamiliesPage() {
         autoHideDuration={6000}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
       >
-        <Alert 
-          onClose={() => setSnackbar({ ...snackbar, open: false })} 
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
           severity={snackbar.severity}
           sx={{ width: '100%' }}
         >

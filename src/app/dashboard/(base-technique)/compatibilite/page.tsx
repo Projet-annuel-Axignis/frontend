@@ -1,52 +1,52 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Paper, 
-  Button, 
-  TextField, 
+import { equipmentService } from '@/services/equipmentService';
+import {
+  CompatibilityGroup,
+  CreateCompatibilityGroupRequest,
+  Product,
+  UpdateCompatibilityGroupRequest
+} from '@/types/equipment';
+import {
+  Add as AddIcon,
+  Delete as DeleteIcon,
+  Edit as EditIcon,
+  Group as GroupIcon,
+  LinkOff as LinkOffIcon,
+  Refresh as RefreshIcon,
+  Search as SearchIcon
+} from '@mui/icons-material';
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Fab,
+  Grid,
   IconButton,
+  Paper,
+  Snackbar,
+  Switch,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
-  TableRow,
   TablePagination,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Alert,
-  Snackbar,
-  CircularProgress,
+  TableRow,
+  TextField,
   Tooltip,
-  Card,
-  CardContent,
-  Fab,
-  Switch,
-  Grid,
+  Typography,
 } from '@mui/material';
-import {
-  Add as AddIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Search as SearchIcon,
-  Refresh as RefreshIcon,
-  LinkOff as LinkOffIcon,
-  Group as GroupIcon
-} from '@mui/icons-material';
-import { equipmentService } from '@/services/equipmentService';
-import { 
-  CompatibilityGroup,
-  Product,
-  CreateCompatibilityGroupRequest, 
-  UpdateCompatibilityGroupRequest
-} from '@/types/equipment';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useEffect, useState } from 'react';
 
 export default function CompatibilityGroupsPage() {
   // États principaux
@@ -57,7 +57,7 @@ export default function CompatibilityGroupsPage() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [total, setTotal] = useState(0);
-  
+
   // États des dialogues
   const [openDialog, setOpenDialog] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -70,14 +70,14 @@ export default function CompatibilityGroupsPage() {
   const [productsPage, setProductsPage] = useState(0);
   const [productsRowsPerPage, setProductsRowsPerPage] = useState(5);
   const [productsTotal, setProductsTotal] = useState(0);
-  
+
   // État du formulaire
   const [formData, setFormData] = useState<CreateCompatibilityGroupRequest>({
     name: '',
     serialNumber: '',
     description: ''
   });
-  
+
   // État des notifications
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
     open: false,
@@ -90,19 +90,19 @@ export default function CompatibilityGroupsPage() {
     try {
       setLoading(true);
       console.log("Paramètres loadGroups:", {
-        page: page + 1, 
-        rowsPerPage, 
-        searchTerm, 
+        page: page + 1,
+        rowsPerPage,
+        searchTerm,
         showDeleted
       });
-      
+
       const groups = await equipmentService.getCompatibilityGroups(
-        page + 1, 
-        rowsPerPage, 
-        searchTerm, 
+        page + 1,
+        rowsPerPage,
+        searchTerm,
         showDeleted
       );
-      
+
       console.log("Réponse loadGroups:", groups);
       setGroups(groups || []);
       // Pour le moment, on utilise la longueur du tableau comme total
@@ -125,13 +125,13 @@ export default function CompatibilityGroupsPage() {
     try {
       setProductsLoading(true);
       setCurrentGroupId(groupId);
-      
+
       const products = await equipmentService.getProductsInCompatibilityGroup(
         groupId,
         productsPage + 1,
         productsRowsPerPage
       );
-      
+
       console.log("Réponse loadGroupProducts:", products);
       setCurrentGroupProducts(products || []);
       setProductsTotal(products?.length || 0);
@@ -224,24 +224,24 @@ export default function CompatibilityGroupsPage() {
       if (editingGroup) {
         // Mise à jour d'un groupe existant
         const updateData: UpdateCompatibilityGroupRequest = {};
-        
+
         if (formData.name !== editingGroup.name) {
           updateData.name = formData.name;
         }
-        
+
         if (formData.serialNumber !== editingGroup.serialNumber) {
           updateData.serialNumber = formData.serialNumber;
         }
-        
+
         if (formData.description !== editingGroup.description) {
           updateData.description = formData.description;
         }
-        
+
         if (Object.keys(updateData).length === 0) {
           handleCloseDialog();
           return;
         }
-        
+
         await equipmentService.updateCompatibilityGroup(editingGroup.id, updateData);
         setSnackbar({
           open: true,
@@ -257,12 +257,12 @@ export default function CompatibilityGroupsPage() {
           severity: 'success'
         });
       }
-      
+
       handleCloseDialog();
       loadGroups();
     } catch (error: any) {
       console.error('Erreur lors de la soumission du formulaire:', error);
-      
+
       // Gestion spécifique des erreurs
       if (error.response?.status === 409) {
         setSnackbar({
@@ -301,7 +301,7 @@ export default function CompatibilityGroupsPage() {
   // Suppression d'un groupe
   const handleDeleteGroup = async () => {
     if (groupToDelete === null) return;
-    
+
     try {
       await equipmentService.deleteCompatibilityGroup(groupToDelete);
       setSnackbar({
@@ -312,7 +312,7 @@ export default function CompatibilityGroupsPage() {
       loadGroups();
     } catch (error: any) {
       console.error('Erreur lors de la suppression du groupe:', error);
-      
+
       if (error.response?.data?.message) {
         setSnackbar({
           open: true,
@@ -343,7 +343,7 @@ export default function CompatibilityGroupsPage() {
       loadGroups();
     } catch (error: any) {
       console.error('Erreur lors de la restauration du groupe:', error);
-      
+
       if (error.response?.data?.message) {
         setSnackbar({
           open: true,
@@ -363,7 +363,7 @@ export default function CompatibilityGroupsPage() {
   // Gestion du retrait d'un produit du groupe
   const handleRemoveProductFromGroup = async (productId: number) => {
     if (!currentGroupId) return;
-    
+
     try {
       await equipmentService.removeProductFromCompatibilityGroup(currentGroupId, productId);
       setSnackbar({
@@ -371,12 +371,12 @@ export default function CompatibilityGroupsPage() {
         message: 'Produit retiré du groupe avec succès',
         severity: 'success'
       });
-      
+
       // Recharger les produits du groupe
       loadGroupProducts(currentGroupId);
     } catch (error: any) {
       console.error('Erreur lors du retrait du produit:', error);
-      
+
       if (error.response?.data?.message) {
         setSnackbar({
           open: true,
@@ -396,12 +396,14 @@ export default function CompatibilityGroupsPage() {
   // Chargement initial
   useEffect(() => {
     loadGroups();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, rowsPerPage, showDeleted]);
 
   // Affichage d'une date formatée ou "N/A"
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
-    
+
     try {
       return format(new Date(dateString), 'dd/MM/yyyy HH:mm', { locale: fr });
     } catch {
@@ -411,8 +413,8 @@ export default function CompatibilityGroupsPage() {
 
   return (
     <Box sx={{ p: { xs: 2, md: 3 } }}>
-      <Typography variant="h5" component="h1" gutterBottom sx={{ 
-        fontWeight: 'bold', 
+      <Typography variant="h5" component="h1" gutterBottom sx={{
+        fontWeight: 'bold',
         color: 'text.primary',
         borderLeft: '4px solid var(--color-axignis-primary)',
         paddingLeft: 2,
@@ -437,7 +439,7 @@ export default function CompatibilityGroupsPage() {
               }}
               sx={{ flexGrow: 1 }}
             />
-            
+
             <Button
               variant="contained"
               color="primary"
@@ -453,7 +455,7 @@ export default function CompatibilityGroupsPage() {
             >
               Rechercher
             </Button>
-            
+
             <Button
               variant="outlined"
               onClick={() => {
@@ -465,7 +467,7 @@ export default function CompatibilityGroupsPage() {
             >
               Réinitialiser
             </Button>
-            
+
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <Typography variant="body2" sx={{ mr: 1 }}>
                 Afficher les groupes supprimés
@@ -477,7 +479,7 @@ export default function CompatibilityGroupsPage() {
               />
             </Box>
           </Box>
-          
+
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
             <Button
               variant="contained"
@@ -523,9 +525,9 @@ export default function CompatibilityGroupsPage() {
                   </TableRow>
                 ) : (
                   groups.map((group) => (
-                    <TableRow 
+                    <TableRow
                       key={group.id}
-                      sx={{ 
+                      sx={{
                         '&:hover': { bgcolor: 'action.hover' },
                         ...(group.deletedAt && { opacity: 0.6, bgcolor: 'rgba(0, 0, 0, 0.04)' })
                       }}
@@ -548,20 +550,20 @@ export default function CompatibilityGroupsPage() {
                                   <GroupIcon fontSize="small" />
                                 </IconButton>
                               </Tooltip>
-                              
+
                               <Tooltip title="Modifier">
-                                <IconButton 
-                                  size="small" 
-                                  color="primary" 
+                                <IconButton
+                                  size="small"
+                                  color="primary"
                                   onClick={() => handleOpenDialog(group)}
                                 >
                                   <EditIcon fontSize="small" />
                                 </IconButton>
                               </Tooltip>
-                              
+
                               <Tooltip title="Supprimer">
-                                <IconButton 
-                                  size="small" 
+                                <IconButton
+                                  size="small"
                                   color="error"
                                   onClick={() => openDeleteDialog(group.id)}
                                 >
@@ -571,8 +573,8 @@ export default function CompatibilityGroupsPage() {
                             </>
                           ) : (
                             <Tooltip title="Restaurer">
-                              <IconButton 
-                                size="small" 
+                              <IconButton
+                                size="small"
                                 color="success"
                                 onClick={() => handleRestoreGroup(group.id)}
                               >
@@ -604,8 +606,8 @@ export default function CompatibilityGroupsPage() {
       </Card>
 
       {/* Dialog pour créer/modifier un groupe */}
-      <Dialog 
-        open={openDialog} 
+      <Dialog
+        open={openDialog}
         onClose={handleCloseDialog}
         maxWidth="sm"
         fullWidth
@@ -622,7 +624,7 @@ export default function CompatibilityGroupsPage() {
         </DialogTitle>
         <DialogContent sx={{ pt: 3 }}>
           <Grid container spacing={2}>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 label="Nom du groupe"
                 variant="outlined"
@@ -635,13 +637,13 @@ export default function CompatibilityGroupsPage() {
                   formData.name.trim().length < 2
                     ? 'Le nom doit contenir au moins 2 caractères'
                     : formData.name.trim().length > 100
-                    ? 'Le nom ne doit pas dépasser 100 caractères'
-                    : 'Le nom doit être unique'
+                      ? 'Le nom ne doit pas dépasser 100 caractères'
+                      : 'Le nom doit être unique'
                 }
               />
             </Grid>
-            
-            <Grid item xs={12}>
+
+            <Grid size={{ xs: 12 }}>
               <TextField
                 label="Numéro de série"
                 variant="outlined"
@@ -654,13 +656,13 @@ export default function CompatibilityGroupsPage() {
                   formData.serialNumber.trim().length < 3
                     ? 'Le numéro de série doit contenir au moins 3 caractères'
                     : formData.serialNumber.trim().length > 50
-                    ? 'Le numéro de série ne doit pas dépasser 50 caractères'
-                    : 'Le numéro de série doit être unique'
+                      ? 'Le numéro de série ne doit pas dépasser 50 caractères'
+                      : 'Le numéro de série doit être unique'
                 }
               />
             </Grid>
-            
-            <Grid item xs={12}>
+
+            <Grid size={{ xs: 12 }}>
               <TextField
                 label="Description"
                 variant="outlined"
@@ -676,15 +678,15 @@ export default function CompatibilityGroupsPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog}>Annuler</Button>
-          <Button 
-            onClick={handleSubmit} 
+          <Button
+            onClick={handleSubmit}
             variant="contained"
             disabled={
-              !formData.name.trim() || 
-              formData.name.length < 2 || 
+              !formData.name.trim() ||
+              formData.name.length < 2 ||
               formData.name.length > 100 ||
-              !formData.serialNumber.trim() || 
-              formData.serialNumber.length < 3 || 
+              !formData.serialNumber.trim() ||
+              formData.serialNumber.length < 3 ||
               formData.serialNumber.length > 50
             }
             sx={{
@@ -712,7 +714,7 @@ export default function CompatibilityGroupsPage() {
           }
         }}
       >
-        <DialogTitle sx={{ 
+        <DialogTitle sx={{
           pb: 1,
           display: 'flex',
           alignItems: 'center',
@@ -729,8 +731,8 @@ export default function CompatibilityGroupsPage() {
           <Button onClick={closeDeleteDialog}>
             Annuler
           </Button>
-          <Button 
-            onClick={handleDeleteGroup} 
+          <Button
+            onClick={handleDeleteGroup}
             color="error"
             variant="contained"
             startIcon={<DeleteIcon />}
@@ -754,7 +756,7 @@ export default function CompatibilityGroupsPage() {
           }
         }}
       >
-        <DialogTitle sx={{ 
+        <DialogTitle sx={{
           pb: 1,
           display: 'flex',
           alignItems: 'center',
@@ -791,7 +793,7 @@ export default function CompatibilityGroupsPage() {
                   </TableRow>
                 ) : (
                   currentGroupProducts.map((product) => (
-                    <TableRow 
+                    <TableRow
                       key={product.id}
                       sx={{ '&:hover': { bgcolor: 'action.hover' } }}
                     >

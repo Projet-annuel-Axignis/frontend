@@ -1,62 +1,62 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Paper, 
-  Button, 
-  TextField, 
+import { equipmentService } from '@/services/equipmentService';
+import {
+  CreateEquipmentTypeRequest,
+  EquipmentFamily,
+  EquipmentType,
+  UpdateEquipmentTypeRequest
+} from '@/types/equipment';
+import {
+  Add as AddIcon,
+  Category as CategoryIcon,
+  Delete as DeleteIcon,
+  Edit as EditIcon,
+  Inventory as InventoryIcon,
+  Refresh as RefreshIcon,
+  Search as SearchIcon,
+  Settings as SettingsIcon,
+  Visibility as ViewIcon,
+  ViewList as ViewListIcon
+} from '@mui/icons-material';
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Checkbox,
+  Chip,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  FormControl,
+  FormControlLabel,
+  FormHelperText,
   IconButton,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  Snackbar,
+  Switch,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
-  TableRow,
   TablePagination,
-  Chip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Alert,
-  Snackbar,
-  CircularProgress,
+  TableRow,
+  TextField,
   Tooltip,
-  Card,
-  CardContent,
-  Switch,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Select,
-  FormControlLabel,
-  Checkbox,
-  FormHelperText,
-  Divider
+  Typography
 } from '@mui/material';
-import {
-  Add as AddIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Search as SearchIcon,
-  Refresh as RefreshIcon,
-  Category as CategoryIcon,
-  ViewList as ViewListIcon,
-  Visibility as ViewIcon,
-  Inventory as InventoryIcon,
-  Settings as SettingsIcon
-} from '@mui/icons-material';
-import { equipmentService } from '@/services/equipmentService';
-import { 
-  EquipmentType, 
-  EquipmentFamily,
-  CreateEquipmentTypeRequest, 
-  UpdateEquipmentTypeRequest 
-} from '@/types/equipment';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useEffect, useState } from 'react';
 
 export default function EquipmentTypesPage() {
   const [types, setTypes] = useState<EquipmentType[]>([]);
@@ -76,7 +76,7 @@ export default function EquipmentTypesPage() {
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [selectedTypeDetails, setSelectedTypeDetails] = useState<EquipmentType | null>(null);
   const [formData, setFormData] = useState<CreateEquipmentTypeRequest>({
-    title: '', 
+    title: '',
     subTitle: '',
     serialNumber: '',
     inventoryRequired: false,
@@ -88,7 +88,7 @@ export default function EquipmentTypesPage() {
     message: '',
     severity: 'success'
   });
-  const [extraFields, setExtraFields] = useState<{key: string, label: string, type: string, values?: string[]}[]>([]);
+  const [extraFields, setExtraFields] = useState<{ key: string, label: string, type: string, values?: string[] }[]>([]);
   const [newFieldKey, setNewFieldKey] = useState('');
   const [newFieldLabel, setNewFieldLabel] = useState('');
   const [newFieldType, setNewFieldType] = useState('text');
@@ -106,12 +106,12 @@ export default function EquipmentTypesPage() {
         search: searchTerm,
         showDeleted
       });
-      
+
       const response = await equipmentService.getTypes(
-        page + 1, 
-        rowsPerPage, 
-        selectedFamily || undefined, 
-        searchTerm, 
+        page + 1,
+        rowsPerPage,
+        selectedFamily || undefined,
+        searchTerm,
         showDeleted
       );
       setTypes(response.results || []);
@@ -155,7 +155,6 @@ export default function EquipmentTypesPage() {
   // Charger les familles au montage
   useEffect(() => {
     loadFamilies();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Gestion des champs personnalisés
@@ -196,8 +195,8 @@ export default function EquipmentTypesPage() {
   // Charger les champs personnalisés à l'édition
   useEffect(() => {
     if (editingType && editingType.extraSchema) {
-      const fields: {key: string, label: string, type: string, values?: string[]}[] = [];
-      
+      const fields: { key: string, label: string, type: string, values?: string[] }[] = [];
+
       Object.entries(editingType.extraSchema).forEach(([key, value]) => {
         if (typeof value === 'object' && value !== null) {
           const fieldDef = value as any;
@@ -209,7 +208,7 @@ export default function EquipmentTypesPage() {
           });
         }
       });
-      
+
       setExtraFields(fields);
     } else {
       setExtraFields([]);
@@ -249,11 +248,11 @@ export default function EquipmentTypesPage() {
     } catch (error: any) {
       console.error('Erreur lors de la sauvegarde:', error);
       let errorMessage = 'Erreur lors de la sauvegarde';
-      
+
       if (error.response) {
         console.error("Code d'erreur:", error.response.status);
         console.error("Détails de l'erreur:", error.response.data);
-        
+
         if (error.response.status === 409) {
           errorMessage = 'Un type avec ce numéro de série existe déjà';
         } else if (error.response.status === 500) {
@@ -262,7 +261,7 @@ export default function EquipmentTypesPage() {
           errorMessage = error.response.data.message;
         }
       }
-      
+
       setSnackbar({
         open: true,
         message: errorMessage,
@@ -283,7 +282,7 @@ export default function EquipmentTypesPage() {
 
   const handleDelete = async () => {
     if (!typeToDelete) return;
-    
+
     try {
       setLoading(true);
       await equipmentService.deleteType(typeToDelete);
@@ -297,7 +296,7 @@ export default function EquipmentTypesPage() {
       console.error('Erreur lors de la suppression:', error);
       // Gestion des erreurs spécifiques
       let errorMessage = 'Erreur lors de la suppression';
-      
+
       if (error.response) {
         if (error.response.status === 409) {
           errorMessage = 'Ce type est utilisé par d\'autres éléments et ne peut pas être supprimé';
@@ -307,7 +306,7 @@ export default function EquipmentTypesPage() {
           errorMessage = error.response.data.message;
         }
       }
-      
+
       setSnackbar({
         open: true,
         message: errorMessage,
@@ -326,17 +325,17 @@ export default function EquipmentTypesPage() {
 
   const handleEdit = (equipmentType: EquipmentType) => {
     setEditingType(equipmentType);
-    
+
     // Assurons-nous que familyId est traité correctement
     const processedFamilyId = equipmentType.family?.id;
-    
+
     // Si c'est un nombre sous forme de chaîne, nous pouvons le conserver tel quel,
     // le service s'occupera de la conversion
     console.log("handleEdit - Type d'équipement à éditer:", equipmentType);
     console.log("handleEdit - Type de familyId:", typeof processedFamilyId);
-    
-    setFormData({ 
-      title: equipmentType.title, 
+
+    setFormData({
+      title: equipmentType.title,
       subTitle: equipmentType.subTitle || '',
       serialNumber: equipmentType.serialNumber,
       inventoryRequired: equipmentType.inventoryRequired,
@@ -348,13 +347,13 @@ export default function EquipmentTypesPage() {
 
   const handleAdd = () => {
     setEditingType(null);
-    setFormData({ 
-      title: '', 
-      subTitle: '', 
-      serialNumber: '', 
+    setFormData({
+      title: '',
+      subTitle: '',
+      serialNumber: '',
       inventoryRequired: false,
       extraSchema: {},
-      familyId: selectedFamily || '' 
+      familyId: selectedFamily || ''
     });
     setExtraFields([]);
     setOpenDialog(true);
@@ -363,13 +362,13 @@ export default function EquipmentTypesPage() {
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setEditingType(null);
-    setFormData({ 
-      title: '', 
-      subTitle: '', 
-      serialNumber: '', 
-      inventoryRequired: false, 
+    setFormData({
+      title: '',
+      subTitle: '',
+      serialNumber: '',
+      inventoryRequired: false,
       extraSchema: {},
-      familyId: '' 
+      familyId: ''
     });
     setExtraFields([]);
   };
@@ -397,16 +396,16 @@ export default function EquipmentTypesPage() {
   return (
     <Box sx={{ p: 3 }}>
       {/* Header avec titre et bouton principal */}
-      <Box sx={{ 
-        display: 'flex', 
+      <Box sx={{
+        display: 'flex',
         flexDirection: { xs: 'column', sm: 'row' },
-        justifyContent: 'space-between', 
+        justifyContent: 'space-between',
         alignItems: { xs: 'stretch', sm: 'flex-start' },
         gap: 2,
-        mb: 4 
+        mb: 4
       }}>
         <Box sx={{ flex: 1 }}>
-          <Typography variant="h4" component="h1" gutterBottom sx={{ 
+          <Typography variant="h4" component="h1" gutterBottom sx={{
             fontWeight: 600,
             background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
             backgroundClip: 'text',
@@ -419,7 +418,7 @@ export default function EquipmentTypesPage() {
             Gérez les types d&apos;équipements techniques de votre organisation
           </Typography>
         </Box>
-        
+
         <Button
           variant="contained"
           startIcon={<AddIcon />}
@@ -441,7 +440,7 @@ export default function EquipmentTypesPage() {
       {/* Statistiques */}
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 3 }}>
         <Box sx={{ flex: '1 1 280px', minWidth: 0 }}>
-          <Card sx={{ 
+          <Card sx={{
             background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
             color: 'white'
           }}>
@@ -472,7 +471,7 @@ export default function EquipmentTypesPage() {
               Filtres et recherche
             </Typography>
           </Box>
-          
+
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Button
               variant="outlined"
@@ -480,7 +479,7 @@ export default function EquipmentTypesPage() {
               onClick={loadTypes}
               disabled={loading}
               startIcon={<RefreshIcon />}
-              sx={{ 
+              sx={{
                 borderColor: 'var(--color-axignis-primary)',
                 color: 'var(--color-axignis-primary)',
                 '&:hover': {
@@ -493,9 +492,9 @@ export default function EquipmentTypesPage() {
             </Button>
           </Box>
         </Box>
-        
+
         {/* Grille de filtres responsive */}
-        <Box sx={{ 
+        <Box sx={{
           display: 'flex',
           flexWrap: 'wrap',
           gap: 2,
@@ -511,7 +510,7 @@ export default function EquipmentTypesPage() {
             }}
             sx={{ minWidth: 280, flex: { xs: '1 1 100%', sm: '1 1 280px' } }}
           />
-          
+
           <FormControl size="small" sx={{ minWidth: 200 }}>
             <InputLabel>Filtrer par famille</InputLabel>
             <Select
@@ -521,17 +520,17 @@ export default function EquipmentTypesPage() {
             >
               <MenuItem value="">Toutes les familles</MenuItem>
               {families.map((family) => (
-                <MenuItem key={family.id} value={family.id as number}>
+                <MenuItem key={family.id} value={family.id as unknown as number}>
                   {family.name}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
-          
-          <Box 
-            sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
+
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
               gap: 1,
               border: '1px solid',
               borderColor: 'divider',
@@ -586,10 +585,10 @@ export default function EquipmentTypesPage() {
                 </TableRow>
               ) : (
                 types.map((equipmentType) => (
-                  <TableRow 
-                    key={equipmentType.id} 
+                  <TableRow
+                    key={equipmentType.id}
                     hover
-                    sx={{ 
+                    sx={{
                       opacity: equipmentType.deletedAt ? 0.6 : 1,
                       backgroundColor: equipmentType.deletedAt ? 'rgba(244, 67, 54, 0.05)' : 'inherit'
                     }}
@@ -597,10 +596,10 @@ export default function EquipmentTypesPage() {
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <CategoryIcon sx={{ color: equipmentType.deletedAt ? 'text.disabled' : 'var(--color-axignis-primary)' }} />
-                        <Typography 
-                          variant="body1" 
+                        <Typography
+                          variant="body1"
                           fontWeight={500}
-                          sx={{ 
+                          sx={{
                             textDecoration: equipmentType.deletedAt ? 'line-through' : 'none',
                             display: 'flex',
                             alignItems: 'center',
@@ -609,12 +608,12 @@ export default function EquipmentTypesPage() {
                         >
                           {equipmentType.title}
                           {equipmentType.deletedAt && (
-                            <Chip 
-                              label="Supprimé" 
-                              size="small" 
-                              color="error" 
-                              variant="outlined" 
-                              sx={{ fontSize: '0.7rem', height: 20 }} 
+                            <Chip
+                              label="Supprimé"
+                              size="small"
+                              color="error"
+                              variant="outlined"
+                              sx={{ fontSize: '0.7rem', height: 20 }}
                             />
                           )}
                         </Typography>
@@ -622,9 +621,9 @@ export default function EquipmentTypesPage() {
                     </TableCell>
                     <TableCell>{equipmentType.subTitle || '-'}</TableCell>
                     <TableCell>
-                      <Chip 
-                        label={equipmentType.serialNumber} 
-                        size="small" 
+                      <Chip
+                        label={equipmentType.serialNumber}
+                        size="small"
                         variant="outlined"
                         sx={{ fontFamily: 'monospace' }}
                       />
@@ -640,29 +639,29 @@ export default function EquipmentTypesPage() {
                     </TableCell>
                     <TableCell>
                       {equipmentType.inventoryRequired ? (
-                        <Chip 
-                          icon={<InventoryIcon />} 
-                          label="Requis" 
-                          size="small" 
-                          color="success" 
+                        <Chip
+                          icon={<InventoryIcon />}
+                          label="Requis"
+                          size="small"
+                          color="success"
                         />
                       ) : (
-                        <Chip 
-                          label="Non requis" 
-                          size="small" 
-                          variant="outlined" 
-                          color="default" 
+                        <Chip
+                          label="Non requis"
+                          size="small"
+                          variant="outlined"
+                          color="default"
                         />
                       )}
                     </TableCell>
                     <TableCell>
                       {equipmentType.extraSchema && Object.keys(equipmentType.extraSchema).length > 0 ? (
-                        <Chip 
+                        <Chip
                           icon={<SettingsIcon />}
-                          label={`${Object.keys(equipmentType.extraSchema).length} champ(s)`} 
-                          size="small" 
+                          label={`${Object.keys(equipmentType.extraSchema).length} champ(s)`}
+                          size="small"
                           color="info"
-                          variant="outlined" 
+                          variant="outlined"
                         />
                       ) : (
                         '-'
@@ -678,17 +677,17 @@ export default function EquipmentTypesPage() {
                         ) : (
                           <>
                             <Tooltip title="Voir les détails">
-                                <IconButton 
-                                  size="small" 
-                                  color="info"
-                                  onClick={() => handleViewDetails(equipmentType)}
-                                >
-                                  <ViewIcon />
-                                </IconButton>
+                              <IconButton
+                                size="small"
+                                color="info"
+                                onClick={() => handleViewDetails(equipmentType)}
+                              >
+                                <ViewIcon />
+                              </IconButton>
                             </Tooltip>
                             <Tooltip title="Modifier">
-                              <IconButton 
-                                size="small" 
+                              <IconButton
+                                size="small"
                                 color="primary"
                                 onClick={() => handleEdit(equipmentType)}
                               >
@@ -696,8 +695,8 @@ export default function EquipmentTypesPage() {
                               </IconButton>
                             </Tooltip>
                             <Tooltip title="Supprimer">
-                              <IconButton 
-                                size="small" 
+                              <IconButton
+                                size="small"
                                 color="error"
                                 onClick={() => openDeleteDialog(equipmentType.id)}
                               >
@@ -714,7 +713,7 @@ export default function EquipmentTypesPage() {
             </TableBody>
           </Table>
         </TableContainer>
-        
+
         <TablePagination
           rowsPerPageOptions={[5, 10, 25, 50]}
           component="div"
@@ -746,7 +745,7 @@ export default function EquipmentTypesPage() {
               helperText="Ex: Éclairage de sécurité (2-100 caractères)"
               required
             />
-            
+
             <TextField
               margin="dense"
               label="Sous-titre"
@@ -756,7 +755,7 @@ export default function EquipmentTypesPage() {
               onChange={(e) => setFormData({ ...formData, subTitle: e.target.value })}
               helperText="Description optionnelle (max 200 caractères)"
             />
-            
+
             <TextField
               margin="dense"
               label="Numéro de série"
@@ -767,7 +766,7 @@ export default function EquipmentTypesPage() {
               helperText="Ex: LIGHT001 (3-50 caractères)"
               required
             />
-            
+
             <FormControl fullWidth margin="dense">
               <InputLabel id="family-select-label-form">Famille parent</InputLabel>
               <Select
@@ -784,7 +783,7 @@ export default function EquipmentTypesPage() {
                   <MenuItem disabled>Aucune famille disponible</MenuItem>
                 ) : (
                   families.map((family) => (
-                    <MenuItem key={family.id} value={family.id as number}>
+                    <MenuItem key={family.id} value={family.id as unknown as number}>
                       {family.name}
                     </MenuItem>
                   ))
@@ -792,14 +791,14 @@ export default function EquipmentTypesPage() {
               </Select>
               <FormHelperText>Sélectionnez la famille à laquelle ce type appartient</FormHelperText>
             </FormControl>
-            
-            <FormControlLabel 
+
+            <FormControlLabel
               control={
-                <Checkbox 
+                <Checkbox
                   checked={formData.inventoryRequired}
                   onChange={(e) => setFormData({ ...formData, inventoryRequired: e.target.checked })}
                 />
-              } 
+              }
               label="Inventaire requis"
               sx={{ mt: 1, display: 'block' }}
             />
@@ -807,9 +806,9 @@ export default function EquipmentTypesPage() {
               Cochez si ce type d&apos;équipement nécessite un inventaire
             </FormHelperText>
           </Box>
-          
+
           <Divider sx={{ my: 2 }} />
-          
+
           <Box sx={{ mb: 2 }}>
             <Typography variant="h6" gutterBottom>
               Champs personnalisés
@@ -817,7 +816,7 @@ export default function EquipmentTypesPage() {
             <Typography variant="body2" color="text.secondary" paragraph>
               Ajoutez des champs personnalisés pour ce type d&apos;équipement (ex: capacité, puissance, etc.)
             </Typography>
-            
+
             {extraFields.length > 0 ? (
               <Box sx={{ mb: 2 }}>
                 <Table size="small">
@@ -836,12 +835,12 @@ export default function EquipmentTypesPage() {
                         <TableCell><Typography variant="body2" fontFamily="monospace">{field.key}</Typography></TableCell>
                         <TableCell>{field.label}</TableCell>
                         <TableCell>
-                          <Chip 
+                          <Chip
                             label={
                               field.type === 'text' ? 'Texte' :
-                              field.type === 'decimal' ? 'Nombre' :
-                              field.type === 'enum' ? 'Liste' :
-                              field.type === 'date' ? 'Date' : field.type
+                                field.type === 'decimal' ? 'Nombre' :
+                                  field.type === 'enum' ? 'Liste' :
+                                    field.type === 'date' ? 'Date' : field.type
                             }
                             size="small"
                             variant="outlined"
@@ -867,9 +866,9 @@ export default function EquipmentTypesPage() {
                 </Typography>
               </Box>
             )}
-            
-            <Button 
-              variant="outlined" 
+
+            <Button
+              variant="outlined"
               startIcon={<AddIcon />}
               onClick={() => setExtraFieldDialogOpen(true)}
               size="small"
@@ -880,19 +879,19 @@ export default function EquipmentTypesPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog}>Annuler</Button>
-          <Button 
-            onClick={handleSubmit} 
+          <Button
+            onClick={handleSubmit}
             variant="contained"
-            disabled={
-              !formData.title.trim() || 
-              formData.title.length < 2 || 
+            disabled={!!(
+              !formData.title.trim() ||
+              formData.title.length < 2 ||
               formData.title.length > 100 ||
-              !formData.serialNumber.trim() || 
-              formData.serialNumber.length < 3 || 
+              !formData.serialNumber.trim() ||
+              formData.serialNumber.length < 3 ||
               formData.serialNumber.length > 50 ||
               !formData.familyId ||
               (formData.subTitle && formData.subTitle.length > 200)
-            }
+            )}
             sx={{
               background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
               '&:hover': {
@@ -919,7 +918,7 @@ export default function EquipmentTypesPage() {
             onChange={(e) => setNewFieldKey(e.target.value)}
             helperText="Identifiant unique du champ (ex: capacity, power)"
           />
-          
+
           <TextField
             margin="dense"
             label="Libellé"
@@ -929,7 +928,7 @@ export default function EquipmentTypesPage() {
             onChange={(e) => setNewFieldLabel(e.target.value)}
             helperText="Label affiché à l'utilisateur (ex: Capacité (L), Puissance (W))"
           />
-          
+
           <FormControl fullWidth margin="dense">
             <InputLabel>Type de champ</InputLabel>
             <Select
@@ -943,7 +942,7 @@ export default function EquipmentTypesPage() {
               <MenuItem value="enum">Liste de valeurs</MenuItem>
             </Select>
           </FormControl>
-          
+
           {newFieldType === 'enum' && (
             <TextField
               margin="dense"
@@ -960,7 +959,7 @@ export default function EquipmentTypesPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setExtraFieldDialogOpen(false)}>Annuler</Button>
-          <Button 
+          <Button
             onClick={addExtraField}
             variant="contained"
             disabled={!newFieldKey.trim() || !newFieldLabel.trim() || (newFieldType === 'enum' && !newFieldValues.trim())}
@@ -983,7 +982,7 @@ export default function EquipmentTypesPage() {
           }
         }}
       >
-        <DialogTitle sx={{ 
+        <DialogTitle sx={{
           pb: 1,
           display: 'flex',
           alignItems: 'center',
@@ -1002,19 +1001,19 @@ export default function EquipmentTypesPage() {
           </Box>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3, justifyContent: 'space-between' }}>
-          <Button 
-            onClick={closeDeleteDialog} 
+          <Button
+            onClick={closeDeleteDialog}
             variant="outlined"
             startIcon={<RefreshIcon />}
           >
             Annuler
           </Button>
-          <Button 
-            onClick={handleDelete} 
+          <Button
+            onClick={handleDelete}
             variant="contained"
             color="error"
             startIcon={<DeleteIcon />}
-            sx={{ 
+            sx={{
               bgcolor: 'error.main',
               '&:hover': { bgcolor: 'error.dark' }
             }}
@@ -1030,8 +1029,8 @@ export default function EquipmentTypesPage() {
         autoHideDuration={6000}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
       >
-        <Alert 
-          onClose={() => setSnackbar({ ...snackbar, open: false })} 
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
           severity={snackbar.severity}
           sx={{ width: '100%' }}
         >
@@ -1040,10 +1039,10 @@ export default function EquipmentTypesPage() {
       </Snackbar>
 
       {/* Dialog pour afficher les détails */}
-      <Dialog 
-        open={detailsDialogOpen} 
-        onClose={() => setDetailsDialogOpen(false)} 
-        maxWidth="md" 
+      <Dialog
+        open={detailsDialogOpen}
+        onClose={() => setDetailsDialogOpen(false)}
+        maxWidth="md"
         fullWidth
       >
         <DialogTitle sx={{
@@ -1075,9 +1074,9 @@ export default function EquipmentTypesPage() {
                   </Box>
                   <Box>
                     <Typography variant="subtitle2" color="text.secondary">Numéro de série</Typography>
-                    <Chip 
-                      label={selectedTypeDetails.serialNumber} 
-                      size="small" 
+                    <Chip
+                      label={selectedTypeDetails.serialNumber}
+                      size="small"
                       variant="outlined"
                       sx={{ fontFamily: 'monospace' }}
                     />
@@ -1085,18 +1084,18 @@ export default function EquipmentTypesPage() {
                   <Box>
                     <Typography variant="subtitle2" color="text.secondary">Inventaire requis</Typography>
                     {selectedTypeDetails.inventoryRequired ? (
-                      <Chip 
-                        icon={<InventoryIcon />} 
-                        label="Requis" 
-                        size="small" 
-                        color="success" 
+                      <Chip
+                        icon={<InventoryIcon />}
+                        label="Requis"
+                        size="small"
+                        color="success"
                       />
                     ) : (
-                      <Chip 
-                        label="Non requis" 
-                        size="small" 
-                        variant="outlined" 
-                        color="default" 
+                      <Chip
+                        label="Non requis"
+                        size="small"
+                        variant="outlined"
+                        color="default"
                       />
                     )}
                   </Box>
@@ -1150,12 +1149,12 @@ export default function EquipmentTypesPage() {
                           </TableCell>
                           <TableCell>{value.label || key}</TableCell>
                           <TableCell>
-                            <Chip 
+                            <Chip
                               label={
                                 value.type === 'text' ? 'Texte' :
-                                value.type === 'decimal' ? 'Nombre' :
-                                value.type === 'enum' ? 'Liste' :
-                                value.type === 'date' ? 'Date' : value.type
+                                  value.type === 'decimal' ? 'Nombre' :
+                                    value.type === 'enum' ? 'Liste' :
+                                      value.type === 'date' ? 'Date' : value.type
                               }
                               size="small"
                               variant="outlined"
