@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   Box, 
   Typography, 
@@ -32,11 +33,9 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Grid,
   FormHelperText,
   OutlinedInput,
-  SelectChangeEvent,
-  Badge
+  SelectChangeEvent
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -44,7 +43,8 @@ import {
   Delete as DeleteIcon,
   Search as SearchIcon,
   Refresh as RefreshIcon,
-  Inventory as InventoryIcon
+  Inventory as InventoryIcon,
+  Info as InfoIcon
 } from '@mui/icons-material';
 import { equipmentService } from '@/services/equipmentService';
 import { 
@@ -53,12 +53,15 @@ import {
   UpdateProductRequest,
   Brand,
   EquipmentType,
-  CompatibilityGroup
+  CompatibilityGroup,
+  ProductDocument
 } from '@/types/equipment';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 export default function ProductsPage() {
+  const router = useRouter();
+  
   const [products, setProducts] = useState<Product[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [equipmentTypes, setEquipmentTypes] = useState<EquipmentType[]>([]);
@@ -93,6 +96,10 @@ export default function ProductsPage() {
     message: '',
     severity: 'success'
   });
+
+  // Nouvel état pour stocker les documents associés à chaque produit
+  const [productDocuments, setProductDocuments] = useState<{ [productId: number]: ProductDocument[] }>({});
+  const [loadingDocuments, setLoadingDocuments] = useState<boolean>(false);
 
   // Fonction pour compter les filtres actifs
   const updateActiveFiltersCount = useCallback(() => {
@@ -131,8 +138,14 @@ export default function ProductsPage() {
       
       console.log("Réponse loadProducts:", response);
       console.log("Structure des produits:", response.results?.[0]);
-      setProducts(response.results || []);
+      const productsData = response.results || [];
+      setProducts(productsData);
       setTotal(response.totalResults || 0);
+      
+      // Charger les documents associés aux produits récupérés
+      if (productsData.length > 0) {
+        await loadProductDocuments(productsData);
+      }
       
       // Si on est sur une page qui n'existe plus (après filtrage)
       if (response.totalResults > 0 && response.results.length === 0 && page > 0) {
@@ -193,7 +206,7 @@ export default function ProductsPage() {
   // Charger les groupes de compatibilité pour le formulaire
   const loadCompatibilityGroups = async () => {
     try {
-      const response = await equipmentService.getCompatibilityGroups(1, 100);
+      const response: any = await equipmentService.getCompatibilityGroups(1, 100);
       console.log('Response groupes de compatibilité:', response);
       
       // Vérifier si la réponse est directement un tableau (format [{ id, name, products }])
@@ -201,8 +214,8 @@ export default function ProductsPage() {
         setCompatibilityGroups(response);
       } 
       // Vérifier si la réponse a une structure avec un champ results
-      else if (response && response.results) {
-        setCompatibilityGroups(response.results);
+      else if (response && typeof response === 'object' && 'results' in response && response.results) {
+        setCompatibilityGroups(response.results as CompatibilityGroup[]);
       }
       // Si format inconnu, utiliser un tableau vide
       else {
@@ -212,6 +225,46 @@ export default function ProductsPage() {
     } catch (error) {
       console.error('Erreur lors du chargement des groupes de compatibilité:', error);
       setCompatibilityGroups([]);
+    }
+  };
+  
+  // Charger les documents pour chaque produit
+  const loadProductDocuments = async (productsArray: Product[]) => {
+    try {
+      setLoadingDocuments(true);
+      const documentsMap: { [productId: number]: ProductDocument[] } = {};
+      
+      // Pour chaque produit, charger ses documents associés
+      await Promise.all(
+        productsArray.map(async (product) => {
+          try {
+            // Récupérer les documents associés au produit
+            const response = await equipmentService.getProductDocumentsByProductId(product.id.toString());
+            
+            // Stocker les documents dans notre map avec l'ID du produit comme clé
+            if (response && response.results) {
+              // La réponse contient un tableau de documents dans results
+              documentsMap[product.id] = response.results || [];
+            } else {
+              documentsMap[product.id] = [];
+            }
+          } catch (error: any) {
+            console.error(`Erreur lors du chargement des documents pour le produit ${product.id}:`, error);
+            // Si c'est une erreur 404, c'est normal (pas de documents pour ce produit)
+            if (error.response && error.response.status === 404) {
+              documentsMap[product.id] = [];
+            } else {
+              documentsMap[product.id] = [];
+            }
+          }
+        })
+      );
+      
+      setProductDocuments(documentsMap);
+    } catch (error) {
+      console.error('Erreur lors du chargement des documents:', error);
+    } finally {
+      setLoadingDocuments(false);
     }
   };
 
@@ -390,8 +443,8 @@ export default function ProductsPage() {
     setFormData({ 
       name: product.name,
       serialNumber: product.serialNumber,
-      brandId: product.brand?.id || 0,
-      typeId: product.type?.id || 0,
+      brandId: product.brand?.id ? (typeof product.brand.id === 'string' ? parseInt(product.brand.id) : product.brand.id) : 0,
+      typeId: product.type?.id ? (typeof product.type.id === 'string' ? parseInt(product.type.id) : product.type.id) : 0,
       compatibilityGroupIds: product.groups?.map(g => g.id) || []
     });
     setOpenDialog(true);
@@ -692,6 +745,7 @@ export default function ProductsPage() {
                 <TableCell sx={{ fontWeight: 600 }}>Marque</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Type</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Groupes de compatibilité</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Documents</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Date de création</TableCell>
                 <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
               </TableRow>
@@ -699,13 +753,13 @@ export default function ProductsPage() {
             <TableBody>
               {loading && products.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
+                  <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
                     <CircularProgress />
                   </TableCell>
                 </TableRow>
               ) : products.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
+                  <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
                     <Typography variant="body1" color="text.secondary">
                       Aucun produit trouvé
                     </Typography>
@@ -782,6 +836,43 @@ export default function ProductsPage() {
                       )}
                     </TableCell>
                     <TableCell>
+                      {productDocuments[product.id] ? (
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <Chip
+                            label={`${productDocuments[product.id].length} document${productDocuments[product.id].length !== 1 ? 's' : ''}`}
+                            size="small"
+                            color="info"
+                            sx={{ 
+                              fontWeight: productDocuments[product.id].length > 0 ? 500 : 400,
+                              opacity: productDocuments[product.id].length > 0 ? 1 : 0.7,
+                              cursor: 'pointer'
+                            }}
+                            variant={productDocuments[product.id].length > 0 ? "filled" : "outlined"}
+                            icon={productDocuments[product.id].length > 0 ? <InventoryIcon sx={{ fontSize: '1rem' }} /> : undefined}
+                            onClick={() => router.push(`/dashboard/base-technique/documents?productId=${product.id}`)}
+                            clickable
+                          />
+                          {productDocuments[product.id].length > 0 && (
+                            <Tooltip title={`Ce produit possède ${productDocuments[product.id].length} document${productDocuments[product.id].length !== 1 ? 's' : ''} associé${productDocuments[product.id].length !== 1 ? 's' : ''}`}>
+                              <InfoIcon sx={{ color: 'info.main', fontSize: '1rem', ml: 1 }} />
+                            </Tooltip>
+                          )}
+                        </Box>
+                      ) : loadingDocuments ? (
+                        <CircularProgress size={20} />
+                      ) : (
+                        <Chip
+                          label="Aucun document"
+                          size="small"
+                          color="default"
+                          variant="outlined"
+                          sx={{ opacity: 0.7, cursor: 'pointer' }}
+                          onClick={() => router.push(`/dashboard/base-technique/documents?productId=${product.id}`)}
+                          clickable
+                        />
+                      )}
+                    </TableCell>
+                    <TableCell>
                       {format(new Date(product.createdAt), 'dd/MM/yyyy HH:mm', { locale: fr })}
                     </TableCell>
                     <TableCell align="center">
@@ -844,68 +935,74 @@ export default function ProductsPage() {
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
         <DialogTitle>
           {editingProduct ? 'Modifier le produit' : 'Nouveau produit'}
-        </DialogTitle>
-        <DialogContent dividers>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <TextField
-                autoFocus
-                margin="dense"
-                label="Nom"
-                fullWidth
-                variant="outlined"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                helperText="Nom du produit (2-100 caractères)"
-                required
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                margin="dense"
-                label="Numéro de série"
-                fullWidth
-                variant="outlined"
-                value={formData.serialNumber}
-                onChange={(e) => setFormData({ ...formData, serialNumber: e.target.value })}
-                helperText="Numéro de série unique (3-50 caractères)"
-                required
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>                <FormControl fullWidth margin="dense" required>
-                <InputLabel>Marque</InputLabel>
-                <Select
-                  value={formData.brandId || ''}
-                  onChange={(e) => setFormData({ ...formData, brandId: Number(e.target.value) })}
-                  label="Marque"
-                >
-                  {brands.map(brand => (
-                    <MenuItem key={brand.id} value={Number(brand.id)}>
-                      {brand.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-                <FormHelperText>Sélectionnez la marque du produit</FormHelperText>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth margin="dense" required>
-                <InputLabel>Type d&apos;équipement</InputLabel>
-                <Select
-                  value={formData.typeId || ''}
-                  onChange={(e) => setFormData({ ...formData, typeId: Number(e.target.value) })}
-                  label="Type d'équipement"
-                >
-                  {equipmentTypes.map(type => (
-                    <MenuItem key={type.id} value={Number(type.id)}>
-                      {type.title}
-                    </MenuItem>
-                  ))}
-                </Select>
-                <FormHelperText>Sélectionnez le type d&apos;équipement</FormHelperText>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12}>
+        </DialogTitle>        <DialogContent dividers>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+              <Box sx={{ flex: '1 1 300px' }}>
+                <TextField
+                  autoFocus
+                  margin="dense"
+                  label="Nom"
+                  fullWidth
+                  variant="outlined"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  helperText="Nom du produit (2-100 caractères)"
+                  required
+                />
+              </Box>
+              <Box sx={{ flex: '1 1 300px' }}>
+                <TextField
+                  margin="dense"
+                  label="Numéro de série"
+                  fullWidth
+                  variant="outlined"
+                  value={formData.serialNumber}
+                  onChange={(e) => setFormData({ ...formData, serialNumber: e.target.value })}
+                  helperText="Numéro de série unique (3-50 caractères)"
+                  required
+                />
+              </Box>
+            </Box>
+            
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+              <Box sx={{ flex: '1 1 300px' }}>
+                <FormControl fullWidth margin="dense" required>
+                  <InputLabel>Marque</InputLabel>
+                  <Select
+                    value={formData.brandId || ''}
+                    onChange={(e) => setFormData({ ...formData, brandId: Number(e.target.value) })}
+                    label="Marque"
+                  >
+                    {brands.map(brand => (
+                      <MenuItem key={brand.id} value={Number(brand.id)}>
+                        {brand.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  <FormHelperText>Sélectionnez la marque du produit</FormHelperText>
+                </FormControl>
+              </Box>
+              <Box sx={{ flex: '1 1 300px' }}>
+                <FormControl fullWidth margin="dense" required>
+                  <InputLabel>Type d&apos;équipement</InputLabel>
+                  <Select
+                    value={formData.typeId || ''}
+                    onChange={(e) => setFormData({ ...formData, typeId: Number(e.target.value) })}
+                    label="Type d'équipement"
+                  >
+                    {equipmentTypes.map(type => (
+                      <MenuItem key={type.id} value={Number(type.id)}>
+                        {type.title}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  <FormHelperText>Sélectionnez le type d&apos;équipement</FormHelperText>
+                </FormControl>
+              </Box>
+            </Box>
+            
+            <Box>
               <FormControl fullWidth margin="dense">
                 <InputLabel>Groupes de compatibilité</InputLabel>
                 <Select
@@ -936,8 +1033,8 @@ export default function ProductsPage() {
                 </Select>
                 <FormHelperText>Sélectionnez les groupes de compatibilité (optionnel)</FormHelperText>
               </FormControl>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog}>Annuler</Button>

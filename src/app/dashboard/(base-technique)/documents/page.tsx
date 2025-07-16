@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { 
   Box, 
   Typography, 
@@ -32,7 +33,6 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Grid,
   InputAdornment,
   FormHelperText
 } from '@mui/material';
@@ -52,7 +52,6 @@ import {
 import { equipmentService } from '@/services/equipmentService';
 import { 
   ProductDocument, 
-  UploadProductDocumentRequest, 
   UpdateProductDocumentStatusRequest,
   DocumentType,
   Product
@@ -74,7 +73,7 @@ function formatFileSize(bytes: number): string {
 // Composant pour afficher un indicateur de statut
 function StatusChip({ status }: { status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED' }) {
   let color: 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' = 'default';
-  let label = status;
+  let label: string = status;
 
   switch (status) {
     case 'DRAFT':
@@ -101,6 +100,20 @@ function StatusChip({ status }: { status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED' }) 
 }
 
 export default function ProductDocumentsPage() {
+  const searchParams = useSearchParams();
+  
+  // Type pour le formulaire d'upload simplifié
+  type UploadForm = {
+    reference: string;
+    serialNumber: string;
+    productId: string;
+    documentTypeId: string;
+    issueDate: string;
+    expiryDate?: string;
+    version: number;
+    file: File | null;
+  };
+  
   const [documents, setDocuments] = useState<ProductDocument[]>([]);
   const [documentTypes, setDocumentTypes] = useState<DocumentType[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -119,15 +132,28 @@ export default function ProductDocumentsPage() {
   const [filterDocumentTypeId, setFilterDocumentTypeId] = useState<string>('');
   const [filterStatus, setFilterStatus] = useState<string>('');
   
+  // Initialisation du filtre produit depuis les paramètres URL
+  useEffect(() => {
+    const productIdFromUrl = searchParams.get('productId');
+    if (productIdFromUrl) {
+      setFilterProductId(productIdFromUrl);
+      // Initialiser aussi le formulaire d'upload avec ce productId
+      setUploadForm(prev => ({
+        ...prev,
+        productId: productIdFromUrl
+      }));
+    }
+  }, [searchParams]);
+  
   // Formulaire d'upload
-  const [uploadForm, setUploadForm] = useState<UploadProductDocumentRequest>({
+  const [uploadForm, setUploadForm] = useState<UploadForm>({
     reference: '',
     serialNumber: '',
     productId: '',
     documentTypeId: '',
     issueDate: format(new Date(), 'yyyy-MM-dd'),
     version: 1,
-    file: null as unknown as File
+    file: null
   });
   
   // État pour valider le checksum
@@ -145,7 +171,7 @@ export default function ProductDocumentsPage() {
   });
 
   // Chargement initial des documents et des listes déroulantes
-  const loadDocuments = async () => {
+  const loadDocuments = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -281,7 +307,7 @@ export default function ProductDocumentsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filterProductId, page, rowsPerPage, filterDocumentTypeId, filterStatus, searchTerm, showDeleted, snackbar.open]);
 
   // Chargement des types de documents pour les filtres et le formulaire
   const loadDocumentTypes = async () => {
@@ -293,9 +319,6 @@ export default function ProductDocumentsPage() {
       if (Array.isArray(response)) {
         const [results] = response;
         setDocumentTypes(Array.isArray(results) ? results : []);
-      } else if (response && typeof response === 'object' && response.results) {
-        // Compatibilité avec l'ancien format de réponse (objet)
-        setDocumentTypes(response.results);
       } else {
         console.error('Format de réponse API inattendu:', response);
         setDocumentTypes([]);
@@ -324,14 +347,12 @@ export default function ProductDocumentsPage() {
   // Appels initiaux
   useEffect(() => {
     loadDocuments();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, rowsPerPage, filterProductId, filterDocumentTypeId, filterStatus, searchTerm, showDeleted]);
+  }, [loadDocuments]);
   
   // Chargement des listes de référence (types de documents et produits)
   useEffect(() => {
     loadDocumentTypes();
     loadProducts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Gestion du formulaire d'upload
@@ -358,18 +379,33 @@ export default function ProductDocumentsPage() {
     try {
       setLoading(true);
       
+      // Vérification que le fichier est présent
+      if (!uploadForm.file) {
+        throw new Error('Aucun fichier sélectionné');
+      }
+      
+      // Trouver le produit sélectionné
+      const selectedProduct = products.find(p => p.id.toString() === uploadForm.productId.toString());
+      if (!selectedProduct) {
+        throw new Error('Produit introuvable');
+      }
+      
+      // Trouver le type de document sélectionné
+      const selectedDocumentType = documentTypes.find(t => t.id.toString() === uploadForm.documentTypeId.toString());
+      if (!selectedDocumentType) {
+        throw new Error('Type de document introuvable');
+      }
+      
       // Préparation des données au format attendu par le backend
       const formattedUploadForm = {
-        ...uploadForm,
-        // Conversion de productId en tableau products
-        products: uploadForm.productId ? 
-          [products.find(p => p.id.toString() === uploadForm.productId.toString()) || { id: uploadForm.productId }] : 
-          [],
-        // Conversion de documentTypeId en objet type complet
-        type: uploadForm.documentTypeId ? 
-          documentTypes.find(t => t.id.toString() === uploadForm.documentTypeId.toString()) || 
-          { id: uploadForm.documentTypeId } : 
-          {} as DocumentType
+        reference: uploadForm.reference,
+        serialNumber: uploadForm.serialNumber,
+        products: [selectedProduct],
+        type: selectedDocumentType,
+        issueDate: uploadForm.issueDate,
+        expiryDate: uploadForm.expiryDate,
+        version: uploadForm.version,
+        file: uploadForm.file
       };
       
       const response = await equipmentService.uploadProductDocument(formattedUploadForm);
@@ -385,10 +421,10 @@ export default function ProductDocumentsPage() {
       handleCloseDialog();
       
       // Mettre à jour la sélection du produit pour afficher le nouveau document
-      if (formattedUploadForm.productId && formattedUploadForm.productId !== filterProductId) {
-        console.log("Mise à jour du produit sélectionné après upload:", formattedUploadForm.productId);
+      if (uploadForm.productId && uploadForm.productId !== filterProductId) {
+        console.log("Mise à jour du produit sélectionné après upload:", uploadForm.productId);
         // Mettre à jour le filtre de produit pour afficher le document qui vient d'être ajouté
-        setFilterProductId(formattedUploadForm.productId);
+        setFilterProductId(uploadForm.productId);
       }
       
       // Attendre un court instant pour permettre à l'API de traiter l'upload avant de recharger
@@ -690,7 +726,7 @@ export default function ProductDocumentsPage() {
       documentTypeId: '',
       issueDate: format(new Date(), 'yyyy-MM-dd'),
       version: 1,
-      file: null as unknown as File
+      file: null
     });
     setOpenDialog(true);
   };
@@ -1109,8 +1145,8 @@ export default function ProductDocumentsPage() {
             Téléverser un nouveau document
           </DialogTitle>
           <DialogContent dividers>
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', md: 'row' } }}>
                 <TextField
                   autoFocus
                   margin="dense"
@@ -1122,8 +1158,6 @@ export default function ProductDocumentsPage() {
                   helperText="Référence unique du document (3-50 caractères)"
                   required
                 />
-              </Grid>
-              <Grid item xs={12} md={6}>
                 <TextField
                   margin="dense"
                   label="Numéro de série"
@@ -1134,8 +1168,9 @@ export default function ProductDocumentsPage() {
                   helperText="Numéro de série unique (3-50 caractères)"
                   required
                 />
-              </Grid>
-              <Grid item xs={12} md={6}>
+              </Box>
+              
+              <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', md: 'row' } }}>
                 <FormControl fullWidth margin="dense">
                   <InputLabel>Produit</InputLabel>
                   <Select
@@ -1152,8 +1187,6 @@ export default function ProductDocumentsPage() {
                   </Select>
                   <FormHelperText>Produit associé au document</FormHelperText>
                 </FormControl>
-              </Grid>
-              <Grid item xs={12} md={6}>
                 <FormControl fullWidth margin="dense">
                   <InputLabel>Type de document</InputLabel>
                   <Select
@@ -1170,8 +1203,9 @@ export default function ProductDocumentsPage() {
                   </Select>
                   <FormHelperText>Type de document</FormHelperText>
                 </FormControl>
-              </Grid>
-              <Grid item xs={12} md={6}>
+              </Box>
+              
+              <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', md: 'row' } }}>
                 <DatePicker
                   label="Date d'émission"
                   value={new Date(uploadForm.issueDate)}
@@ -1191,8 +1225,6 @@ export default function ProductDocumentsPage() {
                     } 
                   }}
                 />
-              </Grid>
-              <Grid item xs={12} md={6}>
                 <DatePicker
                   label="Date d'expiration (optionnel)"
                   value={uploadForm.expiryDate ? new Date(uploadForm.expiryDate) : null}
@@ -1215,8 +1247,9 @@ export default function ProductDocumentsPage() {
                     } 
                   }}
                 />
-              </Grid>
-              <Grid item xs={12} md={6}>
+              </Box>
+              
+              <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', md: 'row' } }}>
                 <TextField
                   margin="dense"
                   label="Version"
@@ -1231,8 +1264,9 @@ export default function ProductDocumentsPage() {
                   })}
                   required
                 />
-              </Grid>
-              <Grid item xs={12}>
+              </Box>
+              
+              <Box>
                 <Button
                   component="label"
                   variant="outlined"
@@ -1266,14 +1300,14 @@ export default function ProductDocumentsPage() {
                     </Box>
                     <IconButton 
                       size="small" 
-                      onClick={() => setUploadForm({ ...uploadForm, file: null as unknown as File })}
+                      onClick={() => setUploadForm({ ...uploadForm, file: null })}
                     >
                       <CancelIcon fontSize="small" />
                     </IconButton>
                   </Paper>
                 )}
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
           </DialogContent>
           <DialogActions>
             <Button onClick={handleCloseDialog}>Annuler</Button>
@@ -1339,7 +1373,7 @@ export default function ProductDocumentsPage() {
               onClick={handleStatusSubmit} 
               variant="contained"
               color="primary"
-              disabled={documentToAction && newStatus === documentToAction.status}
+              disabled={!documentToAction || newStatus === documentToAction.status}
             >
               Mettre à jour le statut
             </Button>
