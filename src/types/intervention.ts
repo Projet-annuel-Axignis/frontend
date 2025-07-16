@@ -185,6 +185,8 @@ export interface Document {
   deletedAt?: string;
   reference: string;
   serialNumber: string;
+  title: string;
+  description: string;
   fileName: string;
   filePath: string;
   size: number;
@@ -201,10 +203,14 @@ export interface Document {
 
 export interface CreateReportFileDto {
   fileId: number;
+  title?: string;
+  description?: string;
 }
 
 export interface UpdateReportFileDto {
   fileId?: number;
+  title?: string;
+  description?: string;
 }
 
 // =========================
