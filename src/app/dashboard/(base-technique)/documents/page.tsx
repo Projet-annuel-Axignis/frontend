@@ -963,7 +963,7 @@ export default function ProductDocumentsPage() {
             </Typography>
           </Box>
           
-          <Box sx={{ display: 'flex', flexDirection: {xs: 'column', md: 'row'}, gap: 2, alignItems: {xs: 'stretch', md: 'center'}, flexWrap: 'wrap' }}>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center' }}>
             <TextField
               size="small"
               placeholder="Rechercher dans les documents..."
@@ -972,10 +972,10 @@ export default function ProductDocumentsPage() {
               InputProps={{
                 startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />
               }}
-              sx={{ minWidth: {xs: '100%', md: 280} }}
+              sx={{ minWidth: 280, flex: { xs: '1 1 100%', sm: '1 1 280px' } }}
             />
             
-            <FormControl size="small" sx={{ minWidth: {xs: '100%', md: 200} }}>
+            <FormControl size="small" sx={{ minWidth: 200 }}>
               <InputLabel>Type de document</InputLabel>
               <Select
                 value={filterDocumentTypeId}
@@ -991,7 +991,7 @@ export default function ProductDocumentsPage() {
               </Select>
             </FormControl>
             
-            <FormControl size="small" sx={{ minWidth: {xs: '100%', md: 150} }}>
+            <FormControl size="small" sx={{ minWidth: 150 }}>
               <InputLabel>Statut</InputLabel>
               <Select
                 value={filterStatus}
@@ -1014,8 +1014,7 @@ export default function ProductDocumentsPage() {
                 borderColor: 'divider',
                 borderRadius: 1,
                 px: 2,
-                py: 0.5,
-                minWidth: {xs: '100%', md: 'auto'}
+                py: 0.5
               }}
             >
               <Typography variant="body2" color="text.secondary">
@@ -1031,11 +1030,19 @@ export default function ProductDocumentsPage() {
             <Button
               variant="outlined"
               size="small"
-              onClick={resetFilters}
+              onClick={loadDocuments}
+              disabled={loading}
               startIcon={<RefreshIcon />}
-              sx={{ minWidth: {xs: '100%', md: 'auto'} }}
+              sx={{ 
+                borderColor: 'var(--color-axignis-primary)',
+                color: 'var(--color-axignis-primary)',
+                '&:hover': {
+                  borderColor: 'var(--color-axignis-secondary)',
+                  backgroundColor: 'rgba(var(--color-axignis-primary-rgb), 0.1)'
+                }
+              }}
             >
-              Réinitialiser
+              Actualiser
             </Button>
           </Box>
         </Paper>

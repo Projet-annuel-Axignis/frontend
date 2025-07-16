@@ -590,6 +590,22 @@ export default function ProductsPage() {
           </Box>
           
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={loadProducts}
+              startIcon={<RefreshIcon />}
+              sx={{ 
+                borderColor: 'var(--color-axignis-primary)',
+                color: 'var(--color-axignis-primary)',
+                '&:hover': {
+                  borderColor: 'var(--color-axignis-secondary)',
+                  backgroundColor: 'rgba(var(--color-axignis-primary-rgb), 0.1)'
+                }
+              }}
+            >
+              Actualiser
+            </Button>
             {activeFiltersCount > 0 && (
               <Button
                 variant="outlined"
@@ -613,15 +629,10 @@ export default function ProductsPage() {
         
         {/* Grille de filtres responsive */}
         <Box sx={{ 
-          display: 'grid', 
-          gridTemplateColumns: { 
-            xs: '1fr', 
-            sm: 'repeat(2, 1fr)', 
-            md: 'repeat(3, 1fr)', 
-            lg: 'repeat(4, 1fr)', 
-            xl: 'repeat(5, 1fr)' 
-          }, 
-          gap: 2
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: 2,
+          alignItems: 'center'
         }}>
           <TextField
             size="small"
@@ -631,10 +642,10 @@ export default function ProductsPage() {
             InputProps={{
               startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />
             }}
-            sx={{ gridColumn: { xs: '1', sm: '1 / -1', md: '1' } }}
+            sx={{ minWidth: 280, flex: { xs: '1 1 100%', sm: '1 1 280px' } }}
           />
           
-          <FormControl size="small">
+          <FormControl size="small" sx={{ minWidth: 180 }}>
             <InputLabel>Marque</InputLabel>
             <Select
               value={filterBrandId || ''}
@@ -650,7 +661,7 @@ export default function ProductsPage() {
             </Select>
           </FormControl>
           
-          <FormControl size="small">
+          <FormControl size="small" sx={{ minWidth: 200 }}>
             <InputLabel>Type d&apos;équipement</InputLabel>
             <Select
               value={filterTypeId || ''}
@@ -666,7 +677,7 @@ export default function ProductsPage() {
             </Select>
           </FormControl>
           
-          <FormControl size="small">
+          <FormControl size="small" sx={{ minWidth: 200 }}>
             <InputLabel>Groupe de compatibilité</InputLabel>
             <Select
               value={filterCompatibilityGroupId || ''}

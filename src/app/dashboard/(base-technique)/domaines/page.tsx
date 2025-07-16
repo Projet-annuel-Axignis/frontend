@@ -332,9 +332,45 @@ export default function DomainesPage() {
         </Box>
       </Box>
 
-      {/* Filtres */}
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+      {/* Barre de filtres */}
+      <Paper sx={{ p: 3, mb: 3, border: '1px solid', borderColor: 'divider' }}>
+        {/* En-tête des filtres */}
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, flexWrap: 'wrap', gap: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
+            <SearchIcon sx={{ color: 'var(--color-axignis-primary)', fontSize: '1.5rem' }} />
+            <Typography variant="h6" sx={{ fontWeight: 600, color: 'var(--color-axignis-primary)' }}>
+              Filtres et recherche
+            </Typography>
+          </Box>
+          
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={loadDomains}
+              disabled={loading}
+              startIcon={<RefreshIcon />}
+              sx={{ 
+                borderColor: 'var(--color-axignis-primary)',
+                color: 'var(--color-axignis-primary)',
+                '&:hover': {
+                  borderColor: 'var(--color-axignis-secondary)',
+                  backgroundColor: 'rgba(var(--color-axignis-primary-rgb), 0.1)'
+                }
+              }}
+            >
+              Actualiser
+            </Button>
+          </Box>
+        </Box>
+        
+        {/* Grille de filtres responsive */}
+        <Box sx={{ 
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: 2,
+          alignItems: 'center'
+        }}>
           <TextField
             size="small"
             placeholder="Rechercher un domaine..."
@@ -343,7 +379,7 @@ export default function DomainesPage() {
             InputProps={{
               startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />
             }}
-            sx={{ minWidth: 250, flex: { xs: '1 1 auto', sm: '0 1 250px' } }}
+            sx={{ minWidth: 280, flex: { xs: '1 1 100%', sm: '1 1 280px' } }}
           />
           
           <Box 
@@ -355,11 +391,12 @@ export default function DomainesPage() {
               borderColor: 'divider',
               borderRadius: 1,
               px: 2,
-              py: 0.5
+              py: 1,
+              backgroundColor: 'background.paper'
             }}
           >
-            <Typography variant="body2" color="text.secondary">
-              Inclure les supprimés
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
+              Inclure supprimés
             </Typography>
             <Switch
               checked={showDeleted}
@@ -367,14 +404,6 @@ export default function DomainesPage() {
               size="small"
             />
           </Box>
-          
-          <Box sx={{ flexGrow: 1 }} />
-          
-          <Tooltip title="Actualiser">
-            <IconButton onClick={loadDomains} disabled={loading}>
-              <RefreshIcon />
-            </IconButton>
-          </Tooltip>
         </Box>
       </Paper>
 
