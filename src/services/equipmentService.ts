@@ -546,22 +546,115 @@ export const equipmentService = {
     return response.data;
   },
 
-  async getProductDocumentsByProductId(productId: string, page: number = 1, limit: number = 10): Promise<ServerPaginatedResponse<ProductDocument>> {
-    const params = new URLSearchParams();
-    
-    if (page) {
-      params.append('page', page.toString());
+  async getProductDocumentsByProductId(
+    productId: string, 
+    page: number = 1, 
+    limit: number = 10, 
+    forceRefresh: boolean = false
+  ): Promise<ServerPaginatedResponse<ProductDocument>> {
+    try {
+      const params = new URLSearchParams();
+      
+      if (page) {
+        params.append('page', page.toString());
+      }
+      
+      if (limit) {
+        params.append('limit', limit.toString());
+      }
+      
+      // Ajouter un paramètre timestamp pour éviter le cache si nécessaire
+      if (forceRefresh) {
+        params.append('_t', Date.now().toString());
+      }
+      
+      const queryString = params.toString() ? `?${params.toString()}` : '';
+      console.log(`Récupération des documents pour le produit ${productId} avec refresh=${forceRefresh}`);
+      const response = await api.get(`/product-documents/product/${productId}${queryString}`);
+      console.log(`Documents récupérés pour le produit ${productId}:`, response.data);
+      
+      // Format de réponse détecté: vérifier si c'est un objet unique ou un tableau dans results
+      // Si la réponse est un document unique (avec id, createdAt, etc.) ou un tableau direct,
+      // nous devons le transformer en format ServerPaginatedResponse
+      if (response.data && !response.data.results) {
+        // Vérifier si la réponse est un document unique ou un tableau direct
+        if (Array.isArray(response.data)) {
+          // Si c'est un tableau, on le met dans le format attendu
+          console.log("Réponse détectée comme un tableau direct de documents");
+          response.data = {
+            results: response.data,
+            totalResults: response.data.length,
+            totalPages: 1,
+            currentResults: response.data.length
+          };
+        } 
+        else if (response.data.id) {
+          // Si c'est un document unique (avec un id), on le transforme en tableau
+          console.log("Réponse détectée comme un document unique");
+          const singleDocument = response.data;
+          response.data = {
+            results: [singleDocument],
+            totalResults: 1,
+            totalPages: 1,
+            currentResults: 1
+          };
+        }
+      }
+      
+      // Maintenant que nous avons un format uniforme, on peut traiter les résultats
+      if (response.data && response.data.results && Array.isArray(response.data.results)) {
+        // Ajout de propriétés compatibles pour l'UI existante
+        response.data.results = response.data.results.map((doc: any) => {
+          // Créer un nouvel objet pour éviter les références
+          const transformedDoc: any = { ...doc };
+          
+          // Pour la compatibilité, ajouter productId et documentTypeId s'ils n'existent pas
+          if (doc.products && Array.isArray(doc.products) && doc.products.length > 0 && !doc.productId) {
+            transformedDoc.productId = doc.products[0].id.toString();
+            if (!doc.product) {
+              transformedDoc.product = { ...doc.products[0] };
+            }
+          }
+          
+          if (doc.type && doc.type.id && !doc.documentTypeId) {
+            transformedDoc.documentTypeId = doc.type.id.toString();
+            if (!doc.documentType) {
+              transformedDoc.documentType = { ...doc.type };
+            }
+          }
+          
+          console.log("Document préparé pour l'affichage:", {
+            id: transformedDoc.id,
+            fileName: transformedDoc.fileName || "MANQUANT",
+            type: transformedDoc.type?.name || "MANQUANT",
+            product: transformedDoc.products?.[0]?.name || "MANQUANT"
+          });
+          
+          return transformedDoc;
+        });
+        
+        console.log(`${response.data.results.length} documents prêts pour l'affichage`);
+      }
+      
+      return response.data;
+    } catch (error: any) {
+      // Si l'erreur est 404 (pas de documents), on retourne un objet vide mais valide
+      if (error.response && error.response.status === 404) {
+        console.log(`Aucun document trouvé pour le produit ${productId}`);
+        return {
+          results: [],
+          totalResults: 0,
+          totalPages: 0,
+          currentResults: 0
+        };
+      }
+      
+      // Sinon on propage l'erreur
+      console.error(`Erreur lors de la récupération des documents pour le produit ${productId}:`, error);
+      throw error;
     }
-    
-    if (limit) {
-      params.append('limit', limit.toString());
-    }
-    
-    const queryString = params.toString() ? `?${params.toString()}` : '';
-    const response = await api.get(`/products/${productId}/documents${queryString}`);
-    return response.data;
   },
-  
+
   async uploadProductDocument(data: UploadProductDocumentRequest): Promise<ApiResponse<ProductDocument>> {
     console.log("Données pour upload de document:", data);
     
@@ -570,8 +663,39 @@ export const equipmentService = {
     formData.append('file', data.file);
     formData.append('reference', data.reference);
     formData.append('serialNumber', data.serialNumber);
-    formData.append('productId', data.productId);
-    formData.append('documentTypeId', data.documentTypeId);
+    
+    // Formatage des produits associés (tableau d'objets)
+    if (data.products && data.products.length > 0) {
+      // Conversion du tableau d'objets en JSON string pour l'envoi
+      formData.append('products', JSON.stringify(data.products));
+    } else if (data.productId) {
+      // Rétrocompatibilité: si productId est fourni mais pas products
+      const productObj = [{ id: data.productId }];
+      formData.append('products', JSON.stringify(productObj));
+    }
+    
+    // Formatage du type de document (objet complet)
+    if (data.type && data.type.id) {
+      // Conversion de l'objet en JSON string pour l'envoi
+      formData.append('type', JSON.stringify(data.type));
+      // Ajouter aussi typeId comme champ séparé (exigé par l'API)
+      // S'assurer que typeId est un nombre valide
+      const typeIdValue = typeof data.type.id === 'string' ? parseInt(data.type.id, 10) : data.type.id;
+      formData.append('typeId', typeIdValue.toString());
+    } else if (data.documentTypeId) {
+      // Rétrocompatibilité: si documentTypeId est fourni mais pas type
+      const typeObj = { id: data.documentTypeId };
+      formData.append('type', JSON.stringify(typeObj));
+      // Ajouter aussi typeId comme champ séparé (exigé par l'API)
+      // S'assurer que typeId est un nombre valide
+      const typeIdValue = typeof data.documentTypeId === 'string' ? parseInt(data.documentTypeId, 10) : data.documentTypeId;
+      formData.append('typeId', typeIdValue.toString());
+    }
+    
+    // Ajouter l'ID de l'utilisateur qui a téléversé le document
+    // On utilise 1 par défaut si non spécifié (l'API pourra utiliser l'utilisateur courant)
+    formData.append('uploadedBy', '1');
+    
     formData.append('issueDate', data.issueDate);
     formData.append('version', data.version.toString());
     
@@ -579,13 +703,34 @@ export const equipmentService = {
       formData.append('expiryDate', data.expiryDate);
     }
     
-    const response = await api.post('/product-documents/upload', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
+    console.log("Envoi de la requête d'upload avec formData:", {
+      reference: formData.get('reference'),
+      serialNumber: formData.get('serialNumber'),
+      products: formData.get('products'),
+      type: formData.get('type'),
+      typeId: formData.get('typeId'),
+      uploadedBy: formData.get('uploadedBy')
     });
     
-    return response.data;
+    try {
+      const response = await api.post('/product-documents/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      console.log("Réponse de l'API après upload:", response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error("Erreur lors de l'upload du document:", error);
+      
+      if (error.response) {
+        console.error("Statut:", error.response.status);
+        console.error("Données:", error.response.data);
+      }
+      
+      throw error;
+    }
   },
   
   async updateProductDocumentStatus(id: string, data: UpdateProductDocumentStatusRequest): Promise<ApiResponse<ProductDocument>> {
@@ -602,8 +747,20 @@ export const equipmentService = {
   },
   
   async validateProductDocumentChecksum(id: string, checksum: string): Promise<ApiResponse<{ valid: boolean }>> {
-    const response = await api.post(`/product-documents/${id}/validate-checksum`, { checksum });
-    return response.data;
+    try {
+      const response = await api.get(`/product-documents/${id}/validate-checksum?checksum=${encodeURIComponent(checksum)}`);
+      return response.data;
+    } catch (error: any) {
+      // Si l'erreur est 404, cela signifie que le document n'existe pas
+      if (error.response && error.response.status === 404) {
+        return {
+          data: { valid: false },
+          message: "Document introuvable ou supprimé",
+          success: false
+        };
+      }
+      throw error;
+    }
   },
   
   async deleteProductDocument(id: string): Promise<ApiResponse<void>> {

@@ -76,7 +76,7 @@ export interface Product {
 }
 
 export interface DocumentType {
-  id: string;
+  id: string | number;  // Peut être string ou number selon l'API
   name: string;
   serialNumber: string;
   createdAt: string;
@@ -108,23 +108,35 @@ export interface ProductDocument {
   checksum: string;
   status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
   uploadedBy?: number;
-  productId: string;
+  // Propriétés originales pour la compatibilité avec l'UI
+  productId?: string;
   product?: Product;
-  documentTypeId: string;
+  documentTypeId?: string;
   documentType?: DocumentType;
+  // Nouvelles propriétés provenant du backend
+  products?: Product[];  // Tableau de produits associés
+  type?: DocumentType;   // Type de document complet
+  // Autres propriétés
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
+  title?: string;
+  description?: string;
 }
 
 export interface UploadProductDocumentRequest {
   reference: string;
   serialNumber: string;
-  productId: string;
-  documentTypeId: string;
+  // Champs modifiés pour correspondre au format backend
+  products: Product[]; // Tableau d'objets produits au lieu de productId
+  type: DocumentType;  // Objet type de document complet au lieu de documentTypeId
+  // Garder les anciens champs pour compatibilité avec le code existant
+  productId?: string;
+  documentTypeId?: string;
   issueDate: string;
   expiryDate?: string;
   version: number;
+  uploadedBy?: number; // ID de l'utilisateur qui téléverse le document
   file: File;
 }
 

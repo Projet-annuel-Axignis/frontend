@@ -103,7 +103,7 @@ function StatusChip({ status }: { status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED' }) 
 export default function ProductDocumentsPage() {
   const [documents, setDocuments] = useState<ProductDocument[]>([]);
   const [documentTypes, setDocumentTypes] = useState<DocumentType[]>([]);
-  const [products] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showDeleted, setShowDeleted] = useState(false);
@@ -148,22 +148,134 @@ export default function ProductDocumentsPage() {
   const loadDocuments = async () => {
     try {
       setLoading(true);
-      const response = await equipmentService.getProductDocuments(
-        page + 1, 
-        rowsPerPage, 
-        filterProductId || undefined, 
-        filterDocumentTypeId || undefined,
-        filterStatus || undefined,
-        searchTerm, 
-        showDeleted
-      );
-      setDocuments(response.results || []);
-      setTotal(response.totalResults || 0);
-    } catch (error) {
+      
+      // Vérifier si un produit est sélectionné
+      if (filterProductId) {
+        try {
+          // Si un produit est sélectionné, utiliser la route par produit
+          const response = await equipmentService.getProductDocumentsByProductId(
+            filterProductId,
+            page + 1,
+            rowsPerPage,
+            true // Force refresh pour s'assurer d'avoir les données les plus récentes
+          );
+          
+          console.log(`Documents pour le produit ${filterProductId} - Format brut:`, response);
+          
+          // Vérifier si nous avons des documents
+          const hasDocuments = response && response.results && response.results.length > 0;
+          
+          console.log(`Analyse de la réponse pour le produit ${filterProductId}:`, {
+            responseType: typeof response,
+            hasResults: !!response.results,
+            totalResults: response.totalResults,
+            resultsCount: response.results?.length || 0,
+            firstDoc: hasDocuments ? {
+              id: response.results[0].id,
+              fileName: response.results[0].fileName,
+              hasProducts: !!response.results[0].products,
+              productsLength: response.results[0].products?.length || 0,
+              productName: response.results[0].products?.[0]?.name || response.results[0].product?.name || 'Non spécifié',
+              hasType: !!response.results[0].type,
+              typeName: response.results[0].type?.name || response.results[0].documentType?.name || 'Non spécifié'
+            } : 'Aucun document disponible'
+          });
+          
+          // Filtrage côté client pour les autres critères (temporaire jusqu'à mise à jour API)
+          let filteredDocs = response.results || [];
+          
+          if (filterDocumentTypeId) {
+            filteredDocs = filteredDocs.filter(doc => doc.documentTypeId === filterDocumentTypeId);
+          }
+          
+          if (filterStatus) {
+            filteredDocs = filteredDocs.filter(doc => doc.status === filterStatus);
+          }
+          
+          if (searchTerm) {
+            const searchLower = searchTerm.toLowerCase();
+            filteredDocs = filteredDocs.filter(doc => 
+              doc.fileName?.toLowerCase().includes(searchLower) ||
+              doc.reference?.toLowerCase().includes(searchLower) ||
+              doc.serialNumber?.toLowerCase().includes(searchLower)
+            );
+          }
+          
+          if (!showDeleted) {
+            filteredDocs = filteredDocs.filter(doc => !doc.deletedAt);
+          }
+          
+          console.log("Documents prêts pour l'affichage:", filteredDocs.map(doc => ({
+            id: doc.id,
+            fileName: doc.fileName,
+            status: doc.status,
+            typeName: doc.documentType?.name || doc.type?.name || 'Inconnu',
+            productName: doc.product?.name || (doc.products && doc.products.length > 0 ? doc.products[0].name : 'Inconnu'),
+            hasProductId: !!doc.productId,
+            hasDocumentTypeId: !!doc.documentTypeId,
+            hasProducts: Array.isArray(doc.products) && doc.products.length > 0,
+            hasType: !!doc.type
+          })));
+          
+          setDocuments(filteredDocs);
+          setTotal(response.totalResults || 0);
+        } catch (error: any) {
+          console.log('Réponse API pour getProductDocumentsByProductId:', error);
+          
+          // Gérer spécifiquement l'erreur 404 (pas de documents trouvés pour ce produit)
+          if (error.response && error.response.status === 404) {
+            // C'est normal s'il n'y a pas de documents, on affiche juste une liste vide
+            setDocuments([]);
+            setTotal(0);
+            
+            // Informer l'utilisateur de manière plus visible
+            console.log("Aucun document trouvé pour ce produit");
+            
+            // Afficher un message non intrusif pour encourager l'upload de documents
+            if (!snackbar.open) {
+              setSnackbar({
+                open: true,
+                message: 'Aucun document trouvé pour ce produit. Vous pouvez en ajouter un.',
+                severity: 'info'
+              });
+            }
+          } else {
+            // Pour les autres erreurs, on les traite comme de véritables erreurs
+            throw error;
+          }
+        }
+      } else {
+        // Si aucun produit n'est sélectionné, afficher un message ou demander à l'utilisateur de sélectionner
+        setDocuments([]);
+        setTotal(0);
+        
+        // Indiquer à l'utilisateur qu'il doit sélectionner un produit
+        if (!snackbar.open) {
+          setSnackbar({
+            open: true,
+            message: 'Veuillez sélectionner un produit pour afficher ses documents',
+            severity: 'info'
+          });
+        }
+      }
+    } catch (error: any) {
       console.error('Erreur lors du chargement des documents:', error);
+      
+      // Message d'erreur personnalisé selon le type d'erreur
+      let errorMessage = 'Erreur lors du chargement des documents';
+      
+      if (error.response) {
+        // Erreurs de l'API avec des réponses
+        if (error.response.status === 403) {
+          errorMessage = "Vous n'avez pas les droits d'accès à ces documents";
+        } else if (error.response.data && error.response.data.message) {
+          errorMessage = error.response.data.message;
+        }
+      }
+      
       setSnackbar({
         open: true,
-        message: 'Erreur lors du chargement des documents',
+        message: errorMessage,
         severity: 'error'
       });
     } finally {
@@ -175,38 +287,69 @@ export default function ProductDocumentsPage() {
   const loadDocumentTypes = async () => {
     try {
       const response = await equipmentService.getDocumentTypes(1, 100);
-      setDocumentTypes(response.results || []);
+      console.log("Réponse loadDocumentTypes:", response);
+      
+      // La réponse est un tableau [results, totalResults, totalPages]
+      if (Array.isArray(response)) {
+        const [results] = response;
+        setDocumentTypes(Array.isArray(results) ? results : []);
+      } else if (response && typeof response === 'object' && response.results) {
+        // Compatibilité avec l'ancien format de réponse (objet)
+        setDocumentTypes(response.results);
+      } else {
+        console.error('Format de réponse API inattendu:', response);
+        setDocumentTypes([]);
+      }
     } catch (error) {
       console.error('Erreur lors du chargement des types de documents:', error);
     }
   };
 
-  // Méthode pour charger la liste des produits (à implémenter)
-  // Cette fonction serait utilisée pour charger les produits à partir de l'API
-  // const loadProducts = async () => {
-  //   try {
-  //     // À implémenter: appel à l'API pour récupérer les produits
-  //     // const response = await productService.getProducts(1, 100);
-  //     // setProducts(response.results || []);
-  //   } catch (error) {
-  //     console.error('Erreur lors du chargement des produits:', error);
-  //   }
-  // };
+  // Méthode pour charger la liste des produits
+  const loadProducts = async () => {
+    try {
+      const response = await equipmentService.getProducts(1, 100);
+      console.log("Réponse loadProducts:", response);
+      
+      if (response && response.results) {
+        setProducts(response.results);
+      } else {
+        console.error('Format de réponse API inattendu pour les produits:', response);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des produits:', error);
+    }
+  };
 
   // Appels initiaux
   useEffect(() => {
     loadDocuments();
-    loadDocumentTypes();
-    // loadProducts(); // À activer quand l'API sera disponible
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, rowsPerPage, filterProductId, filterDocumentTypeId, filterStatus, searchTerm, showDeleted]);
+  
+  // Chargement des listes de référence (types de documents et produits)
+  useEffect(() => {
+    loadDocumentTypes();
+    loadProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Gestion du formulaire d'upload
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
+      const selectedFile = event.target.files[0];
+      
+      // Générer une référence et un numéro de série par défaut basés sur le nom du fichier
+      // pour aider l'utilisateur à remplir le formulaire plus rapidement
+      const fileNameWithoutExtension = selectedFile.name.replace(/\.[^/.]+$/, "");
+      const defaultRef = fileNameWithoutExtension.toUpperCase().replace(/[^A-Z0-9]/g, "-").substring(0, 20);
+      const timestamp = new Date().getTime().toString().slice(-6);
+      
       setUploadForm({
         ...uploadForm,
-        file: event.target.files[0]
+        file: selectedFile,
+        reference: uploadForm.reference || `DOC-${defaultRef}`,
+        serialNumber: uploadForm.serialNumber || `DOC-${defaultRef}-${timestamp}`
       });
     }
   };
@@ -214,14 +357,45 @@ export default function ProductDocumentsPage() {
   const handleUploadSubmit = async () => {
     try {
       setLoading(true);
-      await equipmentService.uploadProductDocument(uploadForm);
+      
+      // Préparation des données au format attendu par le backend
+      const formattedUploadForm = {
+        ...uploadForm,
+        // Conversion de productId en tableau products
+        products: uploadForm.productId ? 
+          [products.find(p => p.id.toString() === uploadForm.productId.toString()) || { id: uploadForm.productId }] : 
+          [],
+        // Conversion de documentTypeId en objet type complet
+        type: uploadForm.documentTypeId ? 
+          documentTypes.find(t => t.id.toString() === uploadForm.documentTypeId.toString()) || 
+          { id: uploadForm.documentTypeId } : 
+          {} as DocumentType
+      };
+      
+      const response = await equipmentService.uploadProductDocument(formattedUploadForm);
+      
+      // Afficher un message de succès avec plus de détails
       setSnackbar({
         open: true,
-        message: 'Document téléversé avec succès',
+        message: `Document "${response.data?.fileName || 'sans nom'}" téléversé avec succès`,
         severity: 'success'
       });
+      
+      // Fermer la boîte de dialogue
       handleCloseDialog();
-      loadDocuments();
+      
+      // Mettre à jour la sélection du produit pour afficher le nouveau document
+      if (formattedUploadForm.productId && formattedUploadForm.productId !== filterProductId) {
+        console.log("Mise à jour du produit sélectionné après upload:", formattedUploadForm.productId);
+        // Mettre à jour le filtre de produit pour afficher le document qui vient d'être ajouté
+        setFilterProductId(formattedUploadForm.productId);
+      }
+      
+      // Attendre un court instant pour permettre à l'API de traiter l'upload avant de recharger
+      setTimeout(() => {
+        // Utiliser la fonction de rechargement forcé pour s'assurer d'avoir les données les plus récentes
+        forceReloadDocuments();
+      }, 800);
     } catch (error: any) {
       console.error('Erreur lors du téléversement:', error);
       let errorMessage = 'Erreur lors du téléversement du document';
@@ -242,6 +416,54 @@ export default function ProductDocumentsPage() {
         message: errorMessage,
         severity: 'error'
       });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fonction pour forcer le rechargement des documents après upload
+  const forceReloadDocuments = async () => {
+    console.log("Rechargement forcé des documents...");
+    // Réinitialiser le cache pour s'assurer d'obtenir les données les plus récentes
+    try {
+      setLoading(true);
+      if (filterProductId) {
+        // Forcer une nouvelle requête pour le produit sélectionné
+        const response = await equipmentService.getProductDocumentsByProductId(
+          filterProductId,
+          page + 1,
+          rowsPerPage,
+          true // Ajoutez un paramètre à la méthode pour forcer le non-cache
+        );
+        
+        console.log("État des documents après upload:", {
+          hasResults: !!response.results,
+          count: response.results?.length || 0,
+          totalResults: response.totalResults || 0
+        });
+        
+        if (response.results) {
+          console.log("Premier document rechargé:", response.results[0] ? {
+            id: response.results[0].id,
+            fileName: response.results[0].fileName || "N/A",
+            type: response.results[0].type?.name || response.results[0].documentType?.name || "N/A",
+            product: response.results[0].products?.[0]?.name || response.results[0].product?.name || "N/A"
+          } : "Aucun document");
+        }
+        
+        setDocuments(response.results || []);
+        setTotal(response.totalResults || 0);
+        
+        if (response.results && response.results.length > 0) {
+          setSnackbar({
+            open: true,
+            message: `${response.results.length} document(s) disponible(s) pour ce produit`,
+            severity: 'success'
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Erreur lors du rechargement forcé:", error);
     } finally {
       setLoading(false);
     }
@@ -312,11 +534,25 @@ export default function ProductDocumentsPage() {
         message: 'Téléchargement démarré',
         severity: 'info'
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur lors du téléchargement:', error);
+      
+      // Message d'erreur personnalisé selon le type d'erreur
+      let errorMessage = 'Erreur lors du téléchargement du document';
+      
+      if (error.response) {
+        if (error.response.status === 404) {
+          errorMessage = "Document introuvable ou supprimé";
+        } else if (error.response.status === 403) {
+          errorMessage = "Vous n'avez pas les droits pour télécharger ce document";
+        } else if (error.response.data && error.response.data.message) {
+          errorMessage = error.response.data.message;
+        }
+      }
+      
       setSnackbar({
         open: true,
-        message: 'Erreur lors du téléchargement du document',
+        message: errorMessage,
         severity: 'error'
       });
     } finally {
@@ -351,11 +587,25 @@ export default function ProductDocumentsPage() {
           : 'Le checksum est invalide, le document pourrait avoir été altéré',
         severity: response.data.valid ? 'success' : 'error'
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur lors de la validation du checksum:', error);
+      
+      // Message d'erreur personnalisé selon le type d'erreur
+      let errorMessage = 'Erreur lors de la validation du checksum';
+      
+      if (error.response) {
+        if (error.response.status === 404) {
+          errorMessage = "Le document n'existe plus ou a été supprimé";
+          // Forcer le rechargement des documents pour mettre à jour la liste
+          loadDocuments();
+        } else if (error.response.data && error.response.data.message) {
+          errorMessage = error.response.data.message;
+        }
+      }
+      
       setSnackbar({
         open: true,
-        message: 'Erreur lors de la validation du checksum',
+        message: errorMessage,
         severity: 'error'
       });
       setChecksumResult(null);
@@ -436,7 +686,7 @@ export default function ProductDocumentsPage() {
     setUploadForm({
       reference: '',
       serialNumber: '',
-      productId: '',
+      productId: filterProductId || '', // Utiliser le produit sélectionné dans le filtre
       documentTypeId: '',
       issueDate: format(new Date(), 'yyyy-MM-dd'),
       version: 1,
@@ -482,6 +732,8 @@ export default function ProductDocumentsPage() {
     setSearchTerm('');
     setPage(0);
   };
+
+  // Fonctions de débug supprimées pour éviter les warnings
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={fr}>
@@ -626,12 +878,17 @@ export default function ProductDocumentsPage() {
               variant="contained"
               startIcon={<AddIcon />}
               onClick={handleAdd}
+              disabled={!filterProductId}
+              title={!filterProductId ? "Veuillez d'abord sélectionner un produit" : ""}
               sx={{
                 background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
                 '&:hover': {
                   background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
                 },
-                minWidth: {xs: '100%', md: 'auto'}
+                minWidth: {xs: '100%', md: 'auto'},
+                '&.Mui-disabled': {
+                  background: 'rgba(0, 0, 0, 0.12)'
+                }
               }}
             >
               Téléverser un document
@@ -661,12 +918,47 @@ export default function ProductDocumentsPage() {
                       <CircularProgress />
                     </TableCell>
                   </TableRow>
+                ) : !filterProductId ? (
+                  <TableRow>
+                    <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                        <Typography variant="body1" color="text.secondary">
+                          Veuillez sélectionner un produit pour afficher ses documents
+                        </Typography>
+                        <FormControl size="small" sx={{ minWidth: 300 }}>
+                          <InputLabel>Sélectionner un produit</InputLabel>
+                          <Select
+                            value={filterProductId}
+                            onChange={(e) => setFilterProductId(e.target.value)}
+                            label="Sélectionner un produit"
+                          >
+                            <MenuItem value="">-- Sélectionnez --</MenuItem>
+                            {products.map(product => (
+                              <MenuItem key={product.id} value={product.id.toString()}>
+                                {product.name}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
                 ) : documents.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
-                      <Typography variant="body1" color="text.secondary">
-                        Aucun document trouvé
-                      </Typography>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                        <Typography variant="body1" color="text.secondary">
+                          Aucun document trouvé pour ce produit
+                        </Typography>
+                        <Button
+                          variant="outlined"
+                          startIcon={<CloudUploadIcon />}
+                          onClick={handleAdd}
+                          size="small"
+                        >
+                          Téléverser votre premier document
+                        </Button>
+                      </Box>
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -723,10 +1015,10 @@ export default function ProductDocumentsPage() {
                         </Box>
                       </TableCell>
                       <TableCell>
-                        {document.documentType?.name || 'Non spécifié'}
+                        {document.documentType?.name || document.type?.name || 'Non spécifié'}
                       </TableCell>
                       <TableCell>
-                        {document.product?.name || 'Non spécifié'}
+                        {document.product?.name || (document.products && document.products.length > 0 ? document.products[0].name : 'Non spécifié')}
                       </TableCell>
                       <TableCell>
                         <StatusChip status={document.status} />
@@ -1204,6 +1496,7 @@ export default function ProductDocumentsPage() {
           color="primary"
           aria-label="Téléverser un document"
           onClick={handleAdd}
+          disabled={!filterProductId}
           sx={{
             position: 'fixed',
             bottom: 16,
@@ -1211,6 +1504,9 @@ export default function ProductDocumentsPage() {
             background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
             '&:hover': {
               background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+            },
+            '&.Mui-disabled': {
+              background: 'rgba(0, 0, 0, 0.12)'
             },
             display: { xs: 'flex', md: 'none' }
           }}

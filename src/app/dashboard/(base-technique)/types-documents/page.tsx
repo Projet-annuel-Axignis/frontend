@@ -465,15 +465,8 @@ export default function DocumentTypesPage() {
                     <TableCell align="center">
                       <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
                         {docType.deletedAt ? (
-                          <Tooltip title="Restaurer">
-                            <IconButton 
-                              size="small" 
-                              color="success"
-                              onClick={() => handleRestore(docType.id)}
-                            >
-                              <RefreshIcon />
-                            </IconButton>
-                          </Tooltip>
+                          /* Ne rien faire */
+                          <></>
                         ) : (
                           <>
                             <Tooltip title="Modifier">
