@@ -6,6 +6,7 @@
 // ============================================================================
 
 import { User } from "./auth";
+import { EquipmentType } from "./equipment";
 import { Part, Typologies } from "./site";
 
 // =========================
@@ -105,6 +106,11 @@ export interface UpdateReportTypeDto {
   periodicity?: Periodicity;
 }
 
+export interface ReportEquipmentType {
+  id: number;
+  equipmentId: number; // Equivaut à l'id de EquipmentType
+}
+
 export interface Report {
   id: number;
   createdAt: string;
@@ -118,6 +124,8 @@ export interface Report {
   parts?: Part[];
   files?: File[];
   obsevations?: Observations[];
+  equipments?: ReportEquipmentType[];
+  equipmentTypes?: EquipmentType[];
 }
 
 export interface CreateReportDto {
@@ -128,6 +136,7 @@ export interface CreateReportDto {
   interventionId: number;
   partIds: number[];
   fileIds: number[];
+  equipmentIds?: number[];
 }
 
 export interface UpdateReportDto {
@@ -138,6 +147,7 @@ export interface UpdateReportDto {
   interventionId?: number;
   partIds?: number[];
   fileIds?: number[];
+  equipmentIds?: number[];
 }
 
 // =========================
