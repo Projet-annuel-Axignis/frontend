@@ -27,7 +27,7 @@ export default function RootLayout({
           <Box
             component="main"
             sx={{
-              px: { xs: 2, md: 6 },
+              px: { xs: 2, md: 3 },
               pt: '30px',
               pb: { xs: 2, sm: 2, md: 3 },
               flex: 1,
