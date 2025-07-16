@@ -19,7 +19,6 @@ import InventoryIcon from '@mui/icons-material/Inventory';
 import DescriptionIcon from '@mui/icons-material/Description';
 import ArticleIcon from '@mui/icons-material/Article';
 import {
-  Badge,
   Box,
   Chip,
   Collapse,
@@ -370,18 +369,6 @@ export default function Sidebar() {
                   </StyledListItemButton>
                 </Link>
                 
-                <Link href="/dashboard/compatibilite" style={{ textDecoration: 'none', color: 'inherit' }}>
-                  <StyledListItemButton
-                    sx={{ py: 0.75, mb: 0.5, width: '100%' }}
-                    isActive={isActive('/dashboard/compatibilite')}
-                  >
-                    <GroupIcon sx={{ mr: 1.5, fontSize: '1rem', color: 'var(--color-axignis-primary)' }} />
-                    <Typography variant="body2" color="textSecondary">
-                      Compatibilité
-                    </Typography>
-                  </StyledListItemButton>
-                </Link>
-
                 <Link href="/dashboard/compatibilite" style={{ textDecoration: 'none', color: 'inherit' }}>
                   <StyledListItemButton
                     sx={{ py: 0.75, mb: 0.5, width: '100%' }}
