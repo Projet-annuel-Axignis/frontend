@@ -54,8 +54,6 @@ export interface Brand {
 export interface CompatibilityGroup {
   id: number;
   name: string;
-  serialNumber: string;
-  description?: string;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
@@ -222,7 +220,7 @@ export interface CreateProductRequest {
   serialNumber: string;
   brandId: number;
   typeId: number;
-  compatibilityGroupIds?: number[];
+  groupIds?: number[];
 }
 
 export interface UpdateProductRequest {
@@ -230,20 +228,26 @@ export interface UpdateProductRequest {
   serialNumber?: string;
   brandId?: number;
   typeId?: number;
-  compatibilityGroupIds?: number[];
+  groupIds?: number[];
 }
 
 // Types pour les groupes de compatibilité
 export interface CreateCompatibilityGroupRequest {
   name: string;
-  serialNumber: string;
-  description?: string;
 }
 
 export interface UpdateCompatibilityGroupRequest {
   name?: string;
-  serialNumber?: string;
-  description?: string;
+}
+
+export interface AttachProductToGroupRequest {
+  productId: number;
+  groupId: number;
+}
+
+export interface DetachProductFromGroupRequest {
+  productId: number;
+  groupId: number;
 }
 
 // Types pour les réponses API

@@ -24,7 +24,10 @@ import {
   Product,
   CreateProductRequest,
   UpdateProductRequest,
-  CompatibilityGroup
+  CompatibilityGroup,
+  CreateCompatibilityGroupRequest,
+  AttachProductToGroupRequest,
+  DetachProductFromGroupRequest
 } from '@/types/equipment';
 
 export const equipmentService = {
@@ -924,30 +927,10 @@ export const equipmentService = {
   },
 
   // Groupes de compatibilité
-  async getCompatibilityGroups(page: number = 1, limit: number = 10, search?: string, showDeleted: boolean = false): Promise<CompatibilityGroup[]> {
-    const params = new URLSearchParams();
-    
-    if (page) {
-      params.append('page', page.toString());
-    }
-    
-    if (limit) {
-      params.append('limit', limit.toString());
-    }
-    
-    if (search) {
-      params.append('search', search);
-    }
-    
-    if (showDeleted) {
-      params.append('includeDeleted', 'true');
-    }
-    
-    const queryString = params.toString() ? `?${params.toString()}` : '';
-    
+  async getCompatibilityGroups(): Promise<CompatibilityGroup[]> {
     try {
-      console.log(`Appel API GET /compatibility-groups${queryString}`);
-      const response = await api.get(`/compatibility-groups${queryString}`);
+      console.log(`Appel API GET /compatibility-groups`);
+      const response = await api.get(`/compatibility-groups`);
       console.log("Réponse API getCompatibilityGroups:", response.data);
       
       // Vérifier si la réponse est directement un tableau de groupes
@@ -965,39 +948,11 @@ export const equipmentService = {
       return [];
     } catch (error: any) {
       console.error("Erreur getCompatibilityGroups:", error);
-      if (error.response) {
-        console.error("Statut de l'erreur:", error.response.status);
-        console.error("Données d'erreur:", error.response.data);
-      }
       throw error;
     }
   },
   
-  async getCompatibilityGroupById(id: number): Promise<ApiResponse<CompatibilityGroup>> {
-    try {
-      console.log(`Appel API GET /compatibility-groups/${id}`);
-      const response = await api.get(`/compatibility-groups/${id}`);
-      console.log("Réponse API getCompatibilityGroupById:", response.data);
-      return response.data;
-    } catch (error: any) {
-      console.error("Erreur getCompatibilityGroupById:", error);
-      throw error;
-    }
-  },
-  
-  async getCompatibilityGroupBySerialNumber(serialNumber: string): Promise<ApiResponse<CompatibilityGroup>> {
-    try {
-      console.log(`Appel API GET /compatibility-groups/serial/${serialNumber}`);
-      const response = await api.get(`/compatibility-groups/serial/${serialNumber}`);
-      console.log("Réponse API getCompatibilityGroupBySerialNumber:", response.data);
-      return response.data;
-    } catch (error: any) {
-      console.error("Erreur getCompatibilityGroupBySerialNumber:", error);
-      throw error;
-    }
-  },
-  
-  async createCompatibilityGroup(data: { name: string, serialNumber: string, description?: string }): Promise<ApiResponse<CompatibilityGroup>> {
+  async createCompatibilityGroup(data: { name: string }): Promise<ApiResponse<CompatibilityGroup>> {
     console.log("Données pour création de groupe de compatibilité:", data);
     try {
       const response = await api.post('/compatibility-groups', data);
@@ -1009,105 +964,41 @@ export const equipmentService = {
     }
   },
   
-  async updateCompatibilityGroup(id: number, data: { name?: string, serialNumber?: string, description?: string }): Promise<ApiResponse<CompatibilityGroup>> {
-    console.log(`Données pour mise à jour du groupe de compatibilité (ID: ${id}):`, data);
-    try {
-      const response = await api.patch(`/compatibility-groups/${id}`, data);
-      console.log("Réponse API updateCompatibilityGroup:", response.data);
-      return response.data;
-    } catch (error: any) {
-      console.error(`Erreur lors de la mise à jour du groupe de compatibilité (ID: ${id}):`, error);
-      throw error;
-    }
-  },
-  
-  async deleteCompatibilityGroup(id: number): Promise<ApiResponse<void>> {
+  async deleteCompatibilityGroup(id: number): Promise<void> {
     try {
       console.log(`Suppression du groupe de compatibilité (ID: ${id})`);
-      const response = await api.delete(`/compatibility-groups/${id}`);
-      console.log("Réponse API deleteCompatibilityGroup:", response.data);
-      return response.data;
+      await api.delete(`/compatibility-groups/${id}`);
+      console.log("Groupe de compatibilité supprimé avec succès");
     } catch (error: any) {
       console.error(`Erreur lors de la suppression du groupe de compatibilité (ID: ${id}):`, error);
       throw error;
     }
   },
   
-  async restoreCompatibilityGroup(id: number): Promise<ApiResponse<CompatibilityGroup>> {
+  async attachProductToGroup(groupId: number, productId: number): Promise<void> {
     try {
-      console.log(`Restauration du groupe de compatibilité (ID: ${id})`);
-      const response = await api.patch(`/compatibility-groups/${id}/restore`);
-      console.log("Réponse API restoreCompatibilityGroup:", response.data);
-      return response.data;
+      console.log(`Attachement du produit ${productId} au groupe ${groupId}`);
+      await api.post('/compatibility-groups/attach-product', {
+        groupId,
+        productId
+      });
+      console.log("Produit attaché au groupe avec succès");
     } catch (error: any) {
-      console.error(`Erreur lors de la restauration du groupe de compatibilité (ID: ${id}):`, error);
+      console.error(`Erreur lors de l'attachement du produit ${productId} au groupe ${groupId}:`, error);
       throw error;
     }
   },
   
-  // Gestion des produits dans les groupes de compatibilité
-  async addProductToCompatibilityGroup(groupId: number, productId: number): Promise<ApiResponse<void>> {
+  async detachProductFromGroup(groupId: number, productId: number): Promise<void> {
     try {
-      console.log(`Ajout du produit ${productId} au groupe de compatibilité ${groupId}`);
-      const response = await api.post(`/compatibility-groups/${groupId}/products/${productId}`);
-      console.log("Réponse API addProductToCompatibilityGroup:", response.data);
-      return response.data;
+      console.log(`Détachement du produit ${productId} du groupe ${groupId}`);
+      await api.post('/compatibility-groups/detach-product', {
+        groupId,
+        productId
+      });
+      console.log("Produit détaché du groupe avec succès");
     } catch (error: any) {
-      console.error(`Erreur lors de l'ajout du produit ${productId} au groupe de compatibilité ${groupId}:`, error);
-      throw error;
-    }
-  },
-  
-  async removeProductFromCompatibilityGroup(groupId: number, productId: number): Promise<ApiResponse<void>> {
-    try {
-      console.log(`Suppression du produit ${productId} du groupe de compatibilité ${groupId}`);
-      const response = await api.delete(`/compatibility-groups/${groupId}/products/${productId}`);
-      console.log("Réponse API removeProductFromCompatibilityGroup:", response.data);
-      return response.data;
-    } catch (error: any) {
-      console.error(`Erreur lors de la suppression du produit ${productId} du groupe de compatibilité ${groupId}:`, error);
-      throw error;
-    }
-  },
-  
-  async getProductsInCompatibilityGroup(groupId: number, page: number = 1, limit: number = 10): Promise<Product[]> {
-    const params = new URLSearchParams();
-    
-    if (page) {
-      params.append('page', page.toString());
-    }
-    
-    if (limit) {
-      params.append('limit', limit.toString());
-    }
-    
-    const queryString = params.toString() ? `?${params.toString()}` : '';
-    
-    try {
-      console.log(`Appel API GET /compatibility-groups/${groupId}/products${queryString}`);
-      const response = await api.get(`/compatibility-groups/${groupId}/products${queryString}`);
-      console.log("Réponse API getProductsInCompatibilityGroup:", response.data);
-      
-      // Vérifier si la réponse est un groupe qui contient un tableau de produits
-      if (response.data && Array.isArray(response.data.products)) {
-        return response.data.products;
-      }
-      
-      // Vérifier si la réponse est directement un tableau de produits
-      if (Array.isArray(response.data)) {
-        return response.data;
-      }
-      
-      // Si la réponse a une structure paginée
-      if (response.data && Array.isArray(response.data.results)) {
-        return response.data.results;
-      }
-      
-      // Si aucun format reconnu, retourner un tableau vide
-      console.warn("Format de réponse inattendu pour les produits du groupe");
-      return [];
-    } catch (error: any) {
-      console.error("Erreur getProductsInCompatibilityGroup:", error);
+      console.error(`Erreur lors du détachement du produit ${productId} du groupe ${groupId}:`, error);
       throw error;
     }
   },
