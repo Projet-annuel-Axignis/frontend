@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { 
   Box, 
   Typography, 
@@ -103,6 +103,7 @@ function StatusChip({ status }: { status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED' }) 
 
 export default function ProductDocumentsPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   
   // Type pour le formulaire d'upload simplifié
   type UploadForm = {
@@ -171,6 +172,17 @@ export default function ProductDocumentsPage() {
     message: '',
     severity: 'success'
   });
+
+  // Fonction pour mettre à jour l'URL avec le produit sélectionné
+  const updateUrlWithProduct = useCallback((productId: string) => {
+    const url = new URL(window.location.href);
+    if (productId) {
+      url.searchParams.set('productId', productId);
+    } else {
+      url.searchParams.delete('productId');
+    }
+    router.replace(url.pathname + url.search);
+  }, [router]);
 
   // Chargement initial des documents et des listes déroulantes
   const loadDocuments = useCallback(async () => {
@@ -793,7 +805,10 @@ export default function ProductDocumentsPage() {
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent'
         }}>
-          Documents produits
+          {filterProductId ? 
+            `Documents - ${products.find(p => p.id.toString() === filterProductId)?.name || 'Produit sélectionné'}` : 
+            'Documents produits'
+          }
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
           Gérez les documents associés à vos produits (manuels, fiches techniques, certificats...)
@@ -819,7 +834,10 @@ export default function ProductDocumentsPage() {
               <Button
                 variant="outlined"
                 size="medium"
-                onClick={() => setFilterProductId('')}
+                onClick={() => {
+                  setFilterProductId('');
+                  updateUrlWithProduct('');
+                }}
                 startIcon={<RefreshIcon />}
                 sx={{ 
                   borderColor: 'var(--color-axignis-primary)',
@@ -842,7 +860,9 @@ export default function ProductDocumentsPage() {
               loading={loading}
               value={products.find(p => p.id.toString() === filterProductId) || null}
               onChange={(event, newValue) => {
-                setFilterProductId(newValue ? newValue.id.toString() : '');
+                const productId = newValue ? newValue.id.toString() : '';
+                setFilterProductId(productId);
+                updateUrlWithProduct(productId);
               }}
               getOptionLabel={(option) => option.name}
               isOptionEqualToValue={(option, value) => option.id === value.id}

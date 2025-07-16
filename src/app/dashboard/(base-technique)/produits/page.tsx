@@ -892,7 +892,7 @@ export default function ProductsPage() {
                             }}
                             variant={productDocuments[product.id].length > 0 ? "filled" : "outlined"}
                             icon={productDocuments[product.id].length > 0 ? <InventoryIcon sx={{ fontSize: '1rem' }} /> : undefined}
-                            onClick={() => router.push(`/dashboard/base-technique/documents?productId=${product.id}`)}
+                            onClick={() => router.push(`/dashboard/documents?productId=${product.id}`)}
                             clickable
                           />
                           {productDocuments[product.id].length > 0 && (
@@ -910,7 +910,7 @@ export default function ProductsPage() {
                           color="default"
                           variant="outlined"
                           sx={{ opacity: 0.7, cursor: 'pointer' }}
-                          onClick={() => router.push(`/dashboard/base-technique/documents?productId=${product.id}`)}
+                          onClick={() => router.push(`/dashboard/documents?productId=${product.id}`)}
                           clickable
                         />
                       )}
