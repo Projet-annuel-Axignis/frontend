@@ -12,6 +12,7 @@ import {
   ApiResponse,
   PaginatedResponse,
   ServerPaginatedResponse,
+  ArrayPaginatedResponse,
   Brand,
   CreateBrandRequest,
   UpdateBrandRequest,
@@ -426,7 +427,7 @@ export const equipmentService = {
   },
 
   // Types de documents
-  async getDocumentTypes(page: number = 1, limit: number = 10, search?: string, showDeleted: boolean = false): Promise<ServerPaginatedResponse<DocumentType>> {
+  async getDocumentTypes(page: number = 1, limit: number = 10, search?: string, showDeleted: boolean = false): Promise<ArrayPaginatedResponse<DocumentType>> {
     const params = new URLSearchParams();
     
     if (page) {
@@ -447,6 +448,7 @@ export const equipmentService = {
     
     const queryString = params.toString() ? `?${params.toString()}` : '';
     const response = await api.get(`/product-document-types${queryString}`);
+    // La réponse est au format [results, totalResults, totalPages]
     return response.data;
   },
   
@@ -492,7 +494,8 @@ export const equipmentService = {
   },
   
   async restoreDocumentType(id: string): Promise<ApiResponse<DocumentType>> {
-    const response = await api.post(`/product-document-types/${id}/restore`);
+    // Utilisation de PATCH comme spécifié dans l'API
+    const response = await api.patch(`/product-document-types/${id}/restore`);
     return response.data;
   },
 

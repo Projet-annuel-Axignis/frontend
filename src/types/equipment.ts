@@ -250,3 +250,6 @@ export interface ServerPaginatedResponse<T> {
   totalPages?: number;
   results: T[];
 }
+
+// Type pour les réponses API paginées qui utilisent le format tableau [results, totalResults, totalPages]
+export type ArrayPaginatedResponse<T> = [T[], number, number];

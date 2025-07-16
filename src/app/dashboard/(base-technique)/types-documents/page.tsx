@@ -78,8 +78,24 @@ export default function DocumentTypesPage() {
         searchTerm, 
         showDeleted
       );
-      setDocumentTypes(response.results || []);
-      setTotal(response.totalResults || 0);
+      
+      // La réponse est un tableau [results, totalResults, totalPages]
+      if (Array.isArray(response)) {
+        const [results, totalResults, totalPages] = response;
+        setDocumentTypes(Array.isArray(results) ? results : []);
+        setTotal(typeof totalResults === 'number' ? totalResults : 0);
+        console.log(`Types de documents chargés: ${results?.length || 0} résultats sur ${totalResults} total (${totalPages} pages)`);
+      } else if (response && typeof response === 'object') {
+        // Compatibilité avec l'ancien format de réponse (objet)
+        const { results, totalResults } = response as any;
+        setDocumentTypes(Array.isArray(results) ? results : []);
+        setTotal(typeof totalResults === 'number' ? totalResults : 0);
+      } else {
+        // Fallback au cas où la structure de réponse ne serait pas celle attendue
+        console.error('Format de réponse API inattendu:', response);
+        setDocumentTypes([]);
+        setTotal(0);
+      }
     } catch (error) {
       console.error('Erreur lors du chargement des types de documents:', error);
       setSnackbar({
