@@ -920,30 +920,6 @@ export default function ProductDocumentsPage() {
               </CardContent>
             </Card>
           </Box>
-          
-          {/* Bouton d'action principal */}
-          <Box sx={{ flex: '0 0 auto', display: 'flex', alignItems: 'center' }}>
-            <Button
-              variant="contained"
-              size="large"
-              startIcon={<CloudUploadIcon />}
-              onClick={handleAdd}
-              sx={{
-                background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
-                px: 4,
-                py: 1.5,
-                fontSize: '1rem',
-                fontWeight: 600,
-                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                '&:hover': {
-                  background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
-                  boxShadow: '0 6px 20px rgba(0,0,0,0.2)',
-                }
-              }}
-            >
-              Ajouter un document
-            </Button>
-          </Box>
         </Box>
       )}      {/* Filtres secondaires - uniquement visible si un produit est sélectionné */}
       {filterProductId && (
@@ -1036,6 +1012,22 @@ export default function ProductDocumentsPage() {
             >
               Actualiser
             </Button>
+            
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<CloudUploadIcon />}
+              onClick={handleAdd}
+              sx={{
+                background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+                fontWeight: 600,
+                '&:hover': {
+                  background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                }
+              }}
+            >
+              Ajouter un document
+            </Button>
           </Box>
         </Paper>
       )}
@@ -1059,45 +1051,15 @@ export default function ProductDocumentsPage() {
               opacity: 0.5 
             }} />
             <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, color: 'text.primary' }}>
-              Gestion des documents produits
+              Aucun produit sélectionné
             </Typography>
             <Typography variant="body1" color="text.secondary" sx={{ mb: 4, lineHeight: 1.6 }}>
-              Organisez et gérez tous les documents associés à vos produits : manuels d&apos;utilisation, 
-              fiches techniques, certificats de conformité, et bien plus encore.
+              Sélectionnez un produit dans le filtre ci-dessus pour consulter et gérer ses documents associés.
             </Typography>
             
             <Typography variant="body2" color="text.secondary" sx={{ mb: 4, fontStyle: 'italic' }}>
-              👆 Utilisez le sélecteur de produit ci-dessus pour commencer
+              � Vous pouvez gérer les manuels d&apos;utilisation, fiches techniques, certificats et autres documents une fois un produit sélectionné.
             </Typography>
-            
-            <Box sx={{ 
-              display: 'grid', 
-              gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
-              gap: 2,
-              mt: 4
-            }}>
-              <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
-                <CloudUploadIcon sx={{ color: 'var(--color-axignis-primary)', mb: 1 }} />
-                <Typography variant="subtitle2" gutterBottom>Téléversement facile</Typography>
-                <Typography variant="caption" color="text.secondary">
-                  Ajoutez vos documents en quelques clics
-                </Typography>
-              </Box>
-              <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
-                <VerifiedIcon sx={{ color: 'var(--color-axignis-primary)', mb: 1 }} />
-                <Typography variant="subtitle2" gutterBottom>Vérification d&apos;intégrité</Typography>
-                <Typography variant="caption" color="text.secondary">
-                  Contrôlez l&apos;authenticité de vos fichiers
-                </Typography>
-              </Box>
-              <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
-                <UpdateIcon sx={{ color: 'var(--color-axignis-primary)', mb: 1 }} />
-                <Typography variant="subtitle2" gutterBottom>Gestion des versions</Typography>
-                <Typography variant="caption" color="text.secondary">
-                  Suivez l&apos;évolution de vos documents
-                </Typography>
-              </Box>
-            </Box>
           </Box>
         </Paper>
       ) : (
