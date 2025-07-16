@@ -72,6 +72,7 @@ const ObservationsManager: React.FC<ObservationsManagerProps> = ({
   // Form states
   const [createForm, setCreateForm] = useState<CreateObservationsDto>({
     title: '',
+    comment: '',
     reference: '',
     location: '',
     priority: 1,
@@ -85,6 +86,7 @@ const ObservationsManager: React.FC<ObservationsManagerProps> = ({
 
   const [editForm, setEditForm] = useState<UpdateObservationsDto>({
     title: '',
+    comment: '',
     reference: '',
     location: '',
     priority: 1,
@@ -121,6 +123,7 @@ const ObservationsManager: React.FC<ObservationsManagerProps> = ({
       setCreateDialogOpen(false);
       setCreateForm({
         title: '',
+        comment: '',
         reference: '',
         location: '',
         priority: 1,
@@ -193,6 +196,7 @@ const ObservationsManager: React.FC<ObservationsManagerProps> = ({
     setSelectedObservation(observation);
     setEditForm({
       title: observation.title,
+      comment: observation.comment,
       reference: observation.reference,
       location: observation.location,
       priority: observation.priority,
@@ -294,6 +298,11 @@ const ObservationsManager: React.FC<ObservationsManagerProps> = ({
                   }}
                   secondary={
                     <Box>
+                      {observation.comment && (
+                        <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                          {observation.comment}
+                        </Typography>
+                      )}
                       <Typography variant="caption" color="text.secondary">
                         Référence: {observation.reference} | Localisation: {observation.location}
                       </Typography>
@@ -389,6 +398,16 @@ const ObservationsManager: React.FC<ObservationsManagerProps> = ({
                 required
               />
             </Grid>
+            <Grid size={{ xs: 12 }}>
+              <TextField
+                label="Commentaire"
+                value={createForm.comment}
+                onChange={(e) => setCreateForm(f => ({ ...f, comment: e.target.value }))}
+                fullWidth
+                multiline
+                minRows={2}
+              />
+            </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 label="Référence"
@@ -457,6 +476,16 @@ const ObservationsManager: React.FC<ObservationsManagerProps> = ({
                 onChange={(e) => setEditForm(f => ({ ...f, title: e.target.value }))}
                 fullWidth
                 required
+              />
+            </Grid>
+            <Grid size={{ xs: 12 }}>
+              <TextField
+                label="Commentaire"
+                value={editForm.comment}
+                onChange={(e) => setEditForm(f => ({ ...f, comment: e.target.value }))}
+                fullWidth
+                multiline
+                minRows={2}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
