@@ -1,9 +1,11 @@
 'use client';
 
 import SearchFilters from '@/components/dashboard/SearchFilters';
+import { equipmentService } from '@/services/equipmentService';
 import organizationService from '@/services/organizationService';
 import reportService from '@/services/reportService';
 import reportTypeService from '@/services/reportTypeService';
+import { EquipmentType } from '@/types/equipment';
 import { CreateReportDto, Organization, OrganizationType, Report, ReportType, UpdateReportDto } from '@/types/intervention';
 import { Typologies } from '@/types/site';
 import {
@@ -86,6 +88,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ interventionId, onNotification,
   // Data states
   const [reports, setReports] = useState<Report[]>([]);
   const [reportTypes, setReportTypes] = useState<ReportType[]>([]);
+  const [equipmentTypes, setEquipmentTypes] = useState<EquipmentType[]>([]);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
   const [filteredReports, setFilteredReports] = useState<Report[]>([]);
@@ -102,7 +105,8 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ interventionId, onNotification,
     label: '',
     typeCode: '',
     organizationId: 0,
-    typologyCode: ''
+    typologyCode: '',
+    equipmentIds: []
   });
 
   // Filters state
@@ -130,7 +134,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ interventionId, onNotification,
   const loadData = async () => {
     try {
       setLoading(true);
-      await Promise.all([loadReports(), loadReferenceData()]);
+      await Promise.all([loadReports(), loadReferenceData(), loadEquipmentTypes()]);
     } finally {
       setLoading(false);
     }
@@ -146,6 +150,16 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ interventionId, onNotification,
     } catch (error) {
       console.error('Erreur lors du chargement des rapports:', error);
       onNotification('Erreur lors du chargement des rapports', 'error');
+    }
+  };
+
+  const loadEquipmentTypes = async () => {
+    try {
+      const result = await equipmentService.getTypes();
+      setEquipmentTypes(result.results);
+    } catch (error) {
+      console.error('Erreur lors du chargement des types d\'équipements:', error);
+      onNotification('Erreur lors du chargement des types d\'équipements', 'error');
     }
   };
 
@@ -232,7 +246,8 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ interventionId, onNotification,
         label: report.label,
         typeCode: report.type.code,
         organizationId: report.organization.id,
-        typologyCode: report.typology.code
+        typologyCode: report.typology.code,
+        equipmentIds: report.equipments?.map(equipment => equipment.equipmentId) || []
       });
     }
   };
@@ -456,6 +471,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ interventionId, onNotification,
                 <TableHead>
                   <TableRow>
                     <TableCell>Libellé</TableCell>
+                    <TableCell>Type d&apos;équipements</TableCell>
                     <TableCell>Type</TableCell>
                     <TableCell>Organisation</TableCell>
                     <TableCell>Typologie</TableCell>
@@ -499,6 +515,11 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ interventionId, onNotification,
                                 {report.label}
                               </Typography>
                             </Box>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">
+                              {report.equipments?.map(equipment => equipment.equipmentType.title).join(', ')}
+                            </Typography>
                           </TableCell>
                           <TableCell>
                             <Typography variant="body2">
@@ -661,6 +682,39 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ interventionId, onNotification,
                                           variant="outlined"
                                           size="small"
                                         />
+
+                                        <Autocomplete
+                                          multiple
+                                          options={equipmentTypes || []}
+                                          getOptionLabel={(option: EquipmentType) => `${option.title} (${option.serialNumber})`}
+                                          value={equipmentTypes?.filter(type => editForm.equipmentIds?.includes(Number(type.id))) || []}
+                                          onChange={(_, newValue) => {
+                                            const equipmentIds = newValue.map((type: EquipmentType) => Number(type.id));
+                                            setEditForm(f => ({ ...f, equipmentIds }));
+                                          }}
+                                          renderInput={(params) => (
+                                            <TextField
+                                              {...params}
+                                              label="Types d'équipements"
+                                              size="small"
+                                              variant="outlined"
+                                              placeholder="Sélectionner les types d'équipements..."
+                                            />
+                                          )}
+                                          renderValue={(value, getTagProps) =>
+                                            value.map((option, index) => (
+                                              <Chip
+                                                {...getTagProps({ index })}
+                                                key={option.id}
+                                                label={`${option.title} (${option.serialNumber})`}
+                                                size="small"
+                                                color="primary"
+                                                variant="outlined"
+                                              />
+                                            ))
+                                          }
+                                        />
+
                                         <Autocomplete<ReportType>
                                           options={reportTypes || []}
                                           getOptionLabel={(option: ReportType) => `${option.name} (${option.code})`}

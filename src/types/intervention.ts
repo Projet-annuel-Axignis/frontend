@@ -108,7 +108,8 @@ export interface UpdateReportTypeDto {
 
 export interface ReportEquipmentType {
   id: number;
-  equipmentId: number; // Equivaut à l'id de EquipmentType
+  equipmentId: number;
+  equipmentType: EquipmentType;
 }
 
 export interface Report {
@@ -125,7 +126,6 @@ export interface Report {
   files?: File[];
   obsevations?: Observations[];
   equipments?: ReportEquipmentType[];
-  equipmentTypes?: EquipmentType[];
 }
 
 export interface CreateReportDto {
