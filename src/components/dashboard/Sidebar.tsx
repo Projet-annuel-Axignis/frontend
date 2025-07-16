@@ -3,6 +3,7 @@ import { UserRoleType } from '@/types/auth';
 import { AdminPanelSettings } from '@mui/icons-material';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import AppsIcon from '@mui/icons-material/Apps';
+import ArticleIcon from '@mui/icons-material/Article';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import BuildIcon from '@mui/icons-material/Build';
 import BusinessIcon from '@mui/icons-material/Business';
@@ -11,6 +12,7 @@ import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import DescriptionIcon from '@mui/icons-material/Description';
 import FolderIcon from '@mui/icons-material/Folder';
 import GroupIcon from '@mui/icons-material/Group';
+import InventoryIcon from '@mui/icons-material/Inventory';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import MenuIcon from '@mui/icons-material/Menu';
 import PeopleIcon from '@mui/icons-material/People';
@@ -18,8 +20,6 @@ import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
 import StorageIcon from '@mui/icons-material/Storage';
 import SupportRoundedIcon from '@mui/icons-material/SupportRounded';
-import InventoryIcon from '@mui/icons-material/Inventory';
-import ArticleIcon from '@mui/icons-material/Article';
 import {
   Box,
   Chip,
@@ -212,7 +212,7 @@ export default function Sidebar() {
   const handleSitesClick = () => {
     setOpenSites(!openSites);
   };
-  
+
   const handleEquipmentsClick = () => {
     setOpenEquipments(!openEquipments);
   };
@@ -339,7 +339,7 @@ export default function Sidebar() {
 
             {/* Sous-menu Équipements */}
             <Collapse in={openEquipments} timeout={400} unmountOnExit>
-              <Box sx={{ pl: 4, py: 1 }}>
+              <Box sx={{ pl: 2, py: 1 }}>
                 <Link href="/dashboard/domaines" style={{ textDecoration: 'none', color: 'inherit' }}>
                   <StyledListItemButton
                     sx={{ py: 0.75, mb: 0.5, width: '100%' }}
@@ -351,7 +351,7 @@ export default function Sidebar() {
                     </Typography>
                   </StyledListItemButton>
                 </Link>
-                
+
                 <Link href="/dashboard/familles" style={{ textDecoration: 'none', color: 'inherit' }}>
                   <StyledListItemButton
                     sx={{ py: 0.75, mb: 0.5, width: '100%' }}
@@ -363,7 +363,7 @@ export default function Sidebar() {
                     </Typography>
                   </StyledListItemButton>
                 </Link>
-                
+
                 <Link href="/dashboard/types" style={{ textDecoration: 'none', color: 'inherit' }}>
                   <StyledListItemButton
                     sx={{ py: 0.75, mb: 0.5, width: '100%' }}
@@ -375,7 +375,7 @@ export default function Sidebar() {
                     </Typography>
                   </StyledListItemButton>
                 </Link>
-                
+
                 <Link href="/dashboard/compatibilite" style={{ textDecoration: 'none', color: 'inherit' }}>
                   <StyledListItemButton
                     sx={{ py: 0.75, mb: 0.5, width: '100%' }}
@@ -439,7 +439,7 @@ export default function Sidebar() {
 
             {/* Sous-menu Produits */}
             <Collapse in={openProducts} timeout={400} unmountOnExit>
-              <Box sx={{ pl: 4, py: 1 }}>
+              <Box sx={{ pl: 2, py: 1 }}>
                 <Link href="/dashboard/produits" style={{ textDecoration: 'none', color: 'inherit' }}>
                   <StyledListItemButton
                     sx={{ py: 0.75, mb: 0.5, width: '100%' }}
@@ -517,7 +517,7 @@ export default function Sidebar() {
 
             {/* Sous-menu Sites */}
             <Collapse in={openSites} timeout={400} unmountOnExit>
-              <Box sx={{ pl: 4, py: 1 }}>
+              <Box sx={{ pl: 2, py: 1 }}>
                 <Link href="/dashboard/sites" style={{ textDecoration: 'none', color: 'inherit' }}>
                   <StyledListItemButton
                     sx={{ py: 0.75, mb: 0.5, width: '100%' }}
@@ -572,7 +572,7 @@ export default function Sidebar() {
 
             {/* Sous-menu Interventions */}
             <Collapse in={openInterventions} timeout={400} unmountOnExit>
-              <Box sx={{ pl: 4, py: 1 }}>
+              <Box sx={{ pl: 2, py: 1 }}>
                 <Link href="/dashboard/interventions" style={{ textDecoration: 'none', color: 'inherit' }}>
                   <StyledListItemButton
                     sx={{ py: 0.75, mb: 0.5, width: '100%' }}
