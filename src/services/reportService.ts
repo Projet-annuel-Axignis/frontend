@@ -1,6 +1,5 @@
 import { api } from '@/lib/api';
 import { CreateReportDto, Report, UpdateReportDto } from '@/types/intervention';
-import { equipmentService } from './equipmentService';
 
 export const reportService = {
   async getReports(params: {
@@ -59,31 +58,6 @@ export const reportService = {
   async getReport(id: number): Promise<Report> {
     const response = await api.get<Report>(`/reports/${id}`);
     const report = response.data;
-
-    // Récupérer les détails des types d'équipements si equipments existe
-    if (report.equipments && report.equipments.length > 0) {
-      try {
-        const equipmentTypePromises = report.equipments.map(async (equipment) => {
-          try {
-            const equipmentTypeResponse = await equipmentService.getTypeById(equipment.equipmentId.toString());
-            return equipmentTypeResponse.data;
-          } catch (error) {
-            console.error(`Erreur lors de la récupération du type d'équipement ${equipment.equipmentId}:`, error);
-            return null;
-          }
-        });
-
-        const equipmentTypes = await Promise.all(equipmentTypePromises);
-        // Filtrer les types null (en cas d'erreur)
-        report.equipmentTypes = equipmentTypes.filter(type => type !== null);
-      } catch (error) {
-        console.error('Erreur lors de la récupération des types d\'équipements:', error);
-        report.equipmentTypes = [];
-      }
-    } else {
-      report.equipmentTypes = [];
-    }
-
     return report;
   },
 
