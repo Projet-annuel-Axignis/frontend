@@ -469,15 +469,7 @@ export default function BrandsPage() {
                     <TableCell align="center">
                       <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
                         {brand.deletedAt ? (
-                          <Tooltip title="Restaurer">
-                            <IconButton 
-                              size="small" 
-                              color="success"
-                              onClick={() => handleRestore(brand.id)}
-                            >
-                              <RefreshIcon />
-                            </IconButton>
-                          </Tooltip>
+                          <></>
                         ) : (
                           <>
                             <Tooltip title="Modifier">

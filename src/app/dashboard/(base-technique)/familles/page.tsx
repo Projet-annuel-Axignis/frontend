@@ -609,15 +609,7 @@ export default function FamiliesPage() {
                     <TableCell align="center">
                       <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
                         {family.deletedAt ? (
-                          <Tooltip title="Restaurer">
-                            <IconButton 
-                              size="small" 
-                              color="success"
-                              onClick={() => handleRestore(family.id)}
-                            >
-                              <RefreshIcon />
-                            </IconButton>
-                          </Tooltip>
+                          <></>
                         ) : (
                           <>
                             <Tooltip title="Modifier">

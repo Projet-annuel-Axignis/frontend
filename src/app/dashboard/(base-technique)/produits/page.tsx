@@ -949,15 +949,7 @@ export default function ProductsPage() {
                     <TableCell align="center">
                       <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
                         {product.deletedAt ? (
-                          <Tooltip title="Restaurer">
-                            <IconButton 
-                              size="small" 
-                              color="success"
-                              onClick={() => handleRestore(product.id)}
-                            >
-                              <RefreshIcon />
-                            </IconButton>
-                          </Tooltip>
+                          <></>
                         ) : (
                           <>
                             <Tooltip title="Modifier">

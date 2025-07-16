@@ -707,15 +707,7 @@ export default function EquipmentTypesPage() {
                     <TableCell align="center">
                       <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
                         {equipmentType.deletedAt ? (
-                          <Tooltip title="Restaurer">
-                            <IconButton 
-                              size="small" 
-                              color="success"
-                              onClick={() => handleRestore(equipmentType.id)}
-                            >
-                              <RefreshIcon />
-                            </IconButton>
-                          </Tooltip>
+                          <></>
                         ) : (
                           <>
                             <Tooltip title="Voir les détails">
