@@ -56,7 +56,7 @@ export interface CompatibilityGroup {
   name: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string | null;
+  deletedAt?: string | null;
 }
 
 export interface Product {

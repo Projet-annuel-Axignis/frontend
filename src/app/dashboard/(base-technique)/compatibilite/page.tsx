@@ -3,18 +3,15 @@
 import { equipmentService } from '@/services/equipmentService';
 import {
   CompatibilityGroup,
-  CreateCompatibilityGroupRequest,
   Product,
-  UpdateCompatibilityGroupRequest
 } from '@/types/equipment';
 import {
   Add as AddIcon,
   Delete as DeleteIcon,
-  Edit as EditIcon,
   Group as GroupIcon,
   LinkOff as LinkOffIcon,
   Refresh as RefreshIcon,
-  Search as SearchIcon
+  Search as SearchIcon,
 } from '@mui/icons-material';
 import {
   Alert,
@@ -22,13 +19,13 @@ import {
   Button,
   Card,
   CardContent,
+  Chip,
   CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   Fab,
-  Grid,
   IconButton,
   Paper,
   Snackbar,
@@ -44,42 +41,36 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
 import { useEffect, useState } from 'react';
 
 export default function CompatibilityGroupsPage() {
   // États principaux
   const [groups, setGroups] = useState<CompatibilityGroup[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showDeleted, setShowDeleted] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [total, setTotal] = useState(0);
 
   // États des dialogues
-  const [openDialog, setOpenDialog] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [openCreateDialog, setOpenCreateDialog] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [openProductsDialog, setOpenProductsDialog] = useState(false);
+  const [openAttachDialog, setOpenAttachDialog] = useState(false);
   const [groupToDelete, setGroupToDelete] = useState<number | null>(null);
-  const [editingGroup, setEditingGroup] = useState<CompatibilityGroup | null>(null);
-  const [productsDialogOpen, setProductsDialogOpen] = useState(false);
-  const [currentGroupProducts, setCurrentGroupProducts] = useState<Product[]>([]);
-  const [currentGroupId, setCurrentGroupId] = useState<number | null>(null);
-  const [productsLoading, setProductsLoading] = useState(false);
-  const [productsPage, setProductsPage] = useState(0);
-  const [productsRowsPerPage, setProductsRowsPerPage] = useState(5);
-  const [productsTotal, setProductsTotal] = useState(0);
+  const [selectedGroup, setSelectedGroup] = useState<CompatibilityGroup | null>(null);
+  const [selectedGroupProducts, setSelectedGroupProducts] = useState<Product[]>([]);
 
   // État du formulaire
-  const [formData, setFormData] = useState<CreateCompatibilityGroupRequest>({
-    name: '',
-    serialNumber: '',
-    description: ''
-  });
+  const [groupName, setGroupName] = useState('');
 
   // État des notifications
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
+  const [snackbar, setSnackbar] = useState<{ 
+    open: boolean; 
+    message: string; 
+    severity: 'success' | 'error' 
+  }>({
     open: false,
     message: '',
     severity: 'success'
@@ -89,27 +80,10 @@ export default function CompatibilityGroupsPage() {
   const loadGroups = async () => {
     try {
       setLoading(true);
-      console.log("Paramètres loadGroups:", {
-        page: page + 1,
-        rowsPerPage,
-        searchTerm,
-        showDeleted
-      });
-
-      const groups = await equipmentService.getCompatibilityGroups(
-        page + 1,
-        rowsPerPage,
-        searchTerm,
-        showDeleted
-      );
-
-      console.log("Réponse loadGroups:", groups);
-      setGroups(groups || []);
-      // Pour le moment, on utilise la longueur du tableau comme total
-      // Idéalement, l'API devrait retourner le nombre total dans des entêtes ou un champ dédié
-      setTotal(groups?.length || 0);
+      const response = await equipmentService.getCompatibilityGroups();
+      setGroups(response || []);
     } catch (error) {
-      console.error('Erreur lors du chargement des groupes de compatibilité:', error);
+      console.error('Erreur lors du chargement des groupes:', error);
       setSnackbar({
         open: true,
         message: 'Erreur lors du chargement des groupes de compatibilité',
@@ -120,299 +94,158 @@ export default function CompatibilityGroupsPage() {
     }
   };
 
-  // Charger les produits d'un groupe
-  const loadGroupProducts = async (groupId: number) => {
+  // Charger tous les produits pour les sélections
+  const loadProducts = async () => {
     try {
-      setProductsLoading(true);
-      setCurrentGroupId(groupId);
-
-      const products = await equipmentService.getProductsInCompatibilityGroup(
-        groupId,
-        productsPage + 1,
-        productsRowsPerPage
-      );
-
-      console.log("Réponse loadGroupProducts:", products);
-      setCurrentGroupProducts(products || []);
-      setProductsTotal(products?.length || 0);
-      setProductsDialogOpen(true);
+      const response = await equipmentService.getProducts();
+      setProducts(response.results || []);
     } catch (error) {
-      console.error(`Erreur lors du chargement des produits du groupe ${groupId}:`, error);
+      console.error('Erreur lors du chargement des produits:', error);
+    }
+  };
+
+  // Créer un nouveau groupe
+  const handleCreateGroup = async () => {
+    if (!groupName.trim()) return;
+
+    try {
+      await equipmentService.createCompatibilityGroup({ name: groupName });
       setSnackbar({
         open: true,
-        message: 'Erreur lors du chargement des produits du groupe',
-        severity: 'error'
+        message: 'Groupe créé avec succès',
+        severity: 'success'
       });
-    } finally {
-      setProductsLoading(false);
-    }
-  };
-
-  // Gestion du changement de page
-  const handleChangePage = (_: unknown, newPage: number) => {
-    setPage(newPage);
-  };
-
-  // Gestion du changement de nombre de lignes par page
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-  // Gestion du changement de page pour la liste des produits
-  const handleChangeProductsPage = (_: unknown, newPage: number) => {
-    setProductsPage(newPage);
-    if (currentGroupId) {
-      loadGroupProducts(currentGroupId);
-    }
-  };
-
-  // Gestion du changement de nombre de lignes par page pour la liste des produits
-  const handleChangeProductsRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setProductsRowsPerPage(parseInt(event.target.value, 10));
-    setProductsPage(0);
-    if (currentGroupId) {
-      loadGroupProducts(currentGroupId);
-    }
-  };
-
-  // Recherche
-  const handleSearch = () => {
-    setPage(0);
-    loadGroups();
-  };
-
-  // Gestion de la fermeture des Snackbars
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
-  // Ouverture du dialogue de création/édition
-  const handleOpenDialog = (group: CompatibilityGroup | null = null) => {
-    if (group) {
-      setEditingGroup(group);
-      setFormData({
-        name: group.name,
-        serialNumber: group.serialNumber,
-        description: group.description || ''
-      });
-    } else {
-      setEditingGroup(null);
-      setFormData({
-        name: '',
-        serialNumber: '',
-        description: ''
-      });
-    }
-    setOpenDialog(true);
-  };
-
-  // Fermeture du dialogue de création/édition
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-    setEditingGroup(null);
-    setFormData({
-      name: '',
-      serialNumber: '',
-      description: ''
-    });
-  };
-
-  // Soumission du formulaire
-  const handleSubmit = async () => {
-    try {
-      if (editingGroup) {
-        // Mise à jour d'un groupe existant
-        const updateData: UpdateCompatibilityGroupRequest = {};
-
-        if (formData.name !== editingGroup.name) {
-          updateData.name = formData.name;
-        }
-
-        if (formData.serialNumber !== editingGroup.serialNumber) {
-          updateData.serialNumber = formData.serialNumber;
-        }
-
-        if (formData.description !== editingGroup.description) {
-          updateData.description = formData.description;
-        }
-
-        if (Object.keys(updateData).length === 0) {
-          handleCloseDialog();
-          return;
-        }
-
-        await equipmentService.updateCompatibilityGroup(editingGroup.id, updateData);
-        setSnackbar({
-          open: true,
-          message: 'Groupe de compatibilité mis à jour avec succès',
-          severity: 'success'
-        });
-      } else {
-        // Création d'un nouveau groupe
-        await equipmentService.createCompatibilityGroup(formData);
-        setSnackbar({
-          open: true,
-          message: 'Groupe de compatibilité créé avec succès',
-          severity: 'success'
-        });
-      }
-
-      handleCloseDialog();
+      setOpenCreateDialog(false);
+      setGroupName('');
       loadGroups();
     } catch (error: any) {
-      console.error('Erreur lors de la soumission du formulaire:', error);
-
-      // Gestion spécifique des erreurs
-      if (error.response?.status === 409) {
-        setSnackbar({
-          open: true,
-          message: 'Un groupe avec ce nom ou ce numéro de série existe déjà',
-          severity: 'error'
-        });
-      } else if (error.response?.data?.message) {
-        setSnackbar({
-          open: true,
-          message: error.response.data.message,
-          severity: 'error'
-        });
-      } else {
-        setSnackbar({
-          open: true,
-          message: 'Une erreur est survenue lors de l\'opération',
-          severity: 'error'
-        });
-      }
+      console.error('Erreur lors de la création:', error);
+      setSnackbar({
+        open: true,
+        message: error.response?.data?.message || 'Erreur lors de la création du groupe',
+        severity: 'error'
+      });
     }
   };
 
-  // Ouverture du dialogue de suppression
-  const openDeleteDialog = (id: number) => {
-    setGroupToDelete(id);
-    setDeleteDialogOpen(true);
-  };
-
-  // Fermeture du dialogue de suppression
-  const closeDeleteDialog = () => {
-    setDeleteDialogOpen(false);
-    setGroupToDelete(null);
-  };
-
-  // Suppression d'un groupe
+  // Supprimer un groupe
   const handleDeleteGroup = async () => {
-    if (groupToDelete === null) return;
+    if (!groupToDelete) return;
 
     try {
       await equipmentService.deleteCompatibilityGroup(groupToDelete);
       setSnackbar({
         open: true,
-        message: 'Groupe de compatibilité supprimé avec succès',
+        message: 'Groupe supprimé avec succès',
         severity: 'success'
       });
+      setOpenDeleteDialog(false);
+      setGroupToDelete(null);
       loadGroups();
     } catch (error: any) {
-      console.error('Erreur lors de la suppression du groupe:', error);
-
-      if (error.response?.data?.message) {
-        setSnackbar({
-          open: true,
-          message: error.response.data.message,
-          severity: 'error'
-        });
-      } else {
-        setSnackbar({
-          open: true,
-          message: 'Une erreur est survenue lors de la suppression',
-          severity: 'error'
-        });
-      }
-    } finally {
-      closeDeleteDialog();
+      console.error('Erreur lors de la suppression:', error);
+      setSnackbar({
+        open: true,
+        message: error.response?.data?.message || 'Erreur lors de la suppression du groupe',
+        severity: 'error'
+      });
     }
   };
 
-  // Restauration d'un groupe supprimé
-  const handleRestoreGroup = async (id: number) => {
+  // Voir les produits d'un groupe
+  const handleViewProducts = (group: CompatibilityGroup) => {
+    setSelectedGroup(group);
+    // Pour simplifier, on affiche tous les produits qui ont ce groupe dans leur liste
+    const groupProducts = products.filter(product => 
+      product.groups?.some(g => g.id === group.id)
+    );
+    setSelectedGroupProducts(groupProducts);
+    setOpenProductsDialog(true);
+  };
+
+  // Attacher un produit à un groupe
+  const handleAttachProduct = async (productId: number) => {
+    if (!selectedGroup) return;
+
     try {
-      await equipmentService.restoreCompatibilityGroup(id);
+      await equipmentService.attachProductToGroup(selectedGroup.id, productId);
       setSnackbar({
         open: true,
-        message: 'Groupe de compatibilité restauré avec succès',
+        message: 'Produit attaché avec succès',
         severity: 'success'
       });
-      loadGroups();
+      loadProducts(); // Recharger pour voir les changements
+      handleViewProducts(selectedGroup); // Refresh de la liste des produits du groupe
     } catch (error: any) {
-      console.error('Erreur lors de la restauration du groupe:', error);
-
-      if (error.response?.data?.message) {
-        setSnackbar({
-          open: true,
-          message: error.response.data.message,
-          severity: 'error'
-        });
-      } else {
-        setSnackbar({
-          open: true,
-          message: 'Une erreur est survenue lors de la restauration',
-          severity: 'error'
-        });
-      }
+      console.error('Erreur lors de l\'attachement:', error);
+      setSnackbar({
+        open: true,
+        message: error.response?.data?.message || 'Erreur lors de l\'attachement du produit',
+        severity: 'error'
+      });
     }
   };
 
-  // Gestion du retrait d'un produit du groupe
-  const handleRemoveProductFromGroup = async (productId: number) => {
-    if (!currentGroupId) return;
+  // Détacher un produit d'un groupe
+  const handleDetachProduct = async (productId: number) => {
+    if (!selectedGroup) return;
 
     try {
-      await equipmentService.removeProductFromCompatibilityGroup(currentGroupId, productId);
+      await equipmentService.detachProductFromGroup(selectedGroup.id, productId);
       setSnackbar({
         open: true,
-        message: 'Produit retiré du groupe avec succès',
+        message: 'Produit détaché avec succès',
         severity: 'success'
       });
-
-      // Recharger les produits du groupe
-      loadGroupProducts(currentGroupId);
+      loadProducts(); // Recharger pour voir les changements
+      handleViewProducts(selectedGroup); // Refresh de la liste des produits du groupe
     } catch (error: any) {
-      console.error('Erreur lors du retrait du produit:', error);
-
-      if (error.response?.data?.message) {
-        setSnackbar({
-          open: true,
-          message: error.response.data.message,
-          severity: 'error'
-        });
-      } else {
-        setSnackbar({
-          open: true,
-          message: 'Une erreur est survenue lors du retrait du produit',
-          severity: 'error'
-        });
-      }
+      console.error('Erreur lors du détachement:', error);
+      setSnackbar({
+        open: true,
+        message: error.response?.data?.message || 'Erreur lors du détachement du produit',
+        severity: 'error'
+      });
     }
+  };
+
+  // Filtrer les groupes selon la recherche et le statut
+  const filteredGroups = groups.filter(group => {
+    const matchesSearch = group.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesDeleted = showDeleted ? !!group.deletedAt : !group.deletedAt;
+    return matchesSearch && matchesDeleted;
+  });
+
+  // Pagination
+  const paginatedGroups = filteredGroups.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
+
+  // Produits disponibles pour attachement (pas déjà dans le groupe)
+  const availableProducts = products.filter(product =>
+    !selectedGroupProducts.some(gp => gp.id === product.id)
+  );
+
+  // Gestion de la pagination
+  const handleChangePage = (_: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
   };
 
   // Chargement initial
   useEffect(() => {
     loadGroups();
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, rowsPerPage, showDeleted]);
-
-  // Affichage d'une date formatée ou "N/A"
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'N/A';
-
-    try {
-      return format(new Date(dateString), 'dd/MM/yyyy HH:mm', { locale: fr });
-    } catch {
-      return 'Date invalide';
-    }
-  };
+    loadProducts();
+  }, []);
 
   return (
     <Box sx={{ p: { xs: 2, md: 3 } }}>
+      {/* En-tête */}
       <Typography variant="h5" component="h1" gutterBottom sx={{
         fontWeight: 'bold',
         color: 'text.primary',
@@ -423,68 +256,35 @@ export default function CompatibilityGroupsPage() {
         Gestion des groupes de compatibilité
       </Typography>
 
-      <Card elevation={3} sx={{ mb: 4, overflow: 'visible' }}>
+      {/* Message informatif */}
+      <Alert severity="info" sx={{ mb: 3 }}>
+        Les groupes de compatibilité permettent d&apos;organiser les produits par catégories. 
+        Vous pouvez créer des groupes et y associer des produits pour faciliter la gestion.
+      </Alert>
+
+      {/* Filtres et actions */}
+      <Card elevation={3} sx={{ mb: 4 }}>
         <CardContent sx={{ p: 3 }}>
-          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: { xs: 'stretch', md: 'center' }, mb: 3 }}>
-            <TextField
-              label="Rechercher"
-              variant="outlined"
-              size="small"
-              fullWidth
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-              InputProps={{
-                startAdornment: <SearchIcon sx={{ color: 'action.active', mr: 1 }} />,
-              }}
-              sx={{ flexGrow: 1 }}
-            />
-
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleSearch}
-              startIcon={<SearchIcon />}
-              sx={{
-                minWidth: '120px',
-                background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
-                '&:hover': {
-                  background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
-                }
-              }}
-            >
-              Rechercher
-            </Button>
-
-            <Button
-              variant="outlined"
-              onClick={() => {
-                setSearchTerm('');
-                setPage(0);
-                loadGroups();
-              }}
-              startIcon={<RefreshIcon />}
-            >
-              Réinitialiser
-            </Button>
-
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Typography variant="body2" sx={{ mr: 1 }}>
-                Afficher les groupes supprimés
-              </Typography>
-              <Switch
-                checked={showDeleted}
-                onChange={(e) => setShowDeleted(e.target.checked)}
-                color="primary"
-              />
-            </Box>
-          </Box>
-
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: { xs: 'column', md: 'row' }, 
+            gap: 2, 
+            alignItems: { xs: 'stretch', md: 'center' },
+            mb: 2
+          }}>
+            <Typography variant="h6" sx={{ 
+              flexGrow: 1,
+              display: 'flex',
+              alignItems: 'center',
+              fontWeight: 600
+            }}>
+              Filtres avancés
+            </Typography>
+            
             <Button
               variant="contained"
               startIcon={<AddIcon />}
-              onClick={() => handleOpenDialog()}
+              onClick={() => setOpenCreateDialog(true)}
               sx={{
                 background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
                 '&:hover': {
@@ -496,96 +296,149 @@ export default function CompatibilityGroupsPage() {
             </Button>
           </Box>
 
-          <TableContainer component={Paper} elevation={0} sx={{ mt: 2 }}>
-            <Table sx={{ minWidth: 650 }} size="small">
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: { xs: 'column', md: 'row' }, 
+            gap: 2, 
+            alignItems: { xs: 'stretch', md: 'center' }
+          }}>
+            <TextField
+              label="Rechercher un groupe"
+              variant="outlined"
+              size="small"
+              fullWidth
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              InputProps={{
+                startAdornment: <SearchIcon sx={{ color: 'action.active', mr: 1 }} />,
+              }}
+              sx={{ flexGrow: 1 }}
+            />
+
+            <Button
+              variant="outlined"
+              onClick={() => {
+                setSearchTerm('');
+                setPage(0);
+              }}
+              startIcon={<RefreshIcon />}
+            >
+              Réinitialiser
+            </Button>
+
+          </Box>
+        </CardContent>
+      </Card>
+
+      {/* Tableau des groupes */}
+      <Card elevation={3}>
+        <CardContent sx={{ p: 0 }}>
+          <TableContainer component={Paper} elevation={0}>
+            <Table sx={{ minWidth: 650 }}>
               <TableHead sx={{ bgcolor: 'background.default' }}>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Nom</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>N° de série</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Description</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Date de création</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Date de modification</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Actions</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', px: 3, py: 2 }}>Nom du groupe</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', px: 3, py: 2 }}>Produits associés</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', px: 3, py: 2, textAlign: 'center' }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={6} align="center">
-                      <CircularProgress size={30} sx={{ my: 2 }} />
+                    <TableCell colSpan={3} align="center" sx={{ py: 4 }}>
+                      <CircularProgress size={30} />
                     </TableCell>
                   </TableRow>
-                ) : groups.length === 0 ? (
+                ) : paginatedGroups.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} align="center" sx={{ py: 3 }}>
+                    <TableCell colSpan={3} align="center" sx={{ py: 4 }}>
                       <Typography variant="body1" color="text.secondary">
-                        Aucun groupe de compatibilité trouvé
+                        {searchTerm ? 'Aucun groupe trouvé pour cette recherche' : 'Aucun groupe de compatibilité créé'}
                       </Typography>
                     </TableCell>
                   </TableRow>
                 ) : (
-                  groups.map((group) => (
-                    <TableRow
-                      key={group.id}
-                      sx={{
-                        '&:hover': { bgcolor: 'action.hover' },
-                        ...(group.deletedAt && { opacity: 0.6, bgcolor: 'rgba(0, 0, 0, 0.04)' })
-                      }}
-                    >
-                      <TableCell>{group.name}</TableCell>
-                      <TableCell>{group.serialNumber}</TableCell>
-                      <TableCell>{group.description || '-'}</TableCell>
-                      <TableCell>{formatDate(group.createdAt)}</TableCell>
-                      <TableCell>{formatDate(group.updatedAt)}</TableCell>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', gap: 1 }}>
-                          {!group.deletedAt ? (
-                            <>
-                              <Tooltip title="Voir les produits du groupe">
-                                <IconButton
+                  paginatedGroups.map((group) => {
+                    const groupProducts = products.filter(product => 
+                      product.groups?.some(g => g.id === group.id)
+                    );
+                    
+                    return (
+                      <TableRow
+                        key={group.id}
+                        sx={{ 
+                          '&:hover': { bgcolor: 'action.hover' },
+                          ...(group.deletedAt && { opacity: 0.6, bgcolor: 'rgba(0, 0, 0, 0.04)' })
+                        }}
+                      >
+                        <TableCell sx={{ px: 3, py: 2 }}>
+                          <Typography variant="body2" fontWeight={500}>
+                            {group.name}
+                          </Typography>
+                        </TableCell>
+                        <TableCell sx={{ px: 3, py: 2 }}>
+                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                            {groupProducts.length > 0 ? (
+                              groupProducts.slice(0, 2).map((product) => (
+                                <Chip
+                                  key={product.id}
+                                  label={product.name}
                                   size="small"
-                                  color="primary"
-                                  onClick={() => loadGroupProducts(group.id)}
-                                >
-                                  <GroupIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-
-                              <Tooltip title="Modifier">
-                                <IconButton
-                                  size="small"
-                                  color="primary"
-                                  onClick={() => handleOpenDialog(group)}
-                                >
-                                  <EditIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-
-                              <Tooltip title="Supprimer">
-                                <IconButton
-                                  size="small"
-                                  color="error"
-                                  onClick={() => openDeleteDialog(group.id)}
-                                >
-                                  <DeleteIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                            </>
-                          ) : (
-                            <Tooltip title="Restaurer">
-                              <IconButton
+                                  variant="outlined"
+                                />
+                              ))
+                            ) : (
+                              <Typography variant="body2" color="text.secondary">
+                                Aucun produit
+                              </Typography>
+                            )}
+                            {groupProducts.length > 2 && (
+                              <Chip
+                                label={`+${groupProducts.length - 2}`}
                                 size="small"
-                                color="success"
-                                onClick={() => handleRestoreGroup(group.id)}
-                              >
-                                <RefreshIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          )}
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  ))
+                                variant="outlined"
+                                color="primary"
+                              />
+                            )}
+                          </Box>
+                        </TableCell>
+                        <TableCell sx={{ px: 3, py: 2, textAlign: 'center' }}>
+                          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                            {!group.deletedAt ? (
+                              <>
+                                <Tooltip title="Gérer les produits">
+                                  <IconButton
+                                    size="small"
+                                    color="primary"
+                                    onClick={() => handleViewProducts(group)}
+                                  >
+                                    <GroupIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+
+                                <Tooltip title="Supprimer">
+                                  <IconButton
+                                    size="small"
+                                    color="error"
+                                    onClick={() => {
+                                      setGroupToDelete(group.id);
+                                      setOpenDeleteDialog(true);
+                                    }}
+                                  >
+                                    <DeleteIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                              </>
+                            ) : (
+                              <Typography variant="body2" color="text.secondary">
+                                Supprimé
+                              </Typography>
+                            )}
+                          </Box>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
                 )}
               </TableBody>
             </Table>
@@ -594,21 +447,24 @@ export default function CompatibilityGroupsPage() {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25, 50]}
             component="div"
-            count={total}
+            count={filteredGroups.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
             labelRowsPerPage="Lignes par page"
-            labelDisplayedRows={({ from, to, count }) => `${from}-${to} sur ${count !== -1 ? count : `plus de ${to}`}`}
+            labelDisplayedRows={({ from, to, count }) => 
+              `${from}-${to} sur ${count !== -1 ? count : `plus de ${to}`}`
+            }
+            sx={{ px: 3 }}
           />
         </CardContent>
       </Card>
 
-      {/* Dialog pour créer/modifier un groupe */}
+      {/* Dialog de création */}
       <Dialog
-        open={openDialog}
-        onClose={handleCloseDialog}
+        open={openCreateDialog}
+        onClose={() => setOpenCreateDialog(false)}
         maxWidth="sm"
         fullWidth
         PaperProps={{
@@ -619,76 +475,29 @@ export default function CompatibilityGroupsPage() {
           }
         }}
       >
-        <DialogTitle sx={{ pb: 1 }}>
-          {editingGroup ? 'Modifier un groupe de compatibilité' : 'Créer un groupe de compatibilité'}
-        </DialogTitle>
+        <DialogTitle>Créer un groupe de compatibilité</DialogTitle>
         <DialogContent sx={{ pt: 3 }}>
-          <Grid container spacing={2}>
-            <Grid size={{ xs: 12 }}>
-              <TextField
-                label="Nom du groupe"
-                variant="outlined"
-                fullWidth
-                required
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                error={formData.name.trim().length < 2 || formData.name.trim().length > 100}
-                helperText={
-                  formData.name.trim().length < 2
-                    ? 'Le nom doit contenir au moins 2 caractères'
-                    : formData.name.trim().length > 100
-                      ? 'Le nom ne doit pas dépasser 100 caractères'
-                      : 'Le nom doit être unique'
-                }
-              />
-            </Grid>
-
-            <Grid size={{ xs: 12 }}>
-              <TextField
-                label="Numéro de série"
-                variant="outlined"
-                fullWidth
-                required
-                value={formData.serialNumber}
-                onChange={(e) => setFormData({ ...formData, serialNumber: e.target.value })}
-                error={formData.serialNumber.trim().length < 3 || formData.serialNumber.trim().length > 50}
-                helperText={
-                  formData.serialNumber.trim().length < 3
-                    ? 'Le numéro de série doit contenir au moins 3 caractères'
-                    : formData.serialNumber.trim().length > 50
-                      ? 'Le numéro de série ne doit pas dépasser 50 caractères'
-                      : 'Le numéro de série doit être unique'
-                }
-              />
-            </Grid>
-
-            <Grid size={{ xs: 12 }}>
-              <TextField
-                label="Description"
-                variant="outlined"
-                fullWidth
-                multiline
-                rows={3}
-                value={formData.description || ''}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                helperText="Description optionnelle du groupe de compatibilité"
-              />
-            </Grid>
-          </Grid>
+          <TextField
+            label="Nom du groupe"
+            variant="outlined"
+            fullWidth
+            required
+            value={groupName}
+            onChange={(e) => setGroupName(e.target.value)}
+            helperText="Le nom doit être unique"
+          />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>Annuler</Button>
+          <Button onClick={() => {
+            setOpenCreateDialog(false);
+            setGroupName('');
+          }}>
+            Annuler
+          </Button>
           <Button
-            onClick={handleSubmit}
+            onClick={handleCreateGroup}
             variant="contained"
-            disabled={
-              !formData.name.trim() ||
-              formData.name.length < 2 ||
-              formData.name.length > 100 ||
-              !formData.serialNumber.trim() ||
-              formData.serialNumber.length < 3 ||
-              formData.serialNumber.length > 50
-            }
+            disabled={!groupName.trim()}
             sx={{
               background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
               '&:hover': {
@@ -696,15 +505,15 @@ export default function CompatibilityGroupsPage() {
               }
             }}
           >
-            {editingGroup ? 'Modifier' : 'Créer'}
+            Créer
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Dialog pour confirmer la suppression */}
+      {/* Dialog de suppression */}
       <Dialog
-        open={deleteDialogOpen}
-        onClose={closeDeleteDialog}
+        open={openDeleteDialog}
+        onClose={() => setOpenDeleteDialog(false)}
         maxWidth="sm"
         PaperProps={{
           sx: {
@@ -715,7 +524,6 @@ export default function CompatibilityGroupsPage() {
         }}
       >
         <DialogTitle sx={{
-          pb: 1,
           display: 'flex',
           alignItems: 'center',
           gap: 1
@@ -724,11 +532,12 @@ export default function CompatibilityGroupsPage() {
         </DialogTitle>
         <DialogContent>
           <Typography variant="body1">
-            Êtes-vous sûr de vouloir supprimer ce groupe de compatibilité ? Cette action est réversible.
+            Êtes-vous sûr de vouloir supprimer ce groupe de compatibilité ? 
+            Cette action supprimera également toutes les associations avec les produits.
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={closeDeleteDialog}>
+          <Button onClick={() => setOpenDeleteDialog(false)}>
             Annuler
           </Button>
           <Button
@@ -742,32 +551,45 @@ export default function CompatibilityGroupsPage() {
         </DialogActions>
       </Dialog>
 
-      {/* Dialog pour afficher les produits d'un groupe */}
+      {/* Dialog de gestion des produits */}
       <Dialog
-        open={productsDialogOpen}
-        onClose={() => setProductsDialogOpen(false)}
+        open={openProductsDialog}
+        onClose={() => setOpenProductsDialog(false)}
         maxWidth="md"
         fullWidth
         PaperProps={{
           sx: {
             borderTop: '4px solid var(--color-axignis-primary)',
             borderRadius: '4px',
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+            height: '80vh'
           }
         }}
       >
         <DialogTitle sx={{
-          pb: 1,
           display: 'flex',
           alignItems: 'center',
-          gap: 1
+          justifyContent: 'space-between'
         }}>
-          <GroupIcon color="primary" /> Produits dans le groupe
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <GroupIcon color="primary" />
+            Produits du groupe &ldquo;{selectedGroup?.name}&rdquo;
+          </Box>
+          {availableProducts.length > 0 && (
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<AddIcon />}
+              onClick={() => setOpenAttachDialog(true)}
+            >
+              Ajouter un produit
+            </Button>
+          )}
         </DialogTitle>
-        <DialogContent>
-          <TableContainer component={Paper} elevation={0} sx={{ mt: 2 }}>
-            <Table size="small">
-              <TableHead sx={{ bgcolor: 'background.default' }}>
+        <DialogContent sx={{ p: 0 }}>
+          <TableContainer component={Paper} elevation={0} sx={{ height: '100%' }}>
+            <Table stickyHeader size="small">
+              <TableHead>
                 <TableRow>
                   <TableCell sx={{ fontWeight: 'bold' }}>Nom</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>N° de série</TableCell>
@@ -777,13 +599,7 @@ export default function CompatibilityGroupsPage() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {productsLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={5} align="center">
-                      <CircularProgress size={30} sx={{ my: 2 }} />
-                    </TableCell>
-                  </TableRow>
-                ) : currentGroupProducts.length === 0 ? (
+                {selectedGroupProducts.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} align="center" sx={{ py: 3 }}>
                       <Typography variant="body1" color="text.secondary">
@@ -792,7 +608,7 @@ export default function CompatibilityGroupsPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  currentGroupProducts.map((product) => (
+                  selectedGroupProducts.map((product) => (
                     <TableRow
                       key={product.id}
                       sx={{ '&:hover': { bgcolor: 'action.hover' } }}
@@ -806,7 +622,7 @@ export default function CompatibilityGroupsPage() {
                           <IconButton
                             size="small"
                             color="error"
-                            onClick={() => handleRemoveProductFromGroup(product.id)}
+                            onClick={() => handleDetachProduct(product.id)}
                           >
                             <LinkOffIcon fontSize="small" />
                           </IconButton>
@@ -818,44 +634,99 @@ export default function CompatibilityGroupsPage() {
               </TableBody>
             </Table>
           </TableContainer>
-
-          <TablePagination
-            rowsPerPageOptions={[5, 10, 25]}
-            component="div"
-            count={productsTotal}
-            rowsPerPage={productsRowsPerPage}
-            page={productsPage}
-            onPageChange={handleChangeProductsPage}
-            onRowsPerPageChange={handleChangeProductsRowsPerPage}
-            labelRowsPerPage="Lignes par page"
-            labelDisplayedRows={({ from, to, count }) => `${from}-${to} sur ${count !== -1 ? count : `plus de ${to}`}`}
-          />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setProductsDialogOpen(false)}>
+          <Button onClick={() => setOpenProductsDialog(false)}>
             Fermer
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Snackbar pour les notifications */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={5000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      {/* Dialog d'attachement de produit */}
+      <Dialog
+        open={openAttachDialog}
+        onClose={() => setOpenAttachDialog(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderTop: '4px solid var(--color-axignis-primary)',
+            borderRadius: '4px',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+          }
+        }}
       >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          variant="filled"
-          sx={{ width: '100%' }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+        <DialogTitle>Ajouter un produit au groupe</DialogTitle>
+        <DialogContent sx={{ pt: 3 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Sélectionnez un produit à ajouter au groupe &ldquo;{selectedGroup?.name}&rdquo;.
+          </Typography>
+          <TableContainer component={Paper} elevation={0} sx={{ maxHeight: 300 }}>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 'bold' }}>Produit</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>Type</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>Action</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {availableProducts.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={3} align="center" sx={{ py: 3 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Tous les produits sont déjà dans ce groupe
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  availableProducts.map((product) => (
+                    <TableRow
+                      key={product.id}
+                      sx={{ '&:hover': { bgcolor: 'action.hover' } }}
+                    >
+                      <TableCell>
+                        <Box>
+                          <Typography variant="body2" fontWeight={500}>
+                            {product.name}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            N° {product.serialNumber}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2">
+                          {product.type?.title || '-'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={() => {
+                            handleAttachProduct(product.id);
+                            setOpenAttachDialog(false);
+                          }}
+                        >
+                          Ajouter
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenAttachDialog(false)}>
+            Annuler
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-      {/* FAB pour ajouter (mobile) */}
+      {/* FAB pour mobile */}
       <Fab
         color="primary"
         aria-label="add"
@@ -869,10 +740,27 @@ export default function CompatibilityGroupsPage() {
             background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
           }
         }}
-        onClick={() => handleOpenDialog()}
+        onClick={() => setOpenCreateDialog(true)}
       >
         <AddIcon />
       </Fab>
+
+      {/* Snackbar pour les notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={5000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
