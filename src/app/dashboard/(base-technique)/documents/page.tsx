@@ -35,7 +35,8 @@ import {
   MenuItem,
   InputAdornment,
   FormHelperText,
-  Autocomplete
+  Autocomplete,
+  Checkbox
 } from '@mui/material';
 import {
   Delete as DeleteIcon,
@@ -107,7 +108,7 @@ export default function ProductDocumentsPage() {
   type UploadForm = {
     reference: string;
     serialNumber: string;
-    productId: string;
+    productIds: string[]; // Array d'IDs de produits pour supporter plusieurs produits
     documentTypeId: string;
     issueDate: string;
     expiryDate?: string;
@@ -141,7 +142,7 @@ export default function ProductDocumentsPage() {
       // Initialiser aussi le formulaire d'upload avec ce productId
       setUploadForm(prev => ({
         ...prev,
-        productId: productIdFromUrl
+        productIds: [productIdFromUrl] // Utiliser un tableau avec un seul élément
       }));
     }
   }, [searchParams]);
@@ -150,7 +151,7 @@ export default function ProductDocumentsPage() {
   const [uploadForm, setUploadForm] = useState<UploadForm>({
     reference: '',
     serialNumber: '',
-    productId: '',
+    productIds: [],
     documentTypeId: '',
     issueDate: format(new Date(), 'yyyy-MM-dd'),
     version: 1,
@@ -385,10 +386,17 @@ export default function ProductDocumentsPage() {
         throw new Error('Aucun fichier sélectionné');
       }
       
-      // Trouver le produit sélectionné
-      const selectedProduct = products.find(p => p.id.toString() === uploadForm.productId.toString());
-      if (!selectedProduct) {
-        throw new Error('Produit introuvable');
+      // Vérifier que au moins un produit est sélectionné
+      if (!uploadForm.productIds || uploadForm.productIds.length === 0) {
+        throw new Error('Veuillez sélectionner au moins un produit');
+      }
+      
+      // Trouver les produits sélectionnés
+      const selectedProducts = products.filter(p => 
+        uploadForm.productIds.some(productId => p.id.toString() === productId.toString())
+      );
+      if (selectedProducts.length === 0) {
+        throw new Error('Aucun produit valide sélectionné');
       }
       
       // Trouver le type de document sélectionné
@@ -401,10 +409,9 @@ export default function ProductDocumentsPage() {
       const formattedUploadForm = {
         reference: uploadForm.reference,
         serialNumber: uploadForm.serialNumber,
-        productId: selectedProduct.id.toString(), // Envoyer l'ID du produit directement
-        productIds: [selectedProduct.id.toString()], // Format alternatif au cas où
-        products: [selectedProduct], // Format actuel
-        typeId: selectedDocumentType.id.toString(), // Envoyer l'ID du type directement
+        productIds: selectedProducts.map(p => typeof p.id === 'string' ? parseInt(p.id, 10) : p.id), // Array d'IDs numériques
+        products: selectedProducts, // Pour compatibilité
+        typeId: typeof selectedDocumentType.id === 'string' ? parseInt(selectedDocumentType.id, 10) : selectedDocumentType.id, // ID numérique
         documentTypeId: selectedDocumentType.id.toString(), // Format alternatif
         type: selectedDocumentType, // Format actuel
         issueDate: uploadForm.issueDate,
@@ -415,7 +422,8 @@ export default function ProductDocumentsPage() {
       
       console.log("Données envoyées à l'API:", {
         ...formattedUploadForm,
-        file: uploadForm.file ? `${uploadForm.file.name} (${uploadForm.file.size} bytes)` : null
+        file: uploadForm.file ? `${uploadForm.file.name} (${uploadForm.file.size} bytes)` : null,
+        selectedProductsNames: selectedProducts.map(p => p.name).join(', ')
       });
       
       const response = await equipmentService.uploadProductDocument(formattedUploadForm);
@@ -424,7 +432,7 @@ export default function ProductDocumentsPage() {
       // Afficher un message de succès avec plus de détails
       setSnackbar({
         open: true,
-        message: `Document "${response.data?.fileName || 'sans nom'}" téléversé avec succès`,
+        message: `Document "${response.data?.fileName || 'sans nom'}" téléversé avec succès et associé à ${selectedProducts.length} produit${selectedProducts.length > 1 ? 's' : ''}`,
         severity: 'success'
       });
       
@@ -432,10 +440,10 @@ export default function ProductDocumentsPage() {
       handleCloseDialog();
       
       // Mettre à jour la sélection du produit pour afficher le nouveau document
-      if (uploadForm.productId && uploadForm.productId !== filterProductId) {
-        console.log("Mise à jour du produit sélectionné après upload:", uploadForm.productId);
+      if (uploadForm.productIds.length > 0 && !uploadForm.productIds.includes(filterProductId)) {
+        console.log("Mise à jour du produit sélectionné après upload:", uploadForm.productIds[0]);
         // Mettre à jour le filtre de produit pour afficher le document qui vient d'être ajouté
-        setFilterProductId(uploadForm.productId);
+        setFilterProductId(uploadForm.productIds[0]);
       }
       
       // Attendre un court instant pour permettre à l'API de traiter l'upload avant de recharger
@@ -733,7 +741,7 @@ export default function ProductDocumentsPage() {
     setUploadForm({
       reference: '',
       serialNumber: '',
-      productId: filterProductId || '', // Utiliser le produit sélectionné dans le filtre
+      productIds: filterProductId ? [filterProductId] : [], // Utiliser le produit sélectionné dans le filtre
       documentTypeId: '',
       issueDate: format(new Date(), 'yyyy-MM-dd'),
       version: 1,
@@ -799,13 +807,35 @@ export default function ProductDocumentsPage() {
           border: '1px solid',
           borderColor: 'divider'
         }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-            <InventoryIcon sx={{ color: 'var(--color-axignis-primary)', fontSize: '1.5rem' }} />
-            <Typography variant="h6" sx={{ fontWeight: 600, color: 'var(--color-axignis-primary)' }}>
-              Sélectionner un produit
-            </Typography>
+          {/* En-tête avec titre et bouton alignés */}
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <InventoryIcon sx={{ color: 'var(--color-axignis-primary)', fontSize: '1.5rem' }} />
+              <Typography variant="h6" sx={{ fontWeight: 600, color: 'var(--color-axignis-primary)' }}>
+                Sélectionner un produit
+              </Typography>
+            </Box>
+            {filterProductId && (
+              <Button
+                variant="outlined"
+                size="medium"
+                onClick={() => setFilterProductId('')}
+                startIcon={<RefreshIcon />}
+                sx={{ 
+                  borderColor: 'var(--color-axignis-primary)',
+                  color: 'var(--color-axignis-primary)',
+                  '&:hover': {
+                    borderColor: 'var(--color-axignis-secondary)',
+                    backgroundColor: 'rgba(var(--color-axignis-primary-rgb), 0.1)'
+                  }
+                }}
+              >
+                Changer de produit
+              </Button>
+            )}
           </Box>
           
+          {/* Sélecteur de produit */}
           <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
             <Autocomplete
               options={products}
@@ -875,7 +905,7 @@ export default function ProductDocumentsPage() {
                   }}
                 />
               )}
-              sx={{ minWidth: 400, maxWidth: { xs: '100%', md: 500 } }}
+              sx={{ minWidth: 400, maxWidth: { xs: '100%', md: 500 }, flex: 1 }}
               size="medium"
               noOptionsText="Aucun produit trouvé pour cette recherche"
               clearText="Effacer"
@@ -883,25 +913,6 @@ export default function ProductDocumentsPage() {
               closeText="Fermer la liste"
               loadingText="Chargement des produits..."
             />
-            
-            {filterProductId && (
-              <Button
-                variant="outlined"
-                size="medium"
-                onClick={() => setFilterProductId('')}
-                startIcon={<RefreshIcon />}
-                sx={{ 
-                  borderColor: 'var(--color-axignis-primary)',
-                  color: 'var(--color-axignis-primary)',
-                  '&:hover': {
-                    borderColor: 'var(--color-axignis-secondary)',
-                    backgroundColor: 'rgba(var(--color-axignis-primary-rgb), 0.1)'
-                  }
-                }}
-              >
-                Changer de produit
-              </Button>
-            )}
           </Box>
         </Paper>
       </Box>      {/* Statistiques conditionnelles */}
@@ -934,13 +945,32 @@ export default function ProductDocumentsPage() {
       )}      {/* Filtres secondaires - uniquement visible si un produit est sélectionné */}
       {filterProductId && (
         <Paper sx={{ p: 2, mb: 3, border: '1px solid', borderColor: 'divider' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-            <SearchIcon sx={{ color: 'text.secondary', fontSize: '1.2rem' }} />
-            <Typography variant="subtitle2" color="text.secondary" sx={{ fontWeight: 600 }}>
-              Filtres avancés
-            </Typography>
+          {/* En-tête avec titre des filtres et bouton d'ajout alignés */}
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <SearchIcon sx={{ color: 'text.secondary', fontSize: '1.2rem' }} />
+              <Typography variant="subtitle2" color="text.secondary" sx={{ fontWeight: 600 }}>
+                Filtres avancés
+              </Typography>
+            </Box>
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<CloudUploadIcon />}
+              onClick={handleAdd}
+              sx={{
+                background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+                fontWeight: 600,
+                '&:hover': {
+                  background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                }
+              }}
+            >
+              Ajouter un document
+            </Button>
           </Box>
           
+          {/* Filtres */}
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center' }}>
             <TextField
               size="small"
@@ -1022,22 +1052,6 @@ export default function ProductDocumentsPage() {
             >
               Actualiser
             </Button>
-            
-            <Button
-              variant="contained"
-              size="small"
-              startIcon={<CloudUploadIcon />}
-              onClick={handleAdd}
-              sx={{
-                background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
-                fontWeight: 600,
-                '&:hover': {
-                  background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
-                }
-              }}
-            >
-              Ajouter un document
-            </Button>
           </Box>
         </Paper>
       )}
@@ -1053,23 +1067,49 @@ export default function ProductDocumentsPage() {
           border: '1px solid',
           borderColor: 'divider'
         }}>
-          <Box sx={{ maxWidth: 600, mx: 'auto' }}>
+          <Box sx={{ maxWidth: 700, mx: 'auto' }}>
             <InsertDriveFileIcon sx={{ 
               fontSize: '4rem', 
-              color: 'text.secondary', 
+              color: 'var(--color-axignis-primary)', 
               mb: 2,
-              opacity: 0.5 
+              opacity: 0.8 
             }} />
             <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, color: 'text.primary' }}>
-              Aucun produit sélectionné
+              Gestion des documents produits
             </Typography>
             <Typography variant="body1" color="text.secondary" sx={{ mb: 4, lineHeight: 1.6 }}>
-              Sélectionnez un produit dans le filtre ci-dessus pour consulter et gérer ses documents associés.
+              Vous pouvez soit sélectionner un produit spécifique ci-dessus pour consulter ses documents, 
+              ou créer un nouveau document qui sera associé aux produits de votre choix.
             </Typography>
             
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 4, fontStyle: 'italic' }}>
-              � Vous pouvez gérer les manuels d&apos;utilisation, fiches techniques, certificats et autres documents une fois un produit sélectionné.
-            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 4 }}>
+              <Button
+                variant="contained"
+                size="large"
+                startIcon={<CloudUploadIcon />}
+                onClick={handleAdd}
+                sx={{
+                  background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
+                  fontSize: '1.1rem',
+                  py: 1.5,
+                  px: 4,
+                  fontWeight: 600,
+                  boxShadow: '0 4px 15px rgba(var(--color-axignis-primary-rgb), 0.3)',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                    boxShadow: '0 6px 20px rgba(var(--color-axignis-primary-rgb), 0.4)',
+                    transform: 'translateY(-2px)'
+                  },
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                Créer un nouveau document
+              </Button>
+              
+              <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                Lors de la création, vous pourrez associer le document à un ou plusieurs produits
+              </Typography>
+            </Box>
           </Box>
         </Paper>
       ) : (
@@ -1188,7 +1228,49 @@ export default function ProductDocumentsPage() {
                         {document.documentType?.name || document.type?.name || 'Non spécifié'}
                       </TableCell>
                       <TableCell>
-                        {document.product?.name || (document.products && document.products.length > 0 ? document.products[0].name : 'Non spécifié')}
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                          {/* Affichage du produit principal ou des produits multiples */}
+                          {document.products && document.products.length > 1 ? (
+                            <Box>
+                              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                {document.products[0].name}
+                              </Typography>
+                              <Tooltip
+                                title={
+                                  <Box>
+                                    <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+                                      Tous les produits associés :
+                                    </Typography>
+                                    {document.products.map((product) => (
+                                      <Typography key={product.id} variant="body2" sx={{ mb: 0.5 }}>
+                                        • {product.name}
+                                      </Typography>
+                                    ))}
+                                  </Box>
+                                }
+                                placement="top"
+                                arrow
+                              >
+                                <Chip 
+                                  label={`+${document.products.length - 1} autre${document.products.length > 2 ? 's' : ''}`}
+                                  size="small"
+                                  color="primary"
+                                  variant="outlined"
+                                  sx={{ 
+                                    fontSize: '0.7rem',
+                                    height: 20,
+                                    backgroundColor: 'rgba(var(--color-axignis-primary-rgb), 0.1)',
+                                    cursor: 'help'
+                                  }}
+                                />
+                              </Tooltip>
+                            </Box>
+                          ) : (
+                            <Typography variant="body2">
+                              {document.product?.name || (document.products && document.products.length > 0 ? document.products[0].name : 'Non spécifié')}
+                            </Typography>
+                          )}
+                        </Box>
                       </TableCell>
                       <TableCell>
                         <StatusChip status={document.status} />
@@ -1277,7 +1359,17 @@ export default function ProductDocumentsPage() {
         {/* Dialog pour téléverser un document */}
         <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
           <DialogTitle>
-            Téléverser un nouveau document
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <CloudUploadIcon sx={{ color: 'var(--color-axignis-primary)' }} />
+              <Box>
+                <Typography variant="h6" component="div">
+                  Téléverser un nouveau document
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Un document peut être associé à plusieurs produits différents
+                </Typography>
+              </Box>
+            </Box>
           </DialogTitle>
           <DialogContent dividers>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -1307,20 +1399,66 @@ export default function ProductDocumentsPage() {
               
               <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', md: 'row' } }}>
                 <FormControl fullWidth margin="dense">
-                  <InputLabel>Produit</InputLabel>
+                  <InputLabel>Produits associés</InputLabel>
                   <Select
-                    value={uploadForm.productId}
-                    onChange={(e) => setUploadForm({ ...uploadForm, productId: e.target.value })}
-                    label="Produit"
+                    multiple
+                    value={uploadForm.productIds}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setUploadForm({ 
+                        ...uploadForm, 
+                        productIds: typeof value === 'string' ? [value] : value 
+                      });
+                    }}
+                    label="Produits associés"
                     required
+                    renderValue={(selected) => (
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {selected.map((productId) => {
+                          const product = products.find(p => p.id.toString() === productId);
+                          return (
+                            <Chip 
+                              key={productId} 
+                              label={product?.name || `ID: ${productId}`} 
+                              size="small"
+                              sx={{ 
+                                backgroundColor: 'rgba(var(--color-axignis-primary-rgb), 0.1)',
+                                color: 'var(--color-axignis-primary)'
+                              }}
+                            />
+                          );
+                        })}
+                      </Box>
+                    )}
                   >
                     {products.map(product => (
                       <MenuItem key={product.id} value={product.id}>
-                        {product.name}
+                        <Checkbox 
+                          checked={uploadForm.productIds.includes(product.id.toString())}
+                          sx={{
+                            color: 'var(--color-axignis-primary)',
+                            '&.Mui-checked': {
+                              color: 'var(--color-axignis-primary)',
+                            }
+                          }}
+                        />
+                        <Box sx={{ ml: 1 }}>
+                          <Typography variant="body1">{product.name}</Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {product.serialNumber} • {product.brand?.name}
+                          </Typography>
+                        </Box>
                       </MenuItem>
                     ))}
                   </Select>
-                  <FormHelperText>Produit associé au document</FormHelperText>
+                  <FormHelperText>
+                    Sélectionnez un ou plusieurs produits à associer au document
+                    {uploadForm.productIds.length > 0 && (
+                      <Typography component="span" color="primary" sx={{ ml: 1 }}>
+                        ({uploadForm.productIds.length} produit{uploadForm.productIds.length > 1 ? 's' : ''} sélectionné{uploadForm.productIds.length > 1 ? 's' : ''})
+                      </Typography>
+                    )}
+                  </FormHelperText>
                 </FormControl>
                 <FormControl fullWidth margin="dense">
                   <InputLabel>Type de document</InputLabel>
@@ -1456,7 +1594,8 @@ export default function ProductDocumentsPage() {
                 !uploadForm.serialNumber.trim() ||
                 uploadForm.serialNumber.length < 3 ||
                 uploadForm.serialNumber.length > 50 ||
-                !uploadForm.productId ||
+                !uploadForm.productIds || 
+                uploadForm.productIds.length === 0 ||
                 !uploadForm.documentTypeId ||
                 !uploadForm.file
               }
