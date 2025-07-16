@@ -245,13 +245,20 @@ const FileList = forwardRef(function FileList(
 
               <ListItemText
                 primary={
-                  <Typography variant="body2">
-                    {file.file.fileName}
-                  </Typography>
+                  <>
+                    <Typography variant="body2" fontWeight={600}>
+                      {file.file.title || file.file.fileName}
+                    </Typography>
+                    {file.file.description && (
+                      <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                        {file.file.description}
+                      </Typography>
+                    )}
+                  </>
                 }
                 secondary={
                   <Typography variant="caption" color="text.secondary">
-                    {(file.file.size / 1024).toFixed(2)} Ko
+                    {file.file.fileName} &bull; {(file.file.size / 1024).toFixed(2)} Ko
                   </Typography>
                 }
               />
