@@ -1,32 +1,45 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Paper, 
-  Button, 
-  TextField, 
+import { equipmentService } from '@/services/equipmentService';
+import { CreateEquipmentDomainRequest, EquipmentDomain, UpdateEquipmentDomainRequest } from '@/types/equipment';
+import {
+  Add as AddIcon,
+  Delete as DeleteIcon,
+  Edit as EditIcon,
+  Folder as FolderIcon,
+  Refresh as RefreshIcon,
+  Search as SearchIcon,
+  Visibility as ViewIcon
+} from '@mui/icons-material';
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Fab,
   IconButton,
+  Paper,
+  Snackbar,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
-  TableRow,
   TablePagination,
-  Chip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Alert,
-  Snackbar,
-  CircularProgress,
+  TableRow,
+  TextField,
   Tooltip,
   Card,
   CardContent,
-  Switch
+  Switch,
+  Typography
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -40,6 +53,7 @@ import { equipmentService } from '@/services/equipmentService';
 import { EquipmentDomain, CreateEquipmentDomainRequest, UpdateEquipmentDomainRequest } from '@/types/equipment';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useEffect, useState } from 'react';
 
 export default function DomainesPage() {
   const [domains, setDomains] = useState<EquipmentDomain[]>([]);
@@ -311,7 +325,7 @@ export default function DomainesPage() {
       {/* Statistiques */}
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 3 }}>
         <Box sx={{ flex: '1 1 280px', minWidth: 0 }}>
-          <Card sx={{ 
+          <Card sx={{
             background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
             color: 'white'
           }}>
@@ -472,9 +486,9 @@ export default function DomainesPage() {
                       </Box>
                     </TableCell>
                     <TableCell>
-                      <Chip 
-                        label={domain.serialNumber} 
-                        size="small" 
+                      <Chip
+                        label={domain.serialNumber}
+                        size="small"
                         variant="outlined"
                         sx={{ fontFamily: 'monospace' }}
                       />
@@ -519,7 +533,7 @@ export default function DomainesPage() {
             </TableBody>
           </Table>
         </TableContainer>
-        
+
         <TablePagination
           rowsPerPageOptions={[5, 10, 25, 50]}
           component="div"
@@ -568,8 +582,8 @@ export default function DomainesPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog}>Annuler</Button>
-          <Button 
-            onClick={handleSubmit} 
+          <Button
+            onClick={handleSubmit}
             variant="contained"
             disabled={!formData.name.trim() || !formData.serialNumber.trim() || formData.serialNumber.length < 3 || formData.serialNumber.length > 50}
             sx={{
@@ -644,8 +658,8 @@ export default function DomainesPage() {
         autoHideDuration={6000}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
       >
-        <Alert 
-          onClose={() => setSnackbar({ ...snackbar, open: false })} 
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
           severity={snackbar.severity}
           sx={{ width: '100%' }}
         >

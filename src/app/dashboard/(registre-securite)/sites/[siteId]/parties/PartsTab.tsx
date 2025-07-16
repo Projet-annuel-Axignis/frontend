@@ -10,6 +10,7 @@ import {
   Delete as DeleteIcon,
   Edit as EditIcon,
   Refresh as RefreshIcon,
+  Security as SecurityIcon,
   ViewModule as ViewModuleIcon
 } from '@mui/icons-material';
 import {
@@ -39,6 +40,7 @@ interface PartsTabProps {
   siteId: number;
   onNotification: (message: string, severity: 'success' | 'error') => void;
   disabled?: boolean;
+  companyId?: number;
 }
 
 interface Filters {
@@ -47,7 +49,7 @@ interface Filters {
   includeDeleted: boolean;
 }
 
-const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = false }) => {
+const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = false, companyId }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -303,6 +305,22 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
     }
   };
 
+  const handleViewInterventions = (part: Part) => {
+    if (!part.building?.site) {
+      onNotification('Impossible de déterminer le site de la partie', 'error');
+      return;
+    }
+
+    const params = new URLSearchParams();
+    if (companyId) params.set('companyId', companyId.toString());
+    params.set('siteId', part.building.site.id.toString());
+    params.set('buildingId', part.building.id.toString());
+    params.set('partId', part.id.toString());
+
+    const url = `/dashboard/interventions?${params.toString()}`;
+    router.push(url);
+  };
+
   const getBuildingName = (building?: Building) => {
     if (!building) return 'Non défini';
     return building.name;
@@ -354,6 +372,21 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
             </Typography>
           </Grid>
 
+          <Grid size={{ xs: 12 }}>
+            <Typography variant="body2" color="text.secondary">
+              <strong>Interventions :</strong> {part.interventions?.length || 0}
+              {part.interventions && part.interventions.length > 0 && (
+                <Chip
+                  label={`${part.interventions.filter(i => i.status === 'TERMINATED').length} terminées`}
+                  size="small"
+                  color="success"
+                  variant="outlined"
+                  sx={{ ml: 1 }}
+                />
+              )}
+            </Typography>
+          </Grid>
+
           {part.erpTypes && part.erpTypes.length > 0 && (
             <Grid size={{ xs: 12 }}>
               <Typography variant="body2" color="text.secondary">
@@ -374,6 +407,14 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
 
       {!disabled && (
         <CardActions>
+          <Button
+            size="small"
+            startIcon={<SecurityIcon />}
+            onClick={() => handleViewInterventions(part)}
+            disabled={isDeleted(part) || !part.interventions || part.interventions.length === 0}
+          >
+            Interventions
+          </Button>
           <Button
             size="small"
             startIcon={<EditIcon />}
@@ -489,6 +530,7 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
                     <TableCell>Niveaux</TableCell>
                     <TableCell>ICPE</TableCell>
                     <TableCell>Code ERP</TableCell>
+                    <TableCell>Interventions</TableCell>
                     <TableCell align="center">Actions</TableCell>
                   </TableRow>
                 </TableHead>
@@ -518,8 +560,31 @@ const PartsTab: React.FC<PartsTabProps> = ({ siteId, onNotification, disabled = 
                       <TableCell>{part.isIcpe ? 'Oui' : 'Non'}</TableCell>
                       <TableCell>{part.erpTypes?.map(erpType => erpType.code).join(', ') || '-'}</TableCell>
                       <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography variant="body2">
+                            {part.interventions?.length || 0}
+                          </Typography>
+                          {part.interventions && part.interventions.length > 0 && (
+                            <Chip
+                              label={`${part.interventions.filter(i => i.status === 'TERMINATED').length} terminées`}
+                              size="small"
+                              color="success"
+                              variant="outlined"
+                            />
+                          )}
+                        </Box>
+                      </TableCell>
+                      <TableCell>
                         {!disabled && (
-                          <Box sx={{ display: 'flex', gap: 1 }}>
+                          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleViewInterventions(part)}
+                              disabled={isDeleted(part) || !part.interventions || part.interventions.length === 0}
+                              title="Consulter les interventions"
+                            >
+                              <SecurityIcon />
+                            </IconButton>
                             <IconButton
                               size="small"
                               onClick={() => openEditDialog(part)}

@@ -39,6 +39,7 @@ export default function LoadingProvider({ children }: LoadingProviderProps) {
       '/dashboard/administration',
       '/dashboard/produits',
       '/dashboard/sites',
+      '/dashboard/interventions',
       // Ajouter d'autres sections avec tabs ici
     ];
 

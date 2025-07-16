@@ -13,7 +13,7 @@ import { Part, Typologies } from "./site";
 // =========================
 
 export type InterventionStatus = 'PLANNED' | 'IN_PROGRESS' | 'TERMINATED';
-export type Periodicity = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY';
+export type Periodicity = 'MONTHLY' | 'QUARTER' | 'SEMESTER' | 'ANNUAL';
 export type ObservationStatus = 'OPEN' | 'IN_PROGRESS' | 'FINISHED';
 export type OrganizationType = 'OA' | 'TC';
 
@@ -33,9 +33,9 @@ export interface Intervention {
   plannedAt: string;
   startedAt: string;
   endedAt: string;
-  type: string;
+  type: InterventionType;
   terminatedBy: User;
-  periodicity: Periodicity;
+  parts: Part[];
 }
 
 export interface CreateInterventionDto {
@@ -43,12 +43,12 @@ export interface CreateInterventionDto {
   companyName: string;
   employeeName: string;
   status: InterventionStatus;
-  periodicity: Periodicity;
-  plannedAt: string;
-  startedAt: string;
-  endedAt: string;
+  plannedAt?: string;
+  startedAt?: string;
+  endedAt?: string;
   typeId: number;
-  terminatedById: number;
+  terminatedById?: number;
+  partIds: number[];
 }
 
 export interface UpdateInterventionDto {
@@ -56,12 +56,12 @@ export interface UpdateInterventionDto {
   companyName?: string;
   employeeName?: string;
   status?: InterventionStatus;
-  periodicity?: Periodicity;
   plannedAt?: string;
   startedAt?: string;
   endedAt?: string;
   typeId?: number;
   terminatedById?: number;
+  partIds?: number[];
 }
 
 
@@ -166,16 +166,53 @@ export interface UpdateOrganizationDto {
 
 export interface File {
   id: number;
-  fileId: number;
+  fileId: number; //id sur la BDD BET
   report?: Report;
+  file: Document;
 }
 
-export interface CreateFileDto {
+export enum DocumentStatus {
+  DRAFT = 'DRAFT',
+  PUBLISHED = 'PUBLISHED',
+  ARCHIVED = 'ARCHIVED',
+  EXPIRED = 'EXPIRED',
+}
+
+export interface Document {
+  id: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+  reference: string;
+  serialNumber: string;
+  title: string;
+  description: string;
+  fileName: string;
+  filePath: string;
+  size: number;
+  issueDate: string;
+  expiryDate: string;
+  version: number;
+  mimeType: string;
+  checksum: string;
+  status: DocumentStatus;
+  uploadedBy: number;
+  type: DocumentType;
+  product?: any;
+}
+
+export interface CreateReportFileDto {
   fileId: number;
+  title?: string;
+  description?: string;
+  version?: number;
 }
 
-export interface UpdateFileDto {
+export interface UpdateReportFileDto {
   fileId?: number;
+  title?: string;
+  description?: string;
+  version?: number;
 }
 
 // =========================
@@ -188,6 +225,7 @@ export interface Observations {
   updatedAt: string;
   deletedAt?: string;
   title: string;
+  comment: string;
   reference: string;
   location: string;
   priority: number;
@@ -201,12 +239,13 @@ export interface Observations {
 
 export interface CreateObservationsDto {
   title: string;
+  comment: string;
   reference: string;
   location: string;
   priority: number;
   status: ObservationStatus;
-  startedAt: string;
-  endedAt: string;
+  startedAt?: string;
+  endedAt?: string;
   reportId: number;
   partIds: number[];
   fileIds: number[];
@@ -214,6 +253,7 @@ export interface CreateObservationsDto {
 
 export interface UpdateObservationsDto {
   title?: string;
+  comment?: string;
   reference?: string;
   location?: string;
   priority?: number;

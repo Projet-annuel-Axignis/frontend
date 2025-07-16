@@ -3,9 +3,12 @@ import { UserRoleType } from '@/types/auth';
 import { AdminPanelSettings } from '@mui/icons-material';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import AppsIcon from '@mui/icons-material/Apps';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import BuildIcon from '@mui/icons-material/Build';
 import BusinessIcon from '@mui/icons-material/Business';
 import CableIcon from '@mui/icons-material/Cable';
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
+import DescriptionIcon from '@mui/icons-material/Description';
 import FolderIcon from '@mui/icons-material/Folder';
 import GroupIcon from '@mui/icons-material/Group';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
@@ -197,6 +200,7 @@ export default function Sidebar() {
   const [openAdministration, setOpenAdministration] = React.useState(false);
   const [openSites, setOpenSites] = React.useState(false);
   const [openEquipments, setOpenEquipments] = React.useState(false);
+  const [openInterventions, setOpenInterventions] = React.useState(false);
 
   const handleProductsClick = () => {
     setOpenProducts(!openProducts);
@@ -212,6 +216,10 @@ export default function Sidebar() {
   
   const handleEquipmentsClick = () => {
     setOpenEquipments(!openEquipments);
+  };
+
+  const handleInterventionsClick = () => {
+    setOpenInterventions(!openInterventions);
   };
 
   const isActive = (path: string) => pathname === path || pathname.startsWith(path + '/');
@@ -530,6 +538,83 @@ export default function Sidebar() {
                     <AccountTreeIcon sx={{ mr: 1.5, fontSize: '1rem', color: 'var(--color-axignis-primary)' }} />
                     <Typography variant="body2" color="textSecondary">
                       Navigation Hiérarchique
+                    </Typography>
+                  </StyledListItemButton>
+                </Link>
+              </Box>
+            </Collapse>
+
+            <ListItem disablePadding sx={{ width: '100%' }}>
+              <Tooltip title="Gérer les interventions et rapports" placement="right" arrow>
+                <Box sx={{ width: '100%' }}>
+                  <StyledListItemButton
+                    onClick={handleInterventionsClick}
+                    isActive={isActive('/dashboard/interventions')}
+                  >
+                    <BuildIcon sx={{ mr: 1.5, color: 'var(--color-axignis-primary)' }} />
+                    <ListItemText
+                      primary={
+                        <Typography variant="body2" fontWeight="medium">
+                          Interventions
+                        </Typography>
+                      }
+                    />
+                    <KeyboardArrowDownIcon
+                      sx={{
+                        transform: openInterventions ? 'rotate(180deg)' : 'none',
+                        transition: 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
+                        color: 'var(--color-axignis-primary)',
+                      }}
+                    />
+                  </StyledListItemButton>
+                </Box>
+              </Tooltip>
+            </ListItem>
+
+            {/* Sous-menu Interventions */}
+            <Collapse in={openInterventions} timeout={400} unmountOnExit>
+              <Box sx={{ pl: 4, py: 1 }}>
+                <Link href="/dashboard/interventions" style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <StyledListItemButton
+                    sx={{ py: 0.75, mb: 0.5, width: '100%' }}
+                    isActive={isActive('/dashboard/interventions')}
+                  >
+                    <BuildIcon sx={{ mr: 1.5, fontSize: '1rem', color: 'var(--color-axignis-primary)' }} />
+                    <Typography variant="body2" color="textSecondary">
+                      Interventions
+                    </Typography>
+                  </StyledListItemButton>
+                </Link>
+                <Link href="/dashboard/interventions/intervention-types" style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <StyledListItemButton
+                    sx={{ py: 0.75, mb: 0.5, width: '100%' }}
+                    isActive={isActive('/dashboard/interventions/intervention-types')}
+                  >
+                    <AssignmentIcon sx={{ mr: 1.5, fontSize: '1rem', color: 'var(--color-axignis-primary)' }} />
+                    <Typography variant="body2" color="textSecondary">
+                      Types d&apos;intervention
+                    </Typography>
+                  </StyledListItemButton>
+                </Link>
+                <Link href="/dashboard/interventions/report-types" style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <StyledListItemButton
+                    sx={{ py: 0.75, mb: 0.5, width: '100%' }}
+                    isActive={isActive('/dashboard/interventions/report-types')}
+                  >
+                    <DescriptionIcon sx={{ mr: 1.5, fontSize: '1rem', color: 'var(--color-axignis-primary)' }} />
+                    <Typography variant="body2" color="textSecondary">
+                      Types de rapport
+                    </Typography>
+                  </StyledListItemButton>
+                </Link>
+                <Link href="/dashboard/interventions/organizations" style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <StyledListItemButton
+                    sx={{ py: 0.75, mb: 0.5, width: '100%' }}
+                    isActive={isActive('/dashboard/interventions/organizations')}
+                  >
+                    <GroupIcon sx={{ mr: 1.5, fontSize: '1rem', color: 'var(--color-axignis-primary)' }} />
+                    <Typography variant="body2" color="textSecondary">
+                      Organismes
                     </Typography>
                   </StyledListItemButton>
                 </Link>
