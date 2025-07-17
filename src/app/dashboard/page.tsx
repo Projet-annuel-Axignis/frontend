@@ -38,7 +38,7 @@ const DashboardPage = () => {
       title: 'Registre de Sécurité',
       description: 'Gestion des interventions, rapports, sites et observations',
       icon: <AssignmentIcon sx={{ fontSize: 40 }} />,
-      href: '/dashboard/(registre-securite)/sites',
+      href: '/dashboard/sites',
       color: '#1976d2',
       gradient: 'linear-gradient(135deg, #1976d2, #42a5f5)'
     },
@@ -46,7 +46,7 @@ const DashboardPage = () => {
       title: 'Base Technique',
       description: 'Gestion des équipements, produits, documents et compatibilités',
       icon: <EngineeringIcon sx={{ fontSize: 40 }} />,
-      href: '/dashboard/(base-technique)/domaines',
+      href: '/dashboard/domaines',
       color: '#388e3c',
       gradient: 'linear-gradient(135deg, #388e3c, #66bb6a)'
     },
@@ -152,7 +152,7 @@ const DashboardPage = () => {
         <Grid container spacing={3}>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <CardActionArea
-              onClick={() => router.push('/dashboard/(registre-securite)/interventions')}
+              onClick={() => router.push('/dashboard/interventions')}
               sx={{
                 p: 2,
                 borderRadius: 1,
@@ -180,7 +180,7 @@ const DashboardPage = () => {
 
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <CardActionArea
-              onClick={() => router.push('/dashboard/(registre-securite)/sites')}
+              onClick={() => router.push('/dashboard/sites')}
               sx={{
                 p: 2,
                 borderRadius: 1,
@@ -208,7 +208,7 @@ const DashboardPage = () => {
 
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <CardActionArea
-              onClick={() => router.push('/dashboard/(base-technique)/produits')}
+              onClick={() => router.push('/dashboard/produits')}
               sx={{
                 p: 2,
                 borderRadius: 1,
