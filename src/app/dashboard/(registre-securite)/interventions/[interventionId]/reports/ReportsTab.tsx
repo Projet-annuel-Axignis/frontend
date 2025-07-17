@@ -16,7 +16,8 @@ import {
   ExpandLess as ExpandLessIcon,
   ExpandMore as ExpandMoreIcon,
   Refresh as RefreshIcon,
-  Restore as RestoreIcon
+  Restore as RestoreIcon,
+  Visibility as VisibilityIcon
 } from '@mui/icons-material';
 import {
   Autocomplete,
@@ -477,6 +478,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ interventionId, onNotification,
                     <TableCell>Organisation</TableCell>
                     <TableCell>Typologie</TableCell>
                     <TableCell>Date de création</TableCell>
+                    <TableCell>Observations</TableCell>
                     <TableCell>Statut</TableCell>
                     <TableCell align="right">Actions</TableCell>
                   </TableRow>
@@ -484,7 +486,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ interventionId, onNotification,
                 <TableBody>
                   {loading ? (
                     <TableRow>
-                      <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
+                      <TableCell colSpan={9} align="center" sx={{ py: 4 }}>
                         <CircularProgress size={32} />
                         <Typography variant="body1" sx={{ mt: 1 }}>
                           Chargement des rapports...
@@ -493,7 +495,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ interventionId, onNotification,
                     </TableRow>
                   ) : filteredReports.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} align="center" sx={{ py: 8 }}>
+                      <TableCell colSpan={9} align="center" sx={{ py: 8 }}>
                         <AssignmentIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
                         <Typography variant="h6" color="text.secondary" gutterBottom>
                           Aucun rapport trouvé
@@ -551,6 +553,14 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ interventionId, onNotification,
                             </Typography>
                           </TableCell>
                           <TableCell>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <VisibilityIcon fontSize="small" color="primary" />
+                              <Typography variant="body2" fontWeight="medium">
+                                {report.obsevations?.length || 0}
+                              </Typography>
+                            </Box>
+                          </TableCell>
+                          <TableCell>
                             <Chip
                               size="small"
                               label={report.deletedAt ? 'Archivé' : 'Actif'}
@@ -596,7 +606,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ interventionId, onNotification,
                         </TableRow>
                         {/* Ligne extensible */}
                         <TableRow>
-                          <TableCell colSpan={7} sx={{ p: 0, border: 'none', background: 'grey.50' }}>
+                          <TableCell colSpan={9} sx={{ p: 0, border: 'none', background: 'grey.50' }}>
                             <Collapse in={expandedRow === report.id} timeout="auto" unmountOnExit>
                               <Box sx={{ p: 3, borderTop: '1px solid', borderColor: 'divider' }}>
                                 <Typography variant="h6" gutterBottom color="primary" sx={{ mb: 3 }}>
@@ -661,7 +671,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ interventionId, onNotification,
                                         }
                                       }}
                                     >
-                                      Observations
+                                      Observations ({report.obsevations?.length || 0})
                                     </Button>
                                   </Box>
                                 </Box>

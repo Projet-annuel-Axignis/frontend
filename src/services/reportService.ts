@@ -1,5 +1,6 @@
 import { api } from '@/lib/api';
 import { CreateReportDto, Report, UpdateReportDto } from '@/types/intervention';
+import observationService from './observationService';
 
 export const reportService = {
   async getReports(params: {
@@ -26,6 +27,38 @@ export const reportService = {
 
     const response = await api.get<{ results: Report[]; total: number }>(`/reports?${searchParams}`);
     let reports = response.data.results;
+
+    // Récupérer les observations pour chaque rapport
+    try {
+      const reportsWithObservations = await Promise.all(
+        reports.map(async (report) => {
+          try {
+            const observationsResult = await observationService.getObservations({
+              reportId: report.id,
+              includeDeleted: false // On ne compte que les observations actives
+            });
+            return {
+              ...report,
+              obsevations: observationsResult.observations || []
+            };
+          } catch (error) {
+            console.error(`Erreur lors de la récupération des observations pour le rapport ${report.id}:`, error);
+            return {
+              ...report,
+              obsevations: []
+            };
+          }
+        })
+      );
+      reports = reportsWithObservations;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des observations:', error);
+      // En cas d'erreur, on garde les rapports sans observations
+      reports = reports.map(report => ({
+        ...report,
+        obsevations: []
+      }));
+    }
 
     // Client-side filtering
     if (params.search) {
