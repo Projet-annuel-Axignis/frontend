@@ -48,10 +48,11 @@ import {
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import React, { useEffect, useState } from 'react';
-import FileList from '../_components/FileList';
-import FileUpload from '../_components/FileUpload';
 import ObservationsManager from '../_components/ObservationsManager';
 import ReportDialog from '../_components/ReportDialog';
+
+// Importer FileSection depuis FileList
+import { FileSection } from '../_components/FileList';
 
 const organizationTypeLabels: Record<OrganizationType, string> = {
   OA: 'Organisme Agréé',
@@ -819,16 +820,10 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ interventionId, onNotification,
                                       <Typography variant="subtitle1" gutterBottom color="primary">
                                         Gestion des fichiers
                                       </Typography>
-                                      <FileUpload
-                                        entityType="report"
-                                        entityId={report.id}
-                                        onUploadComplete={loadReports}
-                                      />
-                                      <FileList
+                                      <FileSection
                                         entityType="report"
                                         entityId={report.id}
                                         title="Fichiers du rapport"
-                                        onFilesChange={loadReports}
                                       />
                                     </Grid>
                                   </Grid>
