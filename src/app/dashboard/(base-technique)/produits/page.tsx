@@ -87,7 +87,7 @@ export default function ProductsPage() {
     serialNumber: '',
     brandId: 0,
     typeId: 0,
-    compatibilityGroupIds: []
+    groupIds: []
   });
   
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
@@ -205,7 +205,7 @@ export default function ProductsPage() {
   // Charger les groupes de compatibilité pour le formulaire
   const loadCompatibilityGroups = async () => {
     try {
-      const response: any = await equipmentService.getCompatibilityGroups(1, 100);
+      const response: any = await equipmentService.getCompatibilityGroups();
       console.log('Response groupes de compatibilité:', response);
       
       // Vérifier si la réponse est directement un tableau (format [{ id, name, products }])
@@ -301,15 +301,20 @@ export default function ProductsPage() {
   const handleSubmit = async () => {
     try {
       console.log("handleSubmit - Données du formulaire avant soumission:", formData);
+      console.log("handleSubmit - groupIds:", formData.groupIds);
       
-      // Assurer que brandId et typeId sont des nombres
+      // Assurer que brandId et typeId sont des nombres, et que groupIds est un tableau de nombres
       const processedData = {
         ...formData,
         brandId: typeof formData.brandId === 'string' ? parseInt(formData.brandId) : formData.brandId,
-        typeId: typeof formData.typeId === 'string' ? parseInt(formData.typeId) : formData.typeId
+        typeId: typeof formData.typeId === 'string' ? parseInt(formData.typeId) : formData.typeId,
+        groupIds: formData.groupIds?.map(id => 
+          typeof id === 'string' ? parseInt(id) : id
+        ) || []
       };
       
       console.log("Données traitées pour soumission:", processedData);
+      console.log("groupIds après traitement:", processedData.groupIds);
 
       if (editingProduct) {
         console.log(`Mise à jour du produit (ID: ${editingProduct.id})`);
@@ -411,7 +416,7 @@ export default function ProductsPage() {
       serialNumber: product.serialNumber,
       brandId: product.brand?.id ? (typeof product.brand.id === 'string' ? parseInt(product.brand.id) : product.brand.id) : 0,
       typeId: product.type?.id ? (typeof product.type.id === 'string' ? parseInt(product.type.id) : product.type.id) : 0,
-      compatibilityGroupIds: product.groups?.map(g => g.id) || []
+      groupIds: product.groups?.map(g => g.id) || []
     });
     setOpenDialog(true);
   };
@@ -423,7 +428,7 @@ export default function ProductsPage() {
       serialNumber: '',
       brandId: 0,
       typeId: 0,
-      compatibilityGroupIds: []
+      groupIds: []
     });
     setOpenDialog(true);
   };
@@ -436,7 +441,7 @@ export default function ProductsPage() {
       serialNumber: '',
       brandId: 0,
       typeId: 0,
-      compatibilityGroupIds: []
+      groupIds: []
     });
   };
 
@@ -453,7 +458,7 @@ export default function ProductsPage() {
     const value = event.target.value;
     setFormData({ 
       ...formData, 
-      compatibilityGroupIds: typeof value === 'string' 
+      groupIds: typeof value === 'string' 
         ? value.split(',').map(id => Number(id)) 
         : value as number[]
     });
@@ -887,7 +892,7 @@ export default function ProductsPage() {
                             }}
                             variant={productDocuments[product.id].length > 0 ? "filled" : "outlined"}
                             icon={productDocuments[product.id].length > 0 ? <InventoryIcon sx={{ fontSize: '1rem' }} /> : undefined}
-                            onClick={() => router.push(`/dashboard/base-technique/documents?productId=${product.id}`)}
+                            onClick={() => router.push(`/dashboard/documents?productId=${product.id}`)}
                             clickable
                           />
                           {productDocuments[product.id].length > 0 && (
@@ -905,7 +910,7 @@ export default function ProductsPage() {
                           color="default"
                           variant="outlined"
                           sx={{ opacity: 0.7, cursor: 'pointer' }}
-                          onClick={() => router.push(`/dashboard/base-technique/documents?productId=${product.id}`)}
+                          onClick={() => router.push(`/dashboard/documents?productId=${product.id}`)}
                           clickable
                         />
                       )}
@@ -1037,7 +1042,7 @@ export default function ProductsPage() {
                 <InputLabel>Groupes de compatibilité</InputLabel>
                 <Select
                   multiple
-                  value={formData.compatibilityGroupIds || []}
+                  value={formData.groupIds || []}
                   onChange={handleGroupIdsChange}
                   input={<OutlinedInput label="Groupes de compatibilité" />}
                   renderValue={(selected) => (

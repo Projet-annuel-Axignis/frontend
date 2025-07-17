@@ -51,7 +51,7 @@ export default function EditProductPage() {
     serialNumber: '',
     brandId: 0,
     typeId: 0,
-    compatibilityGroupIds: []
+    groupIds: []
   });
   
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
@@ -66,7 +66,7 @@ export default function EditProductPage() {
       const [brandsResponse, typesResponse, groupsResponse] = await Promise.all([
         equipmentService.getBrands(1, 100),
         equipmentService.getTypes(1, 100),
-        equipmentService.getCompatibilityGroups(1, 100)
+        equipmentService.getCompatibilityGroups()
       ]);
       
       setBrands(brandsResponse[0] || []);
@@ -96,7 +96,7 @@ export default function EditProductPage() {
         serialNumber: productData.serialNumber,
         brandId: productData.brand?.id ? Number(productData.brand.id) : 0,
         typeId: productData.type?.id ? Number(productData.type.id) : 0,
-        compatibilityGroupIds: productData.groups?.map((g: any) => g.id) || []
+        groupIds: productData.groups?.map((g: any) => g.id) || []
       });
     } catch (error) {
       console.error('Erreur lors du chargement du produit:', error);
@@ -163,7 +163,7 @@ export default function EditProductPage() {
     const value = event.target.value;
     setFormData({ 
       ...formData, 
-      compatibilityGroupIds: typeof value === 'string' 
+      groupIds: typeof value === 'string' 
         ? value.split(',').map(id => Number(id)) 
         : value as number[]
     });
@@ -278,7 +278,7 @@ export default function EditProductPage() {
                 <InputLabel>Groupes de compatibilité</InputLabel>
                 <Select
                   multiple
-                  value={formData.compatibilityGroupIds || []}
+                  value={formData.groupIds || []}
                   onChange={handleGroupIdsChange}
                   input={<OutlinedInput label="Groupes de compatibilité" />}
                   renderValue={(selected) => (
