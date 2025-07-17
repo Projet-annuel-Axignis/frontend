@@ -196,10 +196,10 @@ export default function ReportTypesPage() {
               startIcon={<AddIcon />}
               onClick={() => setCreateDialogOpen(true)}
               sx={{
-                background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
+                background: 'linear-gradient(135deg, var(--color-axignis-primary), var(--color-axignis-secondary))',
                 '&:hover': {
-                  background: 'linear-gradient(45deg, #667eea 60%, #764ba2 100%)',
-                }
+                  background: 'linear-gradient(135deg, var(--color-axignis-secondary), var(--color-axignis-primary))',
+                },
               }}
             >
               {isMobile ? 'Ajouter' : 'Ajouter un type'}

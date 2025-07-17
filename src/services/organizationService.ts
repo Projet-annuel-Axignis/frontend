@@ -61,7 +61,7 @@ const organizationService = {
 
   // Mettre à jour un organisme
   async updateOrganization(id: number, data: UpdateOrganizationDto): Promise<Organization> {
-    const response = await api.put(`/organizations/${id}`, data);
+    const response = await api.patch(`/organizations/${id}`, data);
     return response.data;
   },
 

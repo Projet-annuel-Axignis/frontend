@@ -61,7 +61,7 @@ const reportTypeService = {
 
   // Mettre à jour un type de rapport
   async updateReportType(code: string, data: UpdateReportTypeDto): Promise<ReportType> {
-    const response = await api.put(`/report-types/${code}`, data);
+    const response = await api.patch(`/report-types/${code}`, data);
     return response.data;
   },
 

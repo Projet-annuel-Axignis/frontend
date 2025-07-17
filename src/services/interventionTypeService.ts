@@ -61,7 +61,7 @@ const interventionTypeService = {
 
   // Mettre à jour un type d'intervention
   async updateInterventionType(code: string, data: UpdateInterventionTypeDto): Promise<InterventionType> {
-    const response = await api.put(`/intervention-types/${code}`, data);
+    const response = await api.patch(`/intervention-types/${code}`, data);
     return response.data;
   },
 
