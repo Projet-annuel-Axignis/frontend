@@ -29,7 +29,6 @@ import {
   IconButton,
   Paper,
   Snackbar,
-  Switch,
   Table,
   TableBody,
   TableCell,
@@ -49,7 +48,7 @@ export default function CompatibilityGroupsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [showDeleted, setShowDeleted] = useState(false);
+  const [showDeleted] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -66,10 +65,10 @@ export default function CompatibilityGroupsPage() {
   const [groupName, setGroupName] = useState('');
 
   // État des notifications
-  const [snackbar, setSnackbar] = useState<{ 
-    open: boolean; 
-    message: string; 
-    severity: 'success' | 'error' 
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error'
   }>({
     open: false,
     message: '',
@@ -156,7 +155,7 @@ export default function CompatibilityGroupsPage() {
   const handleViewProducts = (group: CompatibilityGroup) => {
     setSelectedGroup(group);
     // Pour simplifier, on affiche tous les produits qui ont ce groupe dans leur liste
-    const groupProducts = products.filter(product => 
+    const groupProducts = products.filter(product =>
       product.groups?.some(g => g.id === group.id)
     );
     setSelectedGroupProducts(groupProducts);
@@ -258,21 +257,21 @@ export default function CompatibilityGroupsPage() {
 
       {/* Message informatif */}
       <Alert severity="info" sx={{ mb: 3 }}>
-        Les groupes de compatibilité permettent d&apos;organiser les produits par catégories. 
+        Les groupes de compatibilité permettent d&apos;organiser les produits par catégories.
         Vous pouvez créer des groupes et y associer des produits pour faciliter la gestion.
       </Alert>
 
       {/* Filtres et actions */}
       <Card elevation={3} sx={{ mb: 4 }}>
         <CardContent sx={{ p: 3 }}>
-          <Box sx={{ 
-            display: 'flex', 
-            flexDirection: { xs: 'column', md: 'row' }, 
-            gap: 2, 
+          <Box sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', md: 'row' },
+            gap: 2,
             alignItems: { xs: 'stretch', md: 'center' },
             mb: 2
           }}>
-            <Typography variant="h6" sx={{ 
+            <Typography variant="h6" sx={{
               flexGrow: 1,
               display: 'flex',
               alignItems: 'center',
@@ -280,7 +279,7 @@ export default function CompatibilityGroupsPage() {
             }}>
               Filtres avancés
             </Typography>
-            
+
             <Button
               variant="contained"
               startIcon={<AddIcon />}
@@ -296,10 +295,10 @@ export default function CompatibilityGroupsPage() {
             </Button>
           </Box>
 
-          <Box sx={{ 
-            display: 'flex', 
-            flexDirection: { xs: 'column', md: 'row' }, 
-            gap: 2, 
+          <Box sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', md: 'row' },
+            gap: 2,
             alignItems: { xs: 'stretch', md: 'center' }
           }}>
             <TextField
@@ -359,14 +358,14 @@ export default function CompatibilityGroupsPage() {
                   </TableRow>
                 ) : (
                   paginatedGroups.map((group) => {
-                    const groupProducts = products.filter(product => 
+                    const groupProducts = products.filter(product =>
                       product.groups?.some(g => g.id === group.id)
                     );
-                    
+
                     return (
                       <TableRow
                         key={group.id}
-                        sx={{ 
+                        sx={{
                           '&:hover': { bgcolor: 'action.hover' },
                           ...(group.deletedAt && { opacity: 0.6, bgcolor: 'rgba(0, 0, 0, 0.04)' })
                         }}
@@ -453,7 +452,7 @@ export default function CompatibilityGroupsPage() {
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
             labelRowsPerPage="Lignes par page"
-            labelDisplayedRows={({ from, to, count }) => 
+            labelDisplayedRows={({ from, to, count }) =>
               `${from}-${to} sur ${count !== -1 ? count : `plus de ${to}`}`
             }
             sx={{ px: 3 }}
@@ -532,7 +531,7 @@ export default function CompatibilityGroupsPage() {
         </DialogTitle>
         <DialogContent>
           <Typography variant="body1">
-            Êtes-vous sûr de vouloir supprimer ce groupe de compatibilité ? 
+            Êtes-vous sûr de vouloir supprimer ce groupe de compatibilité ?
             Cette action supprimera également toutes les associations avec les produits.
           </Typography>
         </DialogContent>

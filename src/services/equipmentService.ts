@@ -1,56 +1,53 @@
 import { api } from '@/lib/api';
-import { 
-  EquipmentDomain, 
-  EquipmentFamily,
-  EquipmentType,
-  CreateEquipmentDomainRequest, 
-  UpdateEquipmentDomainRequest,
-  CreateEquipmentFamilyRequest,
-  UpdateEquipmentFamilyRequest,
-  CreateEquipmentTypeRequest,
-  UpdateEquipmentTypeRequest,
+import {
   ApiResponse,
-  ServerPaginatedResponse,
   ArrayPaginatedResponse,
   Brand,
-  CreateBrandRequest,
-  UpdateBrandRequest,
-  DocumentType,
-  CreateDocumentTypeRequest,
-  UpdateDocumentTypeRequest,
-  ProductDocument,
-  UploadProductDocumentRequest,
-  UpdateProductDocumentStatusRequest,
-  Product,
-  CreateProductRequest,
-  UpdateProductRequest,
   CompatibilityGroup,
-  CreateCompatibilityGroupRequest,
-  AttachProductToGroupRequest,
-  DetachProductFromGroupRequest
+  CreateBrandRequest,
+  CreateDocumentTypeRequest,
+  CreateEquipmentDomainRequest,
+  CreateEquipmentFamilyRequest,
+  CreateEquipmentTypeRequest,
+  CreateProductRequest,
+  DocumentType,
+  EquipmentDomain,
+  EquipmentFamily,
+  EquipmentType,
+  Product,
+  ProductDocument,
+  ServerPaginatedResponse,
+  UpdateBrandRequest,
+  UpdateDocumentTypeRequest,
+  UpdateEquipmentDomainRequest,
+  UpdateEquipmentFamilyRequest,
+  UpdateEquipmentTypeRequest,
+  UpdateProductDocumentStatusRequest,
+  UpdateProductRequest,
+  UploadProductDocumentRequest,
 } from '@/types/equipment';
 
 export const equipmentService = {
   // Domaines d'équipements
   async getDomains(page: number = 1, limit: number = 10, search?: string, showDeleted: boolean = false): Promise<ServerPaginatedResponse<EquipmentDomain>> {
     const params = new URLSearchParams();
-    
+
     if (page) {
       params.append('page', page.toString());
     }
-    
+
     if (limit) {
       params.append('limit', limit.toString());
     }
-    
+
     if (search) {
       params.append('search', search);
     }
-    
+
     if (showDeleted) {
       params.append('includeDeleted', 'true');
     }
-    
+
     const queryString = params.toString() ? `?${params.toString()}` : '';
     const response = await api.get(`/equipments/domains${queryString}`);
     return response.data;
@@ -71,7 +68,7 @@ export const equipmentService = {
       throw error;
     }
   },
-  
+
   async getDomainBySerialNumber(serialNumber: string): Promise<ApiResponse<EquipmentDomain>> {
     const response = await api.get(`/equipments/domains/serial/${serialNumber}`);
     return response.data;
@@ -124,7 +121,7 @@ export const equipmentService = {
       throw error;
     }
   },
-  
+
   async restoreDomain(id: number): Promise<ApiResponse<EquipmentDomain>> {
     try {
       console.log(`Restauration du domaine (ID: ${id})`);
@@ -144,51 +141,51 @@ export const equipmentService = {
   // Familles d'équipements
   async getFamilies(page: number = 1, limit: number = 10, domainId?: number | string, search?: string, showDeleted: boolean = false): Promise<ServerPaginatedResponse<EquipmentFamily>> {
     const params = new URLSearchParams();
-    
+
     if (page) {
       params.append('page', page.toString());
     }
-    
+
     if (limit) {
       params.append('limit', limit.toString());
     }
-    
+
     // Utilisation des paramètres de filtrage pour le domainId
     if (domainId) {
       params.append('filterField', 'domain');
       params.append('filterOp', 'equals');
       params.append('filter', domainId.toString());
     }
-    
+
     if (search) {
       params.append('search', search);
     }
-    
+
     if (showDeleted) {
       params.append('includeDeleted', 'true');
     }
-    
+
     console.log("Paramètres de requête pour getFamilies:", params.toString());
-    
+
     const queryString = params.toString() ? `?${params.toString()}` : '';
     const response = await api.get(`/equipments/families${queryString}`);
     return response.data;
   },
-  
+
   async getFamilyById(id: string): Promise<ApiResponse<EquipmentFamily>> {
     const response = await api.get(`/equipments/families/${id}`);
     return response.data;
   },
-  
+
   async getFamilyBySerialNumber(serialNumber: string): Promise<ApiResponse<EquipmentFamily>> {
     const response = await api.get(`/equipments/families/serial/${serialNumber}`);
     return response.data;
   },
-  
+
   async createFamily(data: CreateEquipmentFamilyRequest): Promise<ApiResponse<EquipmentFamily>> {
     // Créer un objet pour l'API qui peut avoir des types différents
     const requestData: any = { ...data };
-    
+
     // Si domainId est présent, essayer de le convertir en nombre pour l'API
     if (requestData.domainId) {
       // Dans le cas où domainId est une chaîne qui représente un nombre
@@ -197,17 +194,17 @@ export const equipmentService = {
         requestData.domainId = Number(requestData.domainId);
       }
     }
-    
+
     console.log("Données pour création de famille:", requestData);
-    
+
     const response = await api.post('/equipments/families', requestData);
     return response.data;
   },
-  
+
   async updateFamily(id: string, data: UpdateEquipmentFamilyRequest): Promise<ApiResponse<EquipmentFamily>> {
     // Créer un objet pour l'API qui peut avoir des types différents
     const requestData: any = { ...data };
-    
+
     // Si domainId est présent, essayer de le convertir en nombre pour l'API
     if (requestData.domainId) {
       // Dans le cas où domainId est une chaîne qui représente un nombre
@@ -216,10 +213,10 @@ export const equipmentService = {
         requestData.domainId = Number(requestData.domainId);
       }
     }
-    
+
     console.log(`Appel API PATCH /equipments/families/${id} avec données originales:`, data);
     console.log(`Données après transformation pour l'API:`, requestData);
-    
+
     try {
       const response = await api.patch(`/equipments/families/${id}`, requestData);
       console.log("Réponse API updateFamily:", response.data);
@@ -234,7 +231,7 @@ export const equipmentService = {
       throw error;
     }
   },
-  
+
   async deleteFamily(id: string): Promise<ApiResponse<void>> {
     try {
       const response = await api.delete(`/equipments/families/${id}`);
@@ -243,7 +240,7 @@ export const equipmentService = {
       throw error;
     }
   },
-  
+
   async restoreFamily(id: string): Promise<ApiResponse<EquipmentFamily>> {
     const response = await api.patch(`/equipments/families/${id}/restore`);
     return response.data;
@@ -252,51 +249,51 @@ export const equipmentService = {
   // Types d'équipements
   async getTypes(page: number = 1, limit: number = 10, familyId?: number | string, search?: string, showDeleted: boolean = false): Promise<ServerPaginatedResponse<EquipmentType>> {
     const params = new URLSearchParams();
-    
+
     if (page) {
       params.append('page', page.toString());
     }
-    
+
     if (limit) {
       params.append('limit', limit.toString());
     }
-    
+
     // Utilisation des paramètres de filtrage pour la famille
     if (familyId) {
       params.append('filterField', 'family');
       params.append('filterOp', 'equals');
       params.append('filter', familyId.toString());
     }
-    
+
     if (search) {
       params.append('search', search);
     }
-    
+
     if (showDeleted) {
       params.append('includeDeleted', 'true');
     }
-    
+
     console.log("Paramètres de requête pour getTypes:", params.toString());
-    
+
     const queryString = params.toString() ? `?${params.toString()}` : '';
     const response = await api.get(`/equipments/types${queryString}`);
     return response.data;
   },
-  
+
   async getTypeById(id: string): Promise<ApiResponse<EquipmentType>> {
     const response = await api.get(`/equipments/types/${id}`);
     return response.data;
   },
-  
+
   async getTypeBySerialNumber(serialNumber: string): Promise<ApiResponse<EquipmentType>> {
     const response = await api.get(`/equipments/types/serial/${serialNumber}`);
     return response.data;
   },
-  
+
   async createType(data: CreateEquipmentTypeRequest): Promise<ApiResponse<EquipmentType>> {
     // Créer un objet pour l'API qui peut avoir des types différents
     const requestData: any = { ...data };
-    
+
     // Si familyId est présent, essayer de le convertir en nombre pour l'API
     if (requestData.familyId) {
       // Dans le cas où familyId est une chaîne qui représente un nombre
@@ -305,17 +302,17 @@ export const equipmentService = {
         requestData.familyId = Number(requestData.familyId);
       }
     }
-    
+
     console.log("Données pour création de type:", requestData);
-    
+
     const response = await api.post('/equipments/types', requestData);
     return response.data;
   },
-  
+
   async updateType(id: string, data: UpdateEquipmentTypeRequest): Promise<ApiResponse<EquipmentType>> {
     // Créer un objet pour l'API qui peut avoir des types différents
     const requestData: any = { ...data };
-    
+
     // Si familyId est présent, essayer de le convertir en nombre pour l'API
     if (requestData.familyId) {
       // Dans le cas où familyId est une chaîne qui représente un nombre
@@ -324,10 +321,10 @@ export const equipmentService = {
         requestData.familyId = Number(requestData.familyId);
       }
     }
-    
+
     console.log(`Appel API PATCH /equipments/types/${id} avec données originales:`, data);
     console.log(`Données après transformation pour l'API:`, requestData);
-    
+
     try {
       const response = await api.patch(`/equipments/types/${id}`, requestData);
       console.log("Réponse API updateType:", response.data);
@@ -342,7 +339,7 @@ export const equipmentService = {
       throw error;
     }
   },
-  
+
   async deleteType(id: string): Promise<ApiResponse<void>> {
     try {
       const response = await api.delete(`/equipments/types/${id}`);
@@ -351,7 +348,7 @@ export const equipmentService = {
       throw error;
     }
   },
-  
+
   async restoreType(id: string): Promise<ApiResponse<EquipmentType>> {
     const response = await api.patch(`/equipments/types/${id}/restore`);
     return response.data;
@@ -360,23 +357,23 @@ export const equipmentService = {
   // Brands (Marques)
   async getBrands(page: number = 1, limit: number = 10, search?: string, showDeleted: boolean = false): Promise<[Brand[], number, number]> {
     const params = new URLSearchParams();
-    
+
     if (page) {
       params.append('page', page.toString());
     }
-    
+
     if (limit) {
       params.append('limit', limit.toString());
     }
-    
+
     if (search) {
       params.append('search', search);
     }
-    
+
     if (showDeleted) {
       params.append('includeDeleted', 'true');
     }
-    
+
     const queryString = params.toString() ? `?${params.toString()}` : '';
     const response = await api.get(`/brands${queryString}`);
     return response.data;
@@ -386,7 +383,7 @@ export const equipmentService = {
     const response = await api.get(`/brands/${id}`);
     return response.data;
   },
-  
+
   async getBrandBySerialNumber(serialNumber: string): Promise<ApiResponse<Brand>> {
     const response = await api.get(`/brands/serial/${serialNumber}`);
     return response.data;
@@ -413,7 +410,7 @@ export const equipmentService = {
       throw error;
     }
   },
-  
+
   async deleteBrand(id: string): Promise<ApiResponse<void>> {
     try {
       const response = await api.delete(`/brands/${id}`);
@@ -422,7 +419,7 @@ export const equipmentService = {
       throw error;
     }
   },
-  
+
   async restoreBrand(id: string): Promise<ApiResponse<Brand>> {
     const response = await api.post(`/brands/${id}/restore`);
     return response.data;
@@ -431,45 +428,45 @@ export const equipmentService = {
   // Types de documents
   async getDocumentTypes(page: number = 1, limit: number = 10, search?: string, showDeleted: boolean = false): Promise<ArrayPaginatedResponse<DocumentType>> {
     const params = new URLSearchParams();
-    
+
     if (page) {
       params.append('page', page.toString());
     }
-    
+
     if (limit) {
       params.append('limit', limit.toString());
     }
-    
+
     if (search) {
       params.append('search', search);
     }
-    
+
     if (showDeleted) {
       params.append('includeDeleted', 'true');
     }
-    
+
     const queryString = params.toString() ? `?${params.toString()}` : '';
     const response = await api.get(`/product-document-types${queryString}`);
     // La réponse est au format [results, totalResults, totalPages]
     return response.data;
   },
-  
+
   async getDocumentTypeById(id: string): Promise<ApiResponse<DocumentType>> {
     const response = await api.get(`/product-document-types/${id}`);
     return response.data;
   },
-  
+
   async getDocumentTypeBySerialNumber(serialNumber: string): Promise<ApiResponse<DocumentType>> {
     const response = await api.get(`/product-document-types/serial/${serialNumber}`);
     return response.data;
   },
-  
+
   async createDocumentType(data: CreateDocumentTypeRequest): Promise<ApiResponse<DocumentType>> {
     console.log("Données pour création de type de document:", data);
     const response = await api.post('/product-document-types', data);
     return response.data;
   },
-  
+
   async updateDocumentType(id: string, data: UpdateDocumentTypeRequest): Promise<ApiResponse<DocumentType>> {
     console.log(`Appel API PATCH /product-document-types/${id} avec données:`, data);
     try {
@@ -485,7 +482,7 @@ export const equipmentService = {
       throw error;
     }
   },
-  
+
   async deleteDocumentType(id: string): Promise<ApiResponse<void>> {
     try {
       const response = await api.delete(`/product-document-types/${id}`);
@@ -494,7 +491,7 @@ export const equipmentService = {
       throw error;
     }
   },
-  
+
   async restoreDocumentType(id: string): Promise<ApiResponse<DocumentType>> {
     // Utilisation de PATCH comme spécifié dans l'API
     const response = await api.patch(`/product-document-types/${id}/restore`);
@@ -504,77 +501,77 @@ export const equipmentService = {
   // Documents de produit
   async getProductDocuments(page: number = 1, limit: number = 10, productId?: string, documentTypeId?: string, status?: string, search?: string, showDeleted: boolean = false): Promise<ServerPaginatedResponse<ProductDocument>> {
     const params = new URLSearchParams();
-    
+
     if (page) {
       params.append('page', page.toString());
     }
-    
+
     if (limit) {
       params.append('limit', limit.toString());
     }
-    
+
     if (productId) {
       params.append('productId', productId);
     }
-    
+
     if (documentTypeId) {
       params.append('documentTypeId', documentTypeId);
     }
-    
+
     if (status) {
       params.append('status', status);
     }
-    
+
     if (search) {
       params.append('search', search);
     }
-    
+
     if (showDeleted) {
       params.append('includeDeleted', 'true');
     }
-    
+
     const queryString = params.toString() ? `?${params.toString()}` : '';
     const response = await api.get(`/product-documents${queryString}`);
     return response.data;
   },
-  
+
   async getProductDocumentById(id: string): Promise<ApiResponse<ProductDocument>> {
     const response = await api.get(`/product-documents/${id}`);
     return response.data;
   },
-  
+
   async getProductDocumentBySerialNumber(serialNumber: string): Promise<ApiResponse<ProductDocument>> {
     const response = await api.get(`/product-documents/serial/${serialNumber}`);
     return response.data;
   },
 
   async getProductDocumentsByProductId(
-    productId: string, 
-    page: number = 1, 
-    limit: number = 10, 
+    productId: string,
+    page: number = 1,
+    limit: number = 10,
     forceRefresh: boolean = false
   ): Promise<ServerPaginatedResponse<ProductDocument>> {
     try {
       const params = new URLSearchParams();
-      
+
       if (page) {
         params.append('page', page.toString());
       }
-      
+
       if (limit) {
         params.append('limit', limit.toString());
       }
-      
+
       // Ajouter un paramètre timestamp pour éviter le cache si nécessaire
       if (forceRefresh) {
         params.append('_t', Date.now().toString());
       }
-      
+
       const queryString = params.toString() ? `?${params.toString()}` : '';
       console.log(`Récupération des documents pour le produit ${productId} avec refresh=${forceRefresh}`);
       const response = await api.get(`/product-documents/product/${productId}${queryString}`);
       console.log(`Documents récupérés pour le produit ${productId}:`, response.data);
-      
+
       // Format de réponse détecté: vérifier si c'est un objet unique ou un tableau dans results
       // Si la réponse est un document unique (avec id, createdAt, etc.) ou un tableau direct,
       // nous devons le transformer en format ServerPaginatedResponse
@@ -589,7 +586,7 @@ export const equipmentService = {
             totalPages: 1,
             currentResults: response.data.length
           };
-        } 
+        }
         else if (response.data.id) {
           // Si c'est un document unique (avec un id), on le transforme en tableau
           console.log("Réponse détectée comme un document unique");
@@ -602,14 +599,14 @@ export const equipmentService = {
           };
         }
       }
-      
+
       // Maintenant que nous avons un format uniforme, on peut traiter les résultats
       if (response.data && response.data.results && Array.isArray(response.data.results)) {
         // Ajout de propriétés compatibles pour l'UI existante
         response.data.results = response.data.results.map((doc: any) => {
           // Créer un nouvel objet pour éviter les références
           const transformedDoc: any = { ...doc };
-          
+
           // Pour la compatibilité, ajouter productId et documentTypeId s'ils n'existent pas
           if (doc.products && Array.isArray(doc.products) && doc.products.length > 0 && !doc.productId) {
             transformedDoc.productId = doc.products[0].id.toString();
@@ -617,27 +614,27 @@ export const equipmentService = {
               transformedDoc.product = { ...doc.products[0] };
             }
           }
-          
+
           if (doc.type && doc.type.id && !doc.documentTypeId) {
             transformedDoc.documentTypeId = doc.type.id.toString();
             if (!doc.documentType) {
               transformedDoc.documentType = { ...doc.type };
             }
           }
-          
+
           console.log("Document préparé pour l'affichage:", {
             id: transformedDoc.id,
             fileName: transformedDoc.fileName || "MANQUANT",
             type: transformedDoc.type?.name || "MANQUANT",
             product: transformedDoc.products?.[0]?.name || "MANQUANT"
           });
-          
+
           return transformedDoc;
         });
-        
+
         console.log(`${response.data.results.length} documents prêts pour l'affichage`);
       }
-      
+
       return response.data;
     } catch (error: any) {
       // Si l'erreur est 404 (pas de documents), on retourne un objet vide mais valide
@@ -650,7 +647,7 @@ export const equipmentService = {
           currentResults: 0
         };
       }
-      
+
       // Sinon on propage l'erreur
       console.error(`Erreur lors de la récupération des documents pour le produit ${productId}:`, error);
       throw error;
@@ -659,24 +656,24 @@ export const equipmentService = {
 
   async uploadProductDocument(data: UploadProductDocumentRequest): Promise<ApiResponse<ProductDocument>> {
     console.log("Données pour upload de document:", data);
-    
+
     // Création d'un FormData pour l'upload du fichier
     const formData = new FormData();
     formData.append('file', data.file);
     formData.append('serialNumber', data.serialNumber);
     formData.append('reference', data.reference || '');
-    
+
     // Champs obligatoires selon la spec API
     formData.append('title', data.reference); // Utiliser la référence comme titre par défaut
     formData.append('issueDate', data.issueDate);
     formData.append('version', data.version.toString());
     formData.append('uploadedBy', '1'); // ID utilisateur par défaut
-    
+
     // Champs optionnels
     if (data.expiryDate) {
       formData.append('expiryDate', data.expiryDate);
     }
-    
+
     // typeId - ID du type de document (obligatoire)
     if (data.type && data.type.id) {
       const typeId = typeof data.type.id === 'string' ? parseInt(data.type.id, 10) : data.type.id;
@@ -685,12 +682,12 @@ export const equipmentService = {
       const typeId = typeof data.documentTypeId === 'string' ? parseInt(data.documentTypeId, 10) : data.documentTypeId;
       formData.append('typeId', typeId.toString());
     }
-    
+
     // productIds - Array des IDs de produits (obligatoire)
     const productIds: number[] = [];
     if (data.products && data.products.length > 0) {
       // Convertir tous les IDs de produits en nombres
-      productIds.push(...data.products.map(product => 
+      productIds.push(...data.products.map(product =>
         typeof product.id === 'string' ? parseInt(product.id, 10) : product.id
       ));
     } else if (data.productId) {
@@ -698,7 +695,7 @@ export const equipmentService = {
       const productId = typeof data.productId === 'string' ? parseInt(data.productId, 10) : data.productId;
       productIds.push(productId);
     }
-    
+
     // Ajouter le tableau des IDs de produits
     if (productIds.length > 0) {
       // Envoyer chaque ID comme un élément séparé du array
@@ -706,7 +703,7 @@ export const equipmentService = {
         formData.append('productIds[]', id.toString());
       });
     }
-    
+
     console.log("Envoi de la requête d'upload avec formData:", {
       file: data.file.name,
       serialNumber: formData.get('serialNumber'),
@@ -719,41 +716,41 @@ export const equipmentService = {
       version: formData.get('version'),
       uploadedBy: formData.get('uploadedBy')
     });
-    
+
     try {
       const response = await api.post('/product-documents/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       });
-      
+
       console.log("Réponse de l'API après upload:", response.data);
       return response.data;
     } catch (error: any) {
       console.error("Erreur lors de l'upload du document:", error);
-      
+
       if (error.response) {
         console.error("Statut:", error.response.status);
         console.error("Données:", error.response.data);
       }
-      
+
       throw error;
     }
   },
-  
+
   async updateProductDocumentStatus(id: string, data: UpdateProductDocumentStatusRequest): Promise<ApiResponse<ProductDocument>> {
     console.log(`Mise à jour du statut du document (ID: ${id})`, data);
     const response = await api.patch(`/product-documents/${id}/status`, data);
     return response.data;
   },
-  
+
   async downloadProductDocument(id: string): Promise<Blob> {
     const response = await api.get(`/product-documents/${id}/file`, {
       responseType: 'blob'
     });
     return response.data;
   },
-  
+
   async validateProductDocumentChecksum(id: string, checksum: string): Promise<ApiResponse<{ valid: boolean }>> {
     try {
       const response = await api.get(`/product-documents/${id}/validate-checksum?checksum=${encodeURIComponent(checksum)}`);
@@ -770,7 +767,7 @@ export const equipmentService = {
       throw error;
     }
   },
-  
+
   async deleteProductDocument(id: string): Promise<ApiResponse<void>> {
     try {
       const response = await api.delete(`/product-documents/${id}`);
@@ -779,7 +776,7 @@ export const equipmentService = {
       throw error;
     }
   },
-  
+
   async restoreProductDocument(id: string): Promise<ApiResponse<ProductDocument>> {
     const response = await api.patch(`/product-documents/${id}/restore`);
     return response.data;
@@ -788,42 +785,42 @@ export const equipmentService = {
   // Produits
   async getProducts(page: number = 1, limit: number = 10, brandId?: number, typeId?: number, compatibilityGroupId?: number, search?: string, showDeleted: boolean = false): Promise<ServerPaginatedResponse<Product>> {
     const params = new URLSearchParams();
-    
+
     if (page) {
       params.append('page', page.toString());
     }
-    
+
     if (limit) {
       params.append('limit', limit.toString());
     }
-    
+
     if (brandId) {
       params.append('brandId', brandId.toString());
     }
-    
+
     if (typeId) {
       params.append('typeId', typeId.toString());
     }
-    
+
     if (compatibilityGroupId) {
       params.append('compatibilityGroupId', compatibilityGroupId.toString());
     }
-    
+
     if (search) {
       params.append('search', search);
     }
-    
+
     if (showDeleted) {
       params.append('includeDeleted', 'true');
     }
-    
+
     const queryString = params.toString() ? `?${params.toString()}` : '';
-    
+
     try {
       console.log(`Appel API GET /products${queryString}`);
       const response = await api.get(`/products${queryString}`);
       console.log("Réponse API getProducts:", response.data);
-      
+
       // Adapter le format de réponse [results, totalResults, totalPages]
       if (Array.isArray(response.data) && response.data.length === 3) {
         return {
@@ -832,7 +829,7 @@ export const equipmentService = {
           totalPages: response.data[2] || 0
         };
       }
-      
+
       return response.data;
     } catch (error: any) {
       console.error("Erreur getProducts:", error);
@@ -843,7 +840,7 @@ export const equipmentService = {
       throw error;
     }
   },
-  
+
   async getProductById(id: number): Promise<ApiResponse<Product>> {
     try {
       console.log(`Appel API GET /products/${id}`);
@@ -855,7 +852,7 @@ export const equipmentService = {
       throw error;
     }
   },
-  
+
   async getProductBySerialNumber(serialNumber: string): Promise<ApiResponse<Product>> {
     try {
       console.log(`Appel API GET /products/serial/${serialNumber}`);
@@ -867,10 +864,10 @@ export const equipmentService = {
       throw error;
     }
   },
-  
+
   async createProduct(data: CreateProductRequest): Promise<ApiResponse<Product>> {
     console.log("Données pour création de produit:", data);
-    
+
     try {
       const response = await api.post('/products', data);
       console.log("Réponse API createProduct:", response.data);
@@ -884,10 +881,10 @@ export const equipmentService = {
       throw error;
     }
   },
-  
+
   async updateProduct(id: number, data: UpdateProductRequest): Promise<ApiResponse<Product>> {
     console.log(`Appel API PATCH /products/${id} avec données:`, data);
-    
+
     try {
       const response = await api.patch(`/products/${id}`, data);
       console.log("Réponse API updateProduct:", response.data);
@@ -901,7 +898,7 @@ export const equipmentService = {
       throw error;
     }
   },
-  
+
   async deleteProduct(id: number): Promise<ApiResponse<void>> {
     try {
       console.log(`Appel API DELETE /products/${id}`);
@@ -913,7 +910,7 @@ export const equipmentService = {
       throw error;
     }
   },
-  
+
   async restoreProduct(id: number): Promise<ApiResponse<Product>> {
     try {
       console.log(`Appel API POST /products/${id}/restore`);
@@ -932,17 +929,17 @@ export const equipmentService = {
       console.log(`Appel API GET /compatibility-groups`);
       const response = await api.get(`/compatibility-groups`);
       console.log("Réponse API getCompatibilityGroups:", response.data);
-      
+
       // Vérifier si la réponse est directement un tableau de groupes
       if (Array.isArray(response.data)) {
         return response.data;
       }
-      
+
       // Si la réponse a une structure paginée spécifique
       if (response.data && Array.isArray(response.data.results)) {
         return response.data.results;
       }
-      
+
       // Si format inconnu, retourner un tableau vide
       console.warn("Format de réponse inattendu pour les groupes de compatibilité");
       return [];
@@ -951,7 +948,7 @@ export const equipmentService = {
       throw error;
     }
   },
-  
+
   async createCompatibilityGroup(data: { name: string }): Promise<ApiResponse<CompatibilityGroup>> {
     console.log("Données pour création de groupe de compatibilité:", data);
     try {
@@ -963,7 +960,7 @@ export const equipmentService = {
       throw error;
     }
   },
-  
+
   async deleteCompatibilityGroup(id: number): Promise<void> {
     try {
       console.log(`Suppression du groupe de compatibilité (ID: ${id})`);
@@ -974,7 +971,7 @@ export const equipmentService = {
       throw error;
     }
   },
-  
+
   async attachProductToGroup(groupId: number, productId: number): Promise<void> {
     try {
       console.log(`Attachement du produit ${productId} au groupe ${groupId}`);
@@ -988,7 +985,7 @@ export const equipmentService = {
       throw error;
     }
   },
-  
+
   async detachProductFromGroup(groupId: number, productId: number): Promise<void> {
     try {
       console.log(`Détachement du produit ${productId} du groupe ${groupId}`);
