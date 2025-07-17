@@ -375,17 +375,6 @@ export default function Sidebar() {
                     </Typography>
                   </StyledListItemButton>
                 </Link>
-                <Link href="/dashboard/compatibilite" style={{ textDecoration: 'none', color: 'inherit' }}>
-                  <StyledListItemButton
-                    sx={{ py: 0.75, mb: 0.5, width: '100%' }}
-                    isActive={isActive('/dashboard/compatibilite')}
-                  >
-                    <GroupIcon sx={{ mr: 1.5, fontSize: '1rem', color: 'var(--color-axignis-primary)' }} />
-                    <Typography variant="body2" color="textSecondary">
-                      Compatibilité
-                    </Typography>
-                  </StyledListItemButton>
-                </Link>
               </Box>
             </Collapse>
 
